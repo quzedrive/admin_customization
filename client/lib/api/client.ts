@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const client = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api`,
     withCredentials: true, // Important for cookies (refresh token)
     headers: {
         'Content-Type': 'application/json',
