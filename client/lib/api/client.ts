@@ -37,7 +37,7 @@ client.interceptors.response.use(
                 // Attempt to refresh token
                 // Must use withCredentials for cookie to be sent
                 const refreshResponse = await axios.post(
-                    'http://localhost:8000/api/admin/refresh',
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/refresh`,
                     {},
                     { withCredentials: true }
                 );
