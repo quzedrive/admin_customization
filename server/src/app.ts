@@ -1,0 +1,62 @@
+import express, { Application, Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+
+import adminAuthRoutes from './routes/admin-auth.routes';
+import brandRoutes from './routes/brand.routes';
+import packageRoutes from './routes/package.routes';
+import uploadRoutes from './routes/upload.routes';
+import siteSettingsRoutes from './routes/site-settings.routes';
+import emailConfigRoutes from './routes/email-config.routes';
+import imageUploadConfigRoutes from './routes/image-upload-config.routes';
+import appearanceConfigRoutes from './routes/appearance-settings.routes';
+import carRoutes from './routes/car.routes';
+import systemTemplateRoutes from './routes/system-template.routes';
+import cancellationReasonRoutes from './routes/cancellation-reason.routes';
+
+const app: Application = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(cors({
+    origin: [process.env.FRONTEND_URL || 'http://localhost:3000'], // Allow Client
+    credentials: true
+}));
+
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
+app.use(helmet());
+
+// Routes
+app.get('/', (req: Request, res: Response) => {
+    res.send('API is running...');
+});
+
+app.use('/api/admin', adminAuthRoutes); // /api/admin/login, /api/admin/me
+app.use('/api/brands', brandRoutes); // /api/brands (Public), /api/brands/admin (Admin)
+app.use('/api/packages', packageRoutes); // /api/packages (Public), /api/packages/admin (Admin)
+app.use('/api/upload', uploadRoutes); // /api/upload
+app.use('/api/settings/email', emailConfigRoutes);
+app.use('/api/settings/image-upload', imageUploadConfigRoutes);
+app.use('/api/settings/appearance', appearanceConfigRoutes);
+app.use('/api/templates', systemTemplateRoutes);
+app.use('/api/settings/site-settings', siteSettingsRoutes);
+app.use('/api/cars', carRoutes);
+app.use('/api/cancellation-reasons', cancellationReasonRoutes);
+
+// Error Handling Middleware
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+    res.status(statusCode);
+    res.json({
+        message: err.message,
+        stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+    });
+});
+
+export default app;

@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --color-primary: #2563eb;
+  --color-secondary: #4f46e5;
+  --color-icon: #3b82f6;
+}
+
+@theme inline {
+  --breakpoint-*: initial;
+  --breakpoint-sm: 40rem;
+  /* 640px */
+  --breakpoint-md: 48rem;
+  /* 768px */
+  --breakpoint-lg: 64rem;
+  /* 1024px */
+  --breakpoint-xl: 80rem;
+  /* 1280px */
+  --breakpoint-2xl: 85rem;
+  /* 1360px low res moniters & government laptops*/
+  --breakpoint-3xl: 100rem;
+  /* 1600px macbooks*/
+  --breakpoint-4xl: 120rem;
+  /* 1920px gaming & high res laptop & moniter screens*/
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-btn: #B78B5C;
+  --color-: #344054;
+  --color-custom-newtral: #667085;
+  --font-inter: var(--font-inter);
+  --font-adlam-display: var(--font-adlam-display);
+  --font-roboto: var(--font-roboto);
+  --font-manrope: var(--font-manrope);
+  --font-montserrat: var(--font-montserrat);
+
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-icon: var(--color-icon);
+}
+
+@layer utilities {
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 1.2s ease-out forwards;
+  }
+}
+
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+@media(min-width: 768px) {
+  .showBg {
+    background-image: url('/car.jpg');
+    background-size: cover;
+    background-position: center
+  }
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, Roboto, Manrope, Adlam-Display, sans-serif;
+}
+
+
+body {
+  font-family: var(--font-inter), sans-serif;
+}
+
+.font-inter {
+  font-family: var(--font-inter), sans-serif;
+}
+
+
+@media (max-width: 640px) {
+  .ant-picker-dropdown {
+    width: 95vw !important;
+    left: 2.5vw !important;
+  }
+
+  .ant-picker-panel {
+    font-size: 0.875rem !important;
+    /* Tailwind text-sm */
+  }
+}
+
+
+/* no scrollbar */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* For IE and Edge */
+.no-scrollbar {
+  -ms-overflow-style: none;
+}
+
+
+
+/* Appearance */
+
+.primary-btn {
+  background-color: var(--color-primary);
+  color: white; 
+}
