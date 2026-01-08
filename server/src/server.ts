@@ -1,6 +1,7 @@
 import app from './app';
 import connectDb from './config/db';
 import { configureCloudinary } from './config/cloudinary.config';
+import { CronService } from './services/cron.service';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -15,5 +16,8 @@ connectDb().then(async () => {
 
     app.listen(port, () => {
         console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`);
+
+        // Initialize cron jobs (keep-alive, etc.)
+        CronService.initialize();
     });
 });

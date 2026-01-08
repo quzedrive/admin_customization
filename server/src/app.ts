@@ -37,6 +37,16 @@ app.get('/', (req: Request, res: Response) => {
     res.send('API is running...');
 });
 
+// Health check endpoint for monitoring and keep-alive
+app.get('/api/health', (req: Request, res: Response) => {
+    res.status(200).json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+    });
+});
+
 app.use('/api/admin', adminAuthRoutes); // /api/admin/login, /api/admin/me
 app.use('/api/brands', brandRoutes); // /api/brands (Public), /api/brands/admin (Admin)
 app.use('/api/packages', packageRoutes); // /api/packages (Public), /api/packages/admin (Admin)
