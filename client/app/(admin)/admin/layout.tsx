@@ -6,6 +6,7 @@ import Sidebar from '@/components/admin/Sidebar';
 import Header from '@/components/admin/Header';
 import { cn } from '@/components/utils/cn';
 import { usePathname } from 'next/navigation';
+import { useAdminLoginQueries } from '@/lib/hooks/queries/useAdminLoginQueries';
 
 export default function AdminLayout({
     children,
@@ -14,6 +15,9 @@ export default function AdminLayout({
 }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+
+    // Consume query to force re-render on data update
+    useAdminLoginQueries();
 
     const pathname = usePathname();
     const isPublicPage = pathname === '/admin/login' || pathname.startsWith('/admin/forgot-password') || pathname.startsWith('/admin/reset-password');

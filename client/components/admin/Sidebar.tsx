@@ -208,6 +208,7 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onExpand }: Side
                                             ) : (
                                                 <Link
                                                     href={item.href}
+                                                    onClick={onClose}
                                                     className={cn(
                                                         "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200",
                                                         isActive
@@ -237,6 +238,7 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onExpand }: Side
                                                                 <Link
                                                                     key={subItem.name}
                                                                     href={subItem.href}
+                                                                    onClick={onClose}
                                                                     className={cn(
                                                                         "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                                                                         pathname === subItem.href
@@ -264,8 +266,16 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onExpand }: Side
                 {/* Admin Profile Section */}
                 <div className="p-4 border-t border-gray-100 mt-auto bg-white">
                     <div className={cn("flex items-center gap-3 p-2 rounded-xl bg-gray-50 border border-gray-100", isCollapsed ? "justify-center" : "")}>
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
-                            {data?.admin?.username?.[0]?.toUpperCase() || 'A'}
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0 overflow-hidden">
+                            {data?.admin?.profileImage ? (
+                                <img
+                                    src={data.admin.profileImage}
+                                    alt={data.admin.username}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                data?.admin?.username?.[0]?.toUpperCase() || 'A'
+                            )}
                         </div>
                         {!isCollapsed && (
                             <>

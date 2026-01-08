@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
 import adminAuthRoutes from './routes/admin-auth.routes';
+import adminProfileRoutes from './routes/admin-profile.routes';
 import brandRoutes from './routes/brand.routes';
 import packageRoutes from './routes/package.routes';
 import uploadRoutes from './routes/upload.routes';
@@ -47,16 +48,18 @@ app.get('/api/health', (req: Request, res: Response) => {
     });
 });
 
-app.use('/api/admin', adminAuthRoutes); // /api/admin/login, /api/admin/me
-app.use('/api/brands', brandRoutes); // /api/brands (Public), /api/brands/admin (Admin)
-app.use('/api/packages', packageRoutes); // /api/packages (Public), /api/packages/admin (Admin)
-app.use('/api/upload', uploadRoutes); // /api/upload
+// API Routes
+app.use('/api/admin', adminAuthRoutes);
+app.use('/api/admin/profile', adminProfileRoutes);
+app.use('/api/brands', brandRoutes);
+app.use('/api/packages', packageRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/settings/site-settings', siteSettingsRoutes);
 app.use('/api/settings/email', emailConfigRoutes);
 app.use('/api/settings/image-upload', imageUploadConfigRoutes);
 app.use('/api/settings/appearance', appearanceConfigRoutes);
-app.use('/api/templates', systemTemplateRoutes);
-app.use('/api/settings/site-settings', siteSettingsRoutes);
 app.use('/api/cars', carRoutes);
+app.use('/api/system-templates', systemTemplateRoutes);
 app.use('/api/cancellation-reasons', cancellationReasonRoutes);
 
 // Error Handling Middleware

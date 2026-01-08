@@ -63,6 +63,7 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      /*
       {
         source: '/_next/static/:path*',
         headers: [
@@ -72,12 +73,22 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      */
     ];
   },
 
   // Experimental Features for Performance
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion', 'antd'],
+  },
+
+  // Force webpack to poll for changes (fixes Windows file watch issues)
+  webpack: (config) => {
+    config.watchOptions = {
+      poll: 1000,
+      aggregateTimeout: 300,
+    };
+    return config;
   },
 };
 

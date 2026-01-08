@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Mail, LogOut, Settings, Shield, ExternalLink } from 'lucide-react';
+import { X, User, Mail, LogOut, Settings, Shield, ExternalLink, Camera, Trash2 } from 'lucide-react';
 import { useAdminLoginQueries } from '@/lib/hooks/queries/useAdminLoginQueries';
 import { useAdminLogoutMutation } from '@/lib/hooks/mutations/useAdminLogoutMutation';
+import { useAdminProfileMutations } from '@/lib/hooks/mutations/useAdminProfileMutations';
+import toast from 'react-hot-toast';
 
 interface ProfileOffcanvasProps {
     isOpen: boolean;
@@ -15,7 +17,40 @@ interface ProfileOffcanvasProps {
 export default function ProfileOffcanvas({ isOpen, onClose }: ProfileOffcanvasProps) {
     const { data } = useAdminLoginQueries();
     const logoutMutation = useAdminLogoutMutation();
+    const { useUpdateProfileImage, useDeleteProfileImage } = useAdminProfileMutations();
+    const updateMutation = useUpdateProfileImage();
+    const deleteMutation = useDeleteProfileImage();
     const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size must be less than 5MB');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            await updateMutation.mutateAsync(file);
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm('Remove profile image?')) return;
+        await deleteMutation.mutateAsync();
+    };
 
     return (
         <AnimatePresence>
@@ -63,8 +98,50 @@ export default function ProfileOffcanvas({ isOpen, onClose }: ProfileOffcanvasPr
                         <div className="flex-1 overflow-y-auto no-scrollbar p-6">
                             {/* Profile Info */}
                             <div className="flex flex-col items-center mb-8">
-                                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-lg ring-4 ring-white">
-                                    {data?.admin?.username?.[0]?.toUpperCase() || <User size={40} />}
+                                {/* Profile Image with Camera Icon */}
+                                <div className="relative group mb-4">
+                                    <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white overflow-hidden">
+                                        {data?.admin?.profileImage ? (
+                                            <img
+                                                src={data.admin.profileImage}
+                                                alt={data.admin.username}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            data?.admin?.username?.[0]?.toUpperCase() || <User size={40} />
+                                        )}
+                                    </div>
+
+                                    {/* Camera Icon Overlay */}
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={uploading || updateMutation.isPending}
+                                        className="absolute bottom-0 right-0 cursor-pointer bg-blue-600 hover:bg-blue-700 rounded-full p-2 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="Change profile image"
+                                    >
+                                        <Camera size={16} className="text-white" />
+                                    </button>
+
+                                    {/* Remove Button (only if image exists) */}
+                                    {data?.admin?.profileImage && (
+                                        <button
+                                            onClick={handleDelete}
+                                            disabled={deleteMutation.isPending}
+                                            className="absolute top-0 right-0 cursor-pointer bg-red-600 hover:bg-red-700 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                                            title="Remove profile image"
+                                        >
+                                            <Trash2 size={14} className="text-white" />
+                                        </button>
+                                    )}
+
+                                    {/* Hidden File Input */}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                    />
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900">{data?.admin?.username || 'Admin User'}</h3>
                                 <p className="text-sm text-gray-500 mt-1">{data?.admin?.email || 'admin@example.com'}</p>

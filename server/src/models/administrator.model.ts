@@ -9,6 +9,7 @@ export interface IAdministrator extends Document {
     password: string;
     role: string;
     status: number;
+    profileImage?: string;
     resetPasswordToken?: string;
     resetPasswordExpires?: Date;
     comparePassword(password: string): Promise<boolean>;
@@ -22,6 +23,7 @@ const AdministratorSchema = new Schema(
         password: { type: String, required: true },
         role: { type: String, default: 'admin', required: true },
         status: { type: Number, default: status.active, required: true },
+        profileImage: { type: String, default: '' },
         resetPasswordToken: { type: String },
         resetPasswordExpires: { type: Date },
     },

@@ -35,6 +35,7 @@ export const loginAdmin = async (req: Request, res: Response) => {
                 username: admin.username,
                 email: admin.email,
                 role: admin.role,
+                profileImage: admin.profileImage,
             },
         });
     } else {
@@ -92,6 +93,7 @@ export const getMe = async (req: any, res: Response) => {
         username: req.admin.username,
         email: req.admin.email,
         role: req.admin.role,
+        profileImage: req.admin.profileImage,
     };
     res.status(200).json({ admin });
 };
@@ -149,6 +151,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
                 username: admin.username,
                 email: admin.email,
                 role: admin.role,
+                profileImage: admin.profileImage,
             },
         });
     } else {

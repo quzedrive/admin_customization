@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-cbc';
-const SECRET_KEY = process.env.CREDENTIALS_HASH_SECRET || 'default_secret_key_needs_to_be_32_chars_long!!'; // Must be 32 chars
+const SECRET_KEY = (process.env.CREDENTIALS_HASH_SECRET || 'default_secret_key_needs_to_be_32_chars_long!!').trim(); // Must be 32 chars
 // Ensure key is 32 bytes
 const key = crypto.scryptSync(SECRET_KEY, 'salt', 32);
 

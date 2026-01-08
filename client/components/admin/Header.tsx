@@ -21,6 +21,9 @@ export default function Header({ onMobileMenuClick, onDesktopMenuClick, isDeskto
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isThemeOpen, setIsThemeOpen] = useState(false);
 
+    console.log(data);
+    
+
     return (
         <>
             <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-8 z-60 sticky top-0 transition-all duration-300">
@@ -64,8 +67,16 @@ export default function Header({ onMobileMenuClick, onDesktopMenuClick, isDeskto
                             <p className="text-sm font-medium text-gray-900">{data?.admin?.username || 'Admin'}</p>
                             <p className="text-xs text-gray-500">{data?.admin?.email}</p>
                         </div>
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-medium shadow-md">
-                            {data?.admin?.username?.[0]?.toUpperCase() || <User size={20} />}
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-medium shadow-md overflow-hidden">
+                            {data?.admin?.profileImage ? (
+                                <img
+                                    src={data.admin.profileImage}
+                                    alt={data.admin.username}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                data?.admin?.username?.[0]?.toUpperCase() || <User size={20} />
+                            )}
                         </div>
                     </button>
                 </div>
