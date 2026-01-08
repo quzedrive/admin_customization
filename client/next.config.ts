@@ -83,11 +83,13 @@ const nextConfig: NextConfig = {
   },
 
   // Force webpack to poll for changes (fixes Windows file watch issues)
-  webpack: (config) => {
-    config.watchOptions = {
-      poll: 1000,
-      aggregateTimeout: 300,
-    };
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
+    }
     return config;
   },
 };
