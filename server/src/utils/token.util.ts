@@ -19,9 +19,13 @@ export const generateAccessAndRefreshToken = (res: Response, payload: TokenPaylo
     // Set Refresh Token as HTTP-Only cookie
     res.cookie('qq_refresh_token', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Must be true for sameSite: 'none'
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-domain in production
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (should match REFRESH_TOKEN_EXPIRY)
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        // Only set domain in production to prevent cookie sharing between environments
+        ...(process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN
+            ? { domain: process.env.COOKIE_DOMAIN }
+            : {}),
     });
 
     return { accessToken, refreshToken };

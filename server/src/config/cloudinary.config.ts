@@ -10,12 +10,11 @@ export const configureCloudinary = async () => {
             let apiSecret = config.cloudinary.apiSecret;
 
             // Try to decrypt if it looks encrypted (contains colon)
-            // Note: simple check, encryption util usually produces hex:hex
             if (apiSecret.includes(':')) {
                 try {
                     apiSecret = decrypt(apiSecret);
                 } catch (e) {
-                    // console.error("Failed to decrypt cloudinary secret", e);
+                    console.error("Failed to decrypt cloudinary secret", e);
                 }
             }
 
@@ -24,12 +23,38 @@ export const configureCloudinary = async () => {
                 api_key: config.cloudinary.apiKey,
                 api_secret: apiSecret
             });
+
+            console.log('✓ Cloudinary configured from database');
+            console.log(`  Cloud Name: ${config.cloudinary.cloudName}`);
         } else {
-            // Fallback to env or log warning
-            // console.log("Cloudinary config missing in DB, using existing/env if available");
+            // Fallback to environment variables
+            if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+                cloudinary.config({
+                    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                    api_key: process.env.CLOUDINARY_API_KEY,
+                    api_secret: process.env.CLOUDINARY_API_SECRET
+                });
+                console.log('✓ Cloudinary configured from environment variables');
+                console.log(`  Cloud Name: ${process.env.CLOUDINARY_CLOUD_NAME}`);
+                console.log(`  API Key: ${process.env.CLOUDINARY_API_KEY?.substring(0, 8)}...`);
+            } else {
+                console.warn('⚠ Cloudinary configuration missing in both DB and environment variables!');
+                console.warn('  File uploads will fail until Cloudinary is properly configured.');
+                console.warn('  Check your .env file or database configuration.');
+            }
         }
     } catch (error) {
         console.error("Failed to configure Cloudinary from DB:", error);
+
+        // Try environment variables as fallback
+        if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+            cloudinary.config({
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_API_SECRET
+            });
+            console.log('✓ Cloudinary configured from environment variables (fallback)');
+        }
     }
 };
 

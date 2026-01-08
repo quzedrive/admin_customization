@@ -39,6 +39,12 @@ export const siteSettingsServices = {
         return response.data;
     },
 
+    // Update Base Timing
+    updateBaseTiming: async (data: { baseTiming: string }) => {
+        const response = await client.put(`${BASE_URL}/base-timing`, data);
+        return response.data;
+    },
+
     // Email Configuration
     getEmailConfig: async () => {
         const response = await client.get('/settings/email');

@@ -46,6 +46,12 @@ export const useSiteSettingsMutations = () => {
         onError
     });
 
+    const useUpdateBaseTiming = () => useMutation({
+        mutationFn: siteSettingsServices.updateBaseTiming,
+        onSuccess: () => onSuccess('Base timing updated'),
+        onError
+    });
+
     const useUpdateEmailConfig = () => useMutation({
         mutationFn: siteSettingsServices.updateEmailConfig,
         onSuccess: () => {
@@ -70,6 +76,7 @@ export const useSiteSettingsMutations = () => {
         useUpdateSocial,
         useUpdateSeo,
         useUpdateMaintenance,
+        useUpdateBaseTiming,
         useUpdateEmailConfig,
         useUpdateImageUploadConfig
     };

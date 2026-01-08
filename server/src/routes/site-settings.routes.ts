@@ -6,7 +6,8 @@ import {
     updateContact,
     updateSocial,
     updateSeo,
-    updateMaintenance
+    updateMaintenance,
+    updateBaseTiming
 } from '../controllers/site-settings.controller';
 
 const router = Router();
@@ -20,5 +21,6 @@ router.put('/contact', protect, updateContact);
 router.put('/social', protect, updateSocial);
 router.put('/seo', protect, updateSeo);
 router.put('/maintenance', protect, updateMaintenance);
+router.put('/base-timing', protect, updateBaseTiming);
 
 export default router;

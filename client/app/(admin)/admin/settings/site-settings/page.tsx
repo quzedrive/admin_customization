@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Settings, Globe, Share2, Search, Wrench, Briefcase, Server } from 'lucide-react';
+import { Settings, Globe, Share2, Search, Briefcase, Server } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSiteSettingsQueries } from '@/lib/hooks/queries/useSiteSettingsQueries';
 import GeneralSettingsForm from '@/components/admin/settings/site-settings/GeneralSettingsForm';
 import ContactSettingsForm from '@/components/admin/settings/site-settings/ContactSettingsForm';
 import SocialSettingsForm from '@/components/admin/settings/site-settings/SocialSettingsForm';
 import SeoSettingsForm from '@/components/admin/settings/site-settings/SeoSettingsForm';
-import MaintenanceSettingsForm from '@/components/admin/settings/site-settings/MaintenanceSettingsForm';
 import IntegrationsSettingsForm from '@/components/admin/settings/site-settings/IntegrationsSettingsForm';
 
 export default function SiteSettingsPage() {
@@ -22,7 +21,6 @@ export default function SiteSettingsPage() {
     { id: 'social', label: 'Social Media', icon: Share2 },
     { id: 'seo', label: 'SEO & Meta', icon: Search },
     { id: 'integrations', label: 'Integrations', icon: Server },
-    { id: 'maintenance', label: 'Maintenance', icon: Wrench },
   ];
 
   if (isLoading) {
@@ -39,7 +37,7 @@ export default function SiteSettingsPage() {
     let content = null;
     switch (activeTab) {
       case 'general':
-        content = <GeneralSettingsForm data={settings.general} />;
+        content = <GeneralSettingsForm data={settings.general} baseTiming={settings.baseTiming} />;
         break;
       case 'contact':
         content = <ContactSettingsForm data={settings.contact} />;
@@ -52,9 +50,6 @@ export default function SiteSettingsPage() {
         break;
       case 'integrations':
         content = <IntegrationsSettingsForm />;
-        break;
-      case 'maintenance':
-        content = <MaintenanceSettingsForm data={settings.maintenance} />;
         break;
       default:
         return null;

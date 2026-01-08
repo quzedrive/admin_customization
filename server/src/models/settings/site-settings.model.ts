@@ -32,6 +32,7 @@ export interface ISiteSettings extends Document {
         title: string;
         message: string;
     };
+    baseTiming: string; // Base timing for bookings in hours
 }
 
 const SiteSettingsSchema = new Schema<ISiteSettings>(
@@ -67,6 +68,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
             title: { type: String, default: 'We will be back soon!' },
             message: { type: String, default: 'We are currently under maintenance. Please try again later.' },
         },
+        baseTiming: { type: String, default: '' }, // Default empty string
     },
     { collection: 'site_settings', timestamps: true }
 );

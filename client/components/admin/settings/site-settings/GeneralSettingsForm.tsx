@@ -7,11 +7,14 @@ import toast from 'react-hot-toast';
 
 interface GeneralSettingsFormProps {
     data: any;
+    baseTiming?: string;
 }
 
-export default function GeneralSettingsForm({ data }: GeneralSettingsFormProps) {
-    const { useUpdateGeneral } = useSiteSettingsMutations();
+export default function GeneralSettingsForm({ data, baseTiming }: GeneralSettingsFormProps) {
+    console.log('GeneralSettingsForm - baseTiming prop:', baseTiming); // DEBUG
+    const { useUpdateGeneral, useUpdateBaseTiming } = useSiteSettingsMutations();
     const updateMutation = useUpdateGeneral();
+    const updateBaseTimingMutation = useUpdateBaseTiming();
 
     const [formData, setFormData] = useState({
         siteTitle: '',
@@ -19,7 +22,8 @@ export default function GeneralSettingsForm({ data }: GeneralSettingsFormProps) 
         keywords: '',
         lightLogo: '',
         darkLogo: '',
-        favicon: ''
+        favicon: '',
+        baseTiming: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -32,10 +36,11 @@ export default function GeneralSettingsForm({ data }: GeneralSettingsFormProps) 
                 keywords: data.keywords || '',
                 lightLogo: data.lightLogo || '',
                 darkLogo: data.darkLogo || '',
-                favicon: data.favicon || ''
+                favicon: data.favicon || '',
+                baseTiming: baseTiming || ''
             });
         }
-    }, [data]);
+    }, [data, baseTiming]);
 
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -85,8 +90,19 @@ export default function GeneralSettingsForm({ data }: GeneralSettingsFormProps) 
 
             await Promise.all(uploadPromises);
 
-            console.log('Submitting General Settings:', dataToSubmit); // DEBUG LOG
-            updateMutation.mutate(dataToSubmit, {
+            // Separate baseTiming from general settings
+            const { baseTiming: baseTimingValue, ...generalData } = dataToSubmit;
+
+            console.log('Submitting General Settings:', generalData); // DEBUG LOG
+
+            // Save general settings
+            updateMutation.mutate(generalData, {
+                onSuccess: () => {
+                    // Save baseTiming separately only if it has a value
+                    if (baseTimingValue && baseTimingValue.trim() !== '') {
+                        updateBaseTimingMutation.mutate({ baseTiming: baseTimingValue });
+                    }
+                },
                 onSettled: () => {
                     setLoading(false);
                     setUploading(false);
@@ -137,6 +153,26 @@ export default function GeneralSettingsForm({ data }: GeneralSettingsFormProps) 
                     </div>
                 </div>
             </div>
+
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">
+                    Booking Settings
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <FloatingInput
+                            label="Base Timing (Hours)"
+                            value={formData.baseTiming}
+                            onChange={(e) => handleChange('baseTiming', e.target.value)}
+                            color='blue'
+                            placeholder="Enter base timing in hours"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Default booking duration in hours.</p>
+                    </div>
+                </div>
+            </div>
+
+
 
             <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">

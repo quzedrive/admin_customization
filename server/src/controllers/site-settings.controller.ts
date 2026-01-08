@@ -138,3 +138,22 @@ export const updateMaintenance = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Failed to update maintenance settings', error: error.message });
     }
 };
+
+// @desc    Update Base Timing
+// @route   PUT /api/settings/site-settings/base-timing
+// @access  Private/Admin
+export const updateBaseTiming = async (req: Request, res: Response) => {
+    try {
+        const settings = await getSettingsDocument();
+        const { baseTiming } = req.body;
+
+        if (baseTiming !== undefined) {
+            settings.baseTiming = baseTiming;
+        }
+
+        await settings.save();
+        res.status(200).json({ baseTiming: settings.baseTiming });
+    } catch (error: any) {
+        res.status(500).json({ message: 'Failed to update base timing', error: error.message });
+    }
+};

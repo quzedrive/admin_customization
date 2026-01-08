@@ -20,13 +20,15 @@ export const createReason = async (req: Request, res: Response) => {
     }
 };
 
-// @desc    Get all cancellation reasons
+// @desc    Get all cancellation reasons (excluding deleted)
 // @route   GET /api/cancellation-reasons
 // @access  Private/Admin
 export const getAllReasons = async (req: Request, res: Response) => {
     try {
         const { type } = req.query;
-        let query: any = {};
+        let query: any = {
+            status: { $ne: 0 } // Exclude soft-deleted items (status = 0)
+        };
 
         if (type) {
             query.type = type;
