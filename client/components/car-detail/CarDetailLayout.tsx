@@ -35,7 +35,7 @@ function CarDetailLayout({ detail }: { detail: string }) {
 
     return (
         <div className='pt-28'>
-            <TopBar />
+            <TopBar carName={car?.name} />
             {isLoading ? <HeroSkeleton /> : <Hero car={car} />}
             {isLoading ? <SpecificationsSkeleton /> : <Specifications specifications={car?.specifications} isLoading={isLoading} />}
             <Cta />

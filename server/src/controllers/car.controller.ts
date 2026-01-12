@@ -115,6 +115,7 @@ export const createCar = async (req: Request, res: Response) => {
             packages, // Array of { packageId, price, isActive }
             description,
             specifications, // Array of { icon, text }
+            host, // { type, details }
             status: activeStatus,
             slug: manualSlug
         } = req.body;
@@ -165,6 +166,7 @@ export const createCar = async (req: Request, res: Response) => {
             packages: [],
             description,
             specifications: specIds,
+            host, // Pass host object directly, validation handled by Schema
             status: activeStatus !== undefined ? activeStatus : status.active,
             slug: slug
         });
@@ -179,6 +181,7 @@ export const createCar = async (req: Request, res: Response) => {
                     package: pkg.package, // Assuming the input sends 'package' as ID
                     price: pkg.price,
                     discountPrice: pkg.discountPrice,
+                    halfDayPrice: pkg.halfDayPrice,
                     isActive: pkg.isActive
                 });
                 carPackageIds.push(newCarPackage._id);
@@ -224,6 +227,7 @@ export const updateCar = async (req: Request, res: Response) => {
             packages,
             description,
             specifications,
+            host,
             status: carStatus,
             slug: manualSlug // Optional if manually passed, but we generate from name typically
         } = req.body;
@@ -262,6 +266,7 @@ export const updateCar = async (req: Request, res: Response) => {
         car.hourlyCharge = hourlyCharge ?? car.hourlyCharge;
         car.additionalHourlyCharge = additionalHourlyCharge ?? car.additionalHourlyCharge;
         car.description = description || car.description;
+        if (host) car.host = host; // Update host if provided
         if (carStatus !== undefined) car.status = carStatus;
 
         // Update Packages
@@ -283,6 +288,7 @@ export const updateCar = async (req: Request, res: Response) => {
                         package: pkg.package,
                         price: pkg.price,
                         discountPrice: pkg.discountPrice,
+                        halfDayPrice: pkg.halfDayPrice,
                         isActive: pkg.isActive
                     });
                     finalPackageIds.push(pkg._id);
@@ -293,6 +299,7 @@ export const updateCar = async (req: Request, res: Response) => {
                         package: pkg.package,
                         price: pkg.price,
                         discountPrice: pkg.discountPrice,
+                        halfDayPrice: pkg.halfDayPrice,
                         isActive: pkg.isActive
                     });
                     finalPackageIds.push(newCarPkg._id);

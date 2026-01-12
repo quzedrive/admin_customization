@@ -17,6 +17,7 @@ import CarPricing from './form-sections/CarPricing';
 import CarMedia from './form-sections/CarMedia';
 import CarSpecifications from './form-sections/CarSpecifications';
 import CarPackages from './form-sections/CarPackages';
+import CarHostDetails from './form-sections/CarHostDetails';
 
 interface CarFormProps {
     initialData?: any;
@@ -43,6 +44,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         specifications: [],
 
         packages: [],
+        host: { type: 1, details: { name: '', email: '', phone: '', aadhar: '' } },
         status: 1
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -96,6 +98,8 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 description: initialData.description || '',
                 images: imageUrls,
                 specifications: specs,
+                packages: [], // Handled separately
+                host: initialData.host || { type: 1, details: { name: '', email: '', phone: '', aadhar: '' } },
                 status: initialData.status ?? 1
             }));
         }
@@ -111,6 +115,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                     existingMap.set(p.package._id, {
                         price: p.price,
                         discountPrice: p.discountPrice,
+                        halfDayPrice: p.halfDayPrice,
                         isActive: p.isActive,
                         isAvailable: p.isAvailable,
                         _id: p._id
@@ -128,6 +133,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                         package: pkg._id,
                         price: existing?.price ?? '',
                         discountPrice: existing?.discountPrice ?? '',
+                        halfDayPrice: existing?.halfDayPrice ?? '',
                         isActive: existing ? existing.isActive : false,
                         isAvailable: existing ? existing.isAvailable : true, // Default available?
                         _id: existing?._id // keep existing mapping ID if present
@@ -241,10 +247,39 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
     };
 
     // Packages Handlers
-    const handlePackageChange = (index: number, field: 'price' | 'discountPrice' | 'isActive', value: any) => {
+    const handlePackageChange = (index: number, field: 'price' | 'discountPrice' | 'halfDayPrice' | 'isActive', value: any) => {
         const newPackages = [...formData.packages];
         newPackages[index] = { ...newPackages[index], [field]: value };
         setFormData(prev => ({ ...prev, packages: newPackages }));
+    };
+
+    const handleHostChange = (field: string, value: any) => {
+        setFormData(prev => ({
+            ...prev,
+            host: {
+                ...prev.host,
+                [field]: value
+            }
+        }));
+    };
+
+    const handleHostDetailsChange = (field: string, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            host: {
+                ...prev.host,
+                details: {
+                    ...prev.host.details!,
+                    [field]: value
+                }
+            }
+        }));
+        // Clear error directly since we key errors by direct field names like 'hostName' for simplicity in UI component
+        // In validate() we map these errors back
+        const errorKey = field === 'name' ? 'hostName' : field === 'email' ? 'hostEmail' : field === 'phone' ? 'hostPhone' : '';
+        if (errorKey && errors[errorKey]) {
+            setErrors(prev => ({ ...prev, [errorKey]: '' }));
+        }
     };
 
     const validate = () => {
@@ -257,6 +292,12 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         if (formData.seatingCapacity < 1) newErrors.seatingCapacity = 'Min 1 seat';
         if (formData.basePrice === '' || formData.basePrice < 0) newErrors.basePrice = 'Valid price required';
         if (formData.images.length === 0) newErrors.images = 'At least one image required';
+
+        if (formData.host.type === 2) {
+            if (!formData.host.details?.name) newErrors.hostName = 'Host Name is required';
+            if (!formData.host.details?.email) newErrors.hostEmail = 'Host Email is required';
+            if (!formData.host.details?.phone) newErrors.hostPhone = 'Host Phone is required';
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -317,6 +358,14 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 removeSpec={removeSpec}
                 handleSpecChange={handleSpecChange}
                 handleSpecIconUpload={handleSpecIconUpload}
+            />
+
+            <CarHostDetails
+                formData={formData}
+                handleChange={handleChange}
+                handleHostChange={handleHostChange}
+                handleHostDetailsChange={handleHostDetailsChange}
+                errors={errors}
             />
 
             <CarPackages

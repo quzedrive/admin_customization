@@ -8,8 +8,20 @@ export interface CarPackage {
     package: string; // ID
     price: number | '';
     discountPrice?: number | '';
+    halfDayPrice?: number | '';
     isActive: boolean;
     _id?: string; // mapping ID
+}
+
+
+export interface HostDetails {
+    type: number; // 1: Self Hosted, 2: Attachment
+    details?: {
+        name: string;
+        email: string;
+        phone: string;
+        aadhar?: string;
+    };
 }
 
 export interface CarFormData {
@@ -27,5 +39,6 @@ export interface CarFormData {
     images: string[];
     specifications: Specification[];
     packages: CarPackage[];
+    host: HostDetails;
     status: number;
 }

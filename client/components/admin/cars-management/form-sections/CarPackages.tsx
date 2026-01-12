@@ -9,7 +9,7 @@ interface CarPackagesProps {
     availablePackages: any[];
     packagesLoading: boolean;
 
-    handlePackageChange: (index: number, field: 'price' | 'discountPrice' | 'isActive', value: any) => void;
+    handlePackageChange: (index: number, field: 'price' | 'discountPrice' | 'halfDayPrice' | 'isActive', value: any) => void;
 }
 
 export default function CarPackages({
@@ -54,7 +54,7 @@ export default function CarPackages({
 
                                     {/* Inputs */}
                                     <div className="flex-1 flex flex-col gap-3">
-                                        <div className="w-full grid grid-cols-2 gap-4">
+                                        <div className="w-full grid grid-cols-3 gap-4">
                                             <FloatingInput
                                                 label="Regular Price"
                                                 type="number"
@@ -68,6 +68,13 @@ export default function CarPackages({
                                                 value={formPkg.discountPrice ?? ''}
                                                 onChange={(e) => handlePackageChange(index, 'discountPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
                                                 color='green'
+                                            />
+                                            <FloatingInput
+                                                label="Half Day Price"
+                                                type="number"
+                                                value={formPkg.halfDayPrice ?? ''}
+                                                onChange={(e) => handlePackageChange(index, 'halfDayPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                color='purple'
                                             />
                                         </div>
 

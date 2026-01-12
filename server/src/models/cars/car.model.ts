@@ -7,6 +7,7 @@ export interface ICarPackage {
     isActive: boolean; // car active or not for the particular package
 }
 
+
 export interface ICar extends Document {
     brand: string;
     name: string;
@@ -22,6 +23,15 @@ export interface ICar extends Document {
     packages: ICarPackage[];
     description: string;
     specifications: Types.ObjectId[];
+    host: {
+        type: number; // 1: Self Hosted, 2: Attachment
+        details?: {
+            name: string;
+            email: string;
+            phone: string;
+            aadhar?: string;
+        };
+    };
     status: number;
 }
 
@@ -41,6 +51,24 @@ const CarSchema = new Schema(
         packages: [{ type: Schema.Types.ObjectId, ref: 'CarPackage' }],
         description: { type: String, default: '' },
         specifications: [{ type: Schema.Types.ObjectId, ref: 'CarSpecification' }],
+        host: {
+            type: { type: Number, required: true, enum: [1, 2], default: 1 }, // 1: Self Hosted, 2: Attachment
+            details: {
+                name: {
+                    type: String,
+                    required: function (this: any) { return this.host.type === 2; }
+                },
+                email: {
+                    type: String,
+                    required: function (this: any) { return this.host.type === 2; }
+                },
+                phone: {
+                    type: String,
+                    required: function (this: any) { return this.host.type === 2; }
+                },
+                aadhar: { type: String }
+            }
+        },
         status: { type: Number, default: status.active },
     },
     { collection: 'cars', timestamps: true }
