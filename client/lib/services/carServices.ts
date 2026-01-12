@@ -15,6 +15,12 @@ export const carServices = {
         return response.data;
     },
 
+    // Public: Get car by slug
+    getCarBySlug: async (slug: string) => {
+        const response = await client.get(`${BASE_URL}/public/${slug}`);
+        return response.data;
+    },
+
     // Admin: Get single car by ID
     getCarById: async (id: string) => {
         const response = await client.get(`${BASE_URL}/${id}`);

@@ -8,7 +8,8 @@ interface CarPackagesProps {
     formData: CarFormData;
     availablePackages: any[];
     packagesLoading: boolean;
-    handlePackageChange: (index: number, field: 'price' | 'isActive' | 'isAvailable', value: any) => void;
+
+    handlePackageChange: (index: number, field: 'price' | 'discountPrice' | 'isActive', value: any) => void;
 }
 
 export default function CarPackages({
@@ -53,13 +54,20 @@ export default function CarPackages({
 
                                     {/* Inputs */}
                                     <div className="flex-1 flex flex-col gap-3">
-                                        <div className="w-full">
+                                        <div className="w-full grid grid-cols-2 gap-4">
                                             <FloatingInput
-                                                label="Package Price"
+                                                label="Regular Price"
                                                 type="number"
                                                 value={formPkg.price ?? ''}
                                                 onChange={(e) => handlePackageChange(index, 'price', e.target.value === '' ? '' : parseFloat(e.target.value))}
                                                 color='blue'
+                                            />
+                                            <FloatingInput
+                                                label="Discount Price"
+                                                type="number"
+                                                value={formPkg.discountPrice ?? ''}
+                                                onChange={(e) => handlePackageChange(index, 'discountPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                color='green'
                                             />
                                         </div>
 
@@ -80,21 +88,6 @@ export default function CarPackages({
                                                 </label>
                                             </div>
 
-                                            <div className="flex flex-col gap-1.5">
-                                                <label className="text-xs font-semibold text-gray-500 uppercase">Availability</label>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="sr-only peer"
-                                                        checked={formPkg.isAvailable ?? true}
-                                                        onChange={(e) => handlePackageChange(index, 'isAvailable', e.target.checked)}
-                                                    />
-                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                                                    <span className="ml-2 text-sm font-medium text-gray-700">
-                                                        {formPkg.isAvailable ? 'Available' : 'Booked'}
-                                                    </span>
-                                                </label>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

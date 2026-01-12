@@ -60,35 +60,33 @@ export default function Header() {
         />
       </Link>
 
-      {/* Show nav only on home page */}
-      {pathname === '/' && (
-        <nav className="hidden md:flex items-center text-white font-roboto">
-          <ul className="flex justify-center items-center gap-16 ">
-            {/* Map through navList to create navigation items */}
-            {navList.map((item, index) => (
-              <li key={index} className="relative group pt-2">
-                <a
-                  href={item.href}
-                  className="relative group 4xl:text-xl"
-                >
-                  {item.name}
-                  <span className="absolute left-1/2 bottom-[-10] w-0 h-1 rounded-full bg-white group-hover:w-full group-hover:left-0 group-hover:translate-x-0 transition-all duration-300 transform -translate-x-1/2"></span>
-                </a>
-              </li>
-            ))}
-            <li className="relative group pt-2">
+      {/* Show nav on all pages */}
+      <nav className={`hidden md:flex items-center font-roboto ${pathname === '/' ? 'text-white' : 'text-black'}`}>
+        <ul className="flex justify-center items-center gap-16 ">
+          {/* Map through navList to create navigation items */}
+          {navList.map((item, index) => (
+            <li key={index} className="relative group pt-2">
               <a
-                href='#'
-                onClick={() => setShowUserPopup(!showUserPopup)}
+                href={item.href}
                 className="relative group 4xl:text-xl"
               >
-                Book
-                <span className="absolute left-1/2 bottom-[-10] w-0 h-1 rounded-full bg-white group-hover:w-full group-hover:left-0 group-hover:translate-x-0 transition-all duration-300 transform -translate-x-1/2"></span>
+                {item.name}
+                <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${pathname === '/' ? 'bg-white' : 'bg-black'}`}></span>
               </a>
             </li>
-          </ul>
-        </nav>
-      )}
+          ))}
+          <li className="relative group pt-2">
+            <a
+              href='#'
+              onClick={() => setShowUserPopup(!showUserPopup)}
+              className="relative group 4xl:text-xl"
+            >
+              Book
+              <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${pathname === '/' ? 'bg-white' : 'bg-black'}`}></span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
       {pathname === '/list' ? (
         <button

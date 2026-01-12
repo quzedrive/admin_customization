@@ -302,6 +302,7 @@ export default function CarListPage() {
                             </div>
                             <div>
                               <div className="font-medium text-gray-900">{car.name}</div>
+                              <div className="text-xs text-blue-500 font-mono mt-0.5">{car.slug}</div>
                               <div className="text-xs text-gray-500">{car.type} • {car.transmission}</div>
                             </div>
                           </div>

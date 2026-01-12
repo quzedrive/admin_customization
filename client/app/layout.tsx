@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import '@ant-design/v5-patch-for-react-19';
 import { headers } from "next/headers";
 import Script from "next/script";
 import { Inter, Montserrat } from 'next/font/google';

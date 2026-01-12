@@ -10,6 +10,7 @@ export interface ICarPackage {
 export interface ICar extends Document {
     brand: string;
     name: string;
+    slug: string;
     type: string;
     transmission: string;
     fuelType: string;
@@ -28,6 +29,7 @@ const CarSchema = new Schema(
     {
         brand: { type: String, required: true },
         name: { type: String, required: true },
+        slug: { type: String, required: true },
         type: { type: String, required: true }, // e.g. Sedan, SUV
         transmission: { type: String, required: true }, // e.g. Automatic, Manual
         fuelType: { type: String, required: true }, // e.g. Petrol, Diesel, Electric
@@ -43,6 +45,9 @@ const CarSchema = new Schema(
     },
     { collection: 'cars', timestamps: true }
 );
+
+// Unique index on slug, only for non-deleted documents
+CarSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { status: { $ne: 0 } } });
 
 const Car = model<ICar>('Car', CarSchema);
 

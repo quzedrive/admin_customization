@@ -7,14 +7,15 @@ export interface Specification {
 export interface CarPackage {
     package: string; // ID
     price: number | '';
+    discountPrice?: number | '';
     isActive: boolean;
-    isAvailable: boolean;
     _id?: string; // mapping ID
 }
 
 export interface CarFormData {
     brand: string;
     name: string;
+    slug: string;
     type: string;
     transmission: string;
     fuelType: string;
@@ -26,4 +27,5 @@ export interface CarFormData {
     images: string[];
     specifications: Specification[];
     packages: CarPackage[];
+    status: number;
 }

@@ -2,7 +2,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Trash2 } from 'lucide-react';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
+import { useRouter } from 'next/navigation';
 import { usePackageQueries } from '@/lib/hooks/queries/usePackageQueries';
 import { useBrandQueries } from '@/lib/hooks/queries/useBrandQueries';
 import { useCarMutations } from '@/lib/hooks/mutations/useCarMutations';
@@ -22,10 +24,13 @@ interface CarFormProps {
 }
 
 export default function CarForm({ initialData, isEditMode = false }: CarFormProps) {
+    const router = useRouter();
     const [uploading, setUploading] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [formData, setFormData] = useState<CarFormData>({
         brand: '',
         name: '',
+        slug: '',
         type: '',
         transmission: '',
         fuelType: '',
@@ -36,9 +41,20 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         description: '',
         images: [],
         specifications: [],
-        packages: []
+
+        packages: [],
+        status: 1
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+
+    // Slug Generator
+    const generateSlug = (name: string) => {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)+/g, '');
+    };
 
     // Fetch Packages
     const { useAdminPackages } = usePackageQueries();
@@ -50,7 +66,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
     const { data: brandsData, isLoading: brandsLoading } = usePublicBrands({ page: 1, limit: 100, search: '' });
 
 
-    const { createCarMutation, updateCarMutation } = useCarMutations();
+    const { createCarMutation, updateCarMutation, deleteCarMutation } = useCarMutations();
     const isSubmitting = createCarMutation.isPending || updateCarMutation.isPending;
 
     const availablePackages = packagesData?.packages || [];
@@ -69,6 +85,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 ...prev,
                 brand: initialData.brand || '',
                 name: initialData.name || '',
+                slug: initialData.slug || '',
                 type: initialData.type || '',
                 transmission: initialData.transmission || '',
                 fuelType: initialData.fuelType || '',
@@ -78,7 +95,8 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 additionalHourlyCharge: initialData.additionalHourlyCharge || '',
                 description: initialData.description || '',
                 images: imageUrls,
-                specifications: specs
+                specifications: specs,
+                status: initialData.status ?? 1
             }));
         }
     }, [initialData]);
@@ -90,7 +108,13 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
             if (initialData?.packages) {
                 initialData.packages.forEach((p: any) => {
                     // p.package is populated object, p.price, p.isActive, p.isAvailable
-                    existingMap.set(p.package._id, { price: p.price, isActive: p.isActive, isAvailable: p.isAvailable, _id: p._id });
+                    existingMap.set(p.package._id, {
+                        price: p.price,
+                        discountPrice: p.discountPrice,
+                        isActive: p.isActive,
+                        isAvailable: p.isAvailable,
+                        _id: p._id
+                    });
                 });
             }
 
@@ -103,6 +127,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                     return {
                         package: pkg._id,
                         price: existing?.price ?? '',
+                        discountPrice: existing?.discountPrice ?? '',
                         isActive: existing ? existing.isActive : false,
                         isAvailable: existing ? existing.isAvailable : true, // Default available?
                         _id: existing?._id // keep existing mapping ID if present
@@ -122,6 +147,17 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 ? (value === '' ? '' : parseFloat(value))
                 : value
         }));
+
+        // Auto-generate slug if name changes and not manually edited
+        if (name === 'name' && !isSlugManuallyEdited) {
+            setFormData(prev => ({ ...prev, slug: generateSlug(value) }));
+        }
+
+        // If manual slug edit, mark as manually edited
+        if (name === 'slug') {
+            setIsSlugManuallyEdited(true);
+        }
+
         // Clear error
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
@@ -131,6 +167,10 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
     const handleSelectChange = (name: string, value: string) => {
         setFormData(prev => ({ ...prev, [name]: value }));
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    };
+
+    const handleStatusChange = (value: number) => {
+        setFormData(prev => ({ ...prev, status: value }));
     };
 
     const handleImageUpload = async (files: File[] | File | null) => {
@@ -174,9 +214,11 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
     };
 
     const handleSpecChange = (index: number, field: 'icon' | 'text', value: string) => {
-        const newSpecs = [...formData.specifications];
-        newSpecs[index] = { ...newSpecs[index], [field]: value };
-        setFormData(prev => ({ ...prev, specifications: newSpecs }));
+        setFormData(prev => {
+            const newSpecs = [...prev.specifications];
+            newSpecs[index] = { ...newSpecs[index], [field]: value };
+            return { ...prev, specifications: newSpecs };
+        });
     };
 
     const handleSpecIconUpload = async (index: number, file: File | File[] | null) => {
@@ -199,7 +241,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
     };
 
     // Packages Handlers
-    const handlePackageChange = (index: number, field: 'price' | 'isActive' | 'isAvailable', value: any) => {
+    const handlePackageChange = (index: number, field: 'price' | 'discountPrice' | 'isActive', value: any) => {
         const newPackages = [...formData.packages];
         newPackages[index] = { ...newPackages[index], [field]: value };
         setFormData(prev => ({ ...prev, packages: newPackages }));
@@ -228,9 +270,20 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         }
 
         if (isEditMode && initialData) {
-            updateCarMutation.mutate({ id: initialData._id, data: formData });
+            updateCarMutation.mutate({ id: initialData._id, data: { ...formData, status: formData.status } });
         } else {
-            createCarMutation.mutate(formData);
+            createCarMutation.mutate({ ...formData, activeStatus: formData.status });
+        }
+    };
+
+    const handleDelete = () => {
+        if (initialData?._id) {
+            deleteCarMutation.mutate(initialData._id, {
+                onSuccess: () => {
+                    setDeleteModalOpen(false);
+                    router.push('/admin/cars-management/list-page');
+                }
+            });
         }
     };
 
@@ -240,6 +293,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 formData={formData}
                 handleChange={handleChange}
                 handleSelectChange={handleSelectChange}
+                handleStatusChange={handleStatusChange}
                 errors={errors}
                 brands={(brandsData as any)?.brands || []}
             />
@@ -273,7 +327,17 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
             />
 
             {/* Submit Button */}
-            <div className="flex justify-end pt-4">
+            <div className={`flex ${isEditMode ? 'justify-between' : 'justify-end'} pt-4`}>
+                {isEditMode && (
+                    <button
+                        type="button"
+                        onClick={() => setDeleteModalOpen(true)}
+                        className="flex items-center cursor-pointer gap-2 px-6 py-3 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-all font-medium"
+                    >
+                        <Trash2 size={20} />
+                        Delete Car
+                    </button>
+                )}
                 <button
                     type="submit"
                     disabled={isSubmitting || uploading}
@@ -283,6 +347,16 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                     {isEditMode ? 'Update Car' : 'Publish Car'}
                 </button>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+                title="Delete Car"
+                message="Are you sure you want to delete this car? This action will hide it from the platform."
+                isLoading={deleteCarMutation.isPending}
+            />
         </form>
     );
 }

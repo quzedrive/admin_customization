@@ -25,9 +25,18 @@ export const useCarQueries = () => {
         });
     };
 
+    const useGetCarBySlug = (slug: string) => {
+        return useQuery({
+            queryKey: [queryKeys.cars.detail, slug],
+            queryFn: () => carServices.getCarBySlug(slug),
+            enabled: !!slug,
+        });
+    };
+
     return {
         useGetAllCars,
         useGetPublicCars,
-        useGetCarById
+        useGetCarById,
+        useGetCarBySlug
     };
 };

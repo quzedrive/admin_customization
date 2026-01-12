@@ -28,7 +28,9 @@ export default function CarSpecifications({
 
     // Handle upload for the temporary/new spec
     const handleTempIconUpload = async (file: File | File[] | null) => {
+        console.log('handleTempIconUpload called', file);
         if (!file) {
+            console.log('No file provided, clearing icon');
             setTempSpec(prev => ({ ...prev, icon: '' }));
             return;
         }
@@ -38,11 +40,13 @@ export default function CarSpecifications({
         const toastId = toast.loading('Uploading icon...');
 
         try {
+            console.log('Starting upload for file:', fileToUpload.name);
             const url = await fileServices.uploadFile(fileToUpload, 'cars/specs');
+            console.log('Upload successful, URL:', url);
             setTempSpec(prev => ({ ...prev, icon: url }));
             toast.success('Icon uploaded', { id: toastId });
         } catch (error) {
-            console.error(error);
+            console.error('Upload error:', error);
             toast.error('Upload failed', { id: toastId });
         } finally {
             setUploading(false);
@@ -142,7 +146,7 @@ export default function CarSpecifications({
                                 type="button"
                                 onClick={handleAdd}
                                 disabled={uploading}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors text-sm font-medium shadow-sm"
+                                className="flex-1 cursor-pointer sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors text-sm font-medium shadow-sm"
                             >
                                 <Plus size={16} /> Add
                             </button>
@@ -177,7 +181,7 @@ export default function CarSpecifications({
                                     <button
                                         type="button"
                                         onClick={() => startEdit(index)}
-                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        className="cursor-pointer p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                         disabled={editingIndex !== null}
                                     >
                                         <Edit2 size={14} />
@@ -185,7 +189,7 @@ export default function CarSpecifications({
                                     <button
                                         type="button"
                                         onClick={() => removeSpec(index)}
-                                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                        className="cursor-pointer p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                         disabled={editingIndex !== null}
                                     >
                                         <Trash2 size={14} />

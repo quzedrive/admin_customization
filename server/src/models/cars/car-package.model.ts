@@ -4,8 +4,8 @@ export interface ICarPackage extends Document {
     car: Types.ObjectId;
     package: Types.ObjectId;
     price: number;
+    discountPrice?: number;
     isActive: boolean;
-    isAvailable: boolean;
 }
 
 const CarPackageSchema = new Schema(
@@ -13,8 +13,8 @@ const CarPackageSchema = new Schema(
         car: { type: Schema.Types.ObjectId, ref: 'Car', required: true },
         package: { type: Schema.Types.ObjectId, ref: 'Package', required: true },
         price: { type: Number, default: 0 },
+        discountPrice: { type: Number, default: 0 },
         isActive: { type: Boolean, default: true },
-        isAvailable: { type: Boolean, default: true },
     },
     { collection: 'car_packages', timestamps: true }
 );

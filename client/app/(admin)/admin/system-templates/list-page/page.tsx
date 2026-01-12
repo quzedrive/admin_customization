@@ -33,7 +33,7 @@ export default function SystemTemplateListPage() {
     const [togglingId, setTogglingId] = useState<string | null>(null);
 
     const { useGetAllTemplates } = useSystemTemplateQueries();
-    const { data: templates, isLoading } = useGetAllTemplates();
+    const { data: templates, isLoading, isError, error } = useGetAllTemplates();
     const { deleteTemplateMutation, updateTemplateMutation } = useSystemTemplateMutations();
 
     // Filtering logic (client-side for now as API doesn't seem to support pagination/filter yet)
@@ -175,6 +175,15 @@ export default function SystemTemplateListPage() {
                                                 </div>
                                             </td>
                                         </tr>
+                                    ) : isError ? (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-12 text-center text-red-500">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <p className="font-medium">Failed to load templates</p>
+                                                    <p className="text-sm">{(error as any)?.message || 'Unknown error occurred'}</p>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     ) : filteredTemplates?.length === 0 ? (
                                         <tr>
                                             <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
@@ -204,8 +213,8 @@ export default function SystemTemplateListPage() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${template.status === 1
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-gray-100 text-gray-700'
+                                                        ? 'bg-green-100 text-green-700'
+                                                        : 'bg-gray-100 text-gray-700'
                                                         }`}>
                                                         {template.status === 1 ? 'Active' : 'Inactive'}
                                                     </span>
@@ -261,6 +270,11 @@ export default function SystemTemplateListPage() {
                                     <Loader2 size={24} className="animate-spin text-blue-500 mx-auto mb-2" />
                                     <p>Loading templates...</p>
                                 </div>
+                            ) : isError ? (
+                                <div className="col-span-full py-12 text-center text-red-500 bg-white rounded-xl border border-red-100">
+                                    <p className="font-medium">Failed to load templates</p>
+                                    <p className="text-sm">{(error as any)?.message || 'Unknown error occurred'}</p>
+                                </div>
                             ) : filteredTemplates?.length === 0 ? (
                                 <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
                                     <p className="text-lg font-medium text-gray-900 mb-1">No templates found</p>
@@ -272,8 +286,8 @@ export default function SystemTemplateListPage() {
                                         {/* Status Badge - Absolute Top Right */}
                                         <div className="absolute top-2 right-4 z-10">
                                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${template.status === 1
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-gray-100 text-gray-700'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-gray-100 text-gray-700'
                                                 }`}>
                                                 {template.status === 1 ? 'Active' : 'Inactive'}
                                             </span>

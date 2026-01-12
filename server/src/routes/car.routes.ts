@@ -6,13 +6,15 @@ import {
     updateCar,
     deleteCar,
     getPublicCars,
-    toggleCarStatus
+    toggleCarStatus,
+    getCarBySlug
 } from '../controllers/car.controller';
 import { protect } from '../middlewares/auth.middleware';
 
 const router = express.Router();
 
 router.get('/public', getPublicCars);
+router.get('/public/:slug', getCarBySlug);
 
 router.route('/')
     .get(protect, getAllCars)

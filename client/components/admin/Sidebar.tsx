@@ -17,7 +17,8 @@ import {
     Globe,
     Mails,
     CarFront,
-    TicketX
+    TicketX,
+    BookOpenText
 } from 'lucide-react';
 import { cn } from '@/components/utils/cn';
 import { useAdminLogoutMutation } from '@/lib/hooks/mutations/useAdminLogoutMutation';
@@ -83,6 +84,15 @@ const menuItems = [
                     { name: 'Add Template', icon: PlusCircle, href: '/admin/system-templates/add-page' },
                 ]
             },
+            // {
+            //     name: 'CMS',
+            //     icon: BookOpenText,
+            //     href: '#',
+            //     subItems: [
+            //         { name: 'All Pages', icon: List, href: '/admin/cms/list-page' },
+            //         { name: 'Add Page', icon: PlusCircle, href: '/admin/cms/add-page' },
+            //     ]
+            // },
             {
                 name: 'Settings',
                 icon: Settings,

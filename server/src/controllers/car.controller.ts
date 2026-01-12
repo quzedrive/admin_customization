@@ -5,6 +5,13 @@ import CarSpecification from '../models/cars/car-specification.model';
 import CarPackage from '../models/cars/car-package.model';
 import { status } from '../constants/status';
 
+const generateSlug = (name: string) => {
+    return name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+};
+
 // @desc    Get all cars
 // @route   GET /api/cars
 // @access  Private
@@ -39,6 +46,29 @@ export const getPublicCars = async (req: Request, res: Response) => {
             })
             .sort({ createdAt: -1 });
         res.status(200).json(cars);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get single car by slug (Public)
+// @route   GET /api/cars/public/:slug
+// @access  Public
+export const getCarBySlug = async (req: Request, res: Response) => {
+    try {
+        const car = await Car.findOne({ slug: req.params.slug, status: status.active })
+            .populate('images')
+            .populate('specifications')
+            .populate({
+                path: 'packages',
+                match: { isActive: true },
+                populate: { path: 'package' }
+            });
+
+        if (!car) {
+            return res.status(404).json({ message: 'Car not found' });
+        }
+        res.status(200).json(car);
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }
@@ -85,8 +115,17 @@ export const createCar = async (req: Request, res: Response) => {
             packages, // Array of { packageId, price, isActive }
             description,
             specifications, // Array of { icon, text }
-            activeStatus
+            status: activeStatus,
+            slug: manualSlug
         } = req.body;
+
+        const slug = manualSlug || generateSlug(name);
+
+        // Check for existing slug (excluding deleted cars)
+        const existingCar = await Car.findOne({ slug, status: { $ne: status.deleted } });
+        if (existingCar) {
+            return res.status(409).json({ message: 'Car with this name already exists' });
+        }
 
         // 1. Handle Images
         const imageIds = [];
@@ -126,7 +165,8 @@ export const createCar = async (req: Request, res: Response) => {
             packages: [],
             description,
             specifications: specIds,
-            status: activeStatus !== undefined ? activeStatus : status.active
+            status: activeStatus !== undefined ? activeStatus : status.active,
+            slug: slug
         });
 
         // 4. Handle Packages (CarPackage Mapping)
@@ -138,8 +178,8 @@ export const createCar = async (req: Request, res: Response) => {
                     car: car._id,
                     package: pkg.package, // Assuming the input sends 'package' as ID
                     price: pkg.price,
-                    isActive: pkg.isActive,
-                    isAvailable: pkg.isAvailable
+                    discountPrice: pkg.discountPrice,
+                    isActive: pkg.isActive
                 });
                 carPackageIds.push(newCarPackage._id);
             }
@@ -184,8 +224,32 @@ export const updateCar = async (req: Request, res: Response) => {
             packages,
             description,
             specifications,
-            status: carStatus
+            status: carStatus,
+            slug: manualSlug // Optional if manually passed, but we generate from name typically
         } = req.body;
+
+        // Logic for slug update:
+        // 1. If manualSlug is provided and different from current, use it (and check unique).
+        // 2. If name changes and NO manualSlug provided, generate from name.
+
+        let newSlug = car.slug;
+        let shouldCheckUnique = false;
+
+        if (manualSlug && manualSlug !== car.slug) {
+            newSlug = manualSlug;
+            shouldCheckUnique = true;
+        } else if (name && name !== car.name && !manualSlug) {
+            newSlug = generateSlug(name);
+            shouldCheckUnique = true;
+        }
+
+        if (shouldCheckUnique) {
+            const existingCar = await Car.findOne({ slug: newSlug, status: { $ne: status.deleted }, _id: { $ne: car._id } });
+            if (existingCar) {
+                return res.status(409).json({ message: 'Car with this name/slug already exists' });
+            }
+            car.slug = newSlug;
+        }
 
         // Update basic fields
         car.brand = brand || car.brand;
@@ -218,8 +282,8 @@ export const updateCar = async (req: Request, res: Response) => {
                     await CarPackage.findByIdAndUpdate(pkg._id, {
                         package: pkg.package,
                         price: pkg.price,
-                        isActive: pkg.isActive,
-                        isAvailable: pkg.isAvailable
+                        discountPrice: pkg.discountPrice,
+                        isActive: pkg.isActive
                     });
                     finalPackageIds.push(pkg._id);
                 } else {
@@ -228,8 +292,8 @@ export const updateCar = async (req: Request, res: Response) => {
                         car: car._id,
                         package: pkg.package,
                         price: pkg.price,
-                        isActive: pkg.isActive,
-                        isAvailable: pkg.isAvailable
+                        discountPrice: pkg.discountPrice,
+                        isActive: pkg.isActive
                     });
                     finalPackageIds.push(newCarPkg._id);
                 }
