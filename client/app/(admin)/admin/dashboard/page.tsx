@@ -41,20 +41,12 @@ function AdminDashboardPage() {
       link: '/admin/order-management/list-page'
     },
     {
-      label: 'Pending Approvals',
-      value: stats?.orders?.pending || 0, // Using pending count
-      icon: CheckCircle2,
-      color: 'text-orange-600',
-      bg: 'bg-orange-50',
-      link: '/admin/order-management/list-page?status=0'
-    },
-    {
       label: 'Completed Rides',
       value: stats?.orders?.completed || 0,
       icon: CheckCircle2,
       color: 'text-indigo-600',
       bg: 'bg-indigo-50',
-      link: '/admin/order-management/list-page?status=5' // Assuming 5 is RIDE_COMPLETED
+      link: '/admin/order-management/list-page' // Assuming 5 is RIDE_COMPLETED
     },
     {
       label: 'Active Cars',
@@ -62,7 +54,7 @@ function AdminDashboardPage() {
       icon: Car,
       color: 'text-green-600',
       bg: 'bg-green-50',
-      link: '/admin/cars/list-page'
+      link: '/admin/cars-management/list-page'
     },
     {
       label: 'Brands',
@@ -94,7 +86,7 @@ function AdminDashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, idx) => (
-          <div key={idx} className="block group">
+          <Link href={stat.link}   key={idx} className="block group">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between transition-all hover:-translate-y-1 hover:shadow-md h-full">
               <div>
                 <p className="text-sm font-medium text-gray-500">{stat.label}</p>
@@ -106,7 +98,7 @@ function AdminDashboardPage() {
                 <stat.icon className={cn("w-6 h-6", stat.color)} />
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
