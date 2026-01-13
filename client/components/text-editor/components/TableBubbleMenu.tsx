@@ -28,6 +28,45 @@ export const TableBubbleMenu = ({ editor }: { editor: Editor }) => {
             <div className="flex items-center gap-1 border-r border-gray-200 pr-1 mr-1">
                 <button
                     type='button'
+                    onClick={() => editor.chain().focus().updateAttributes('table', { align: 'left' }).run()}
+                    className={`p-1.5 cursor-pointer rounded flex items-center gap-1 text-xs ${editor.isActive('table', { align: 'left' }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    title="Align Table Left"
+                >
+                    <div className="flex flex-col gap-[2px]">
+                        <div className="w-3 h-[2px] bg-current"></div>
+                        <div className="w-2 h-[2px] bg-current mr-auto"></div>
+                        <div className="w-3 h-[2px] bg-current"></div>
+                    </div>
+                </button>
+                <button
+                    type='button'
+                    onClick={() => editor.chain().focus().updateAttributes('table', { align: 'center' }).run()}
+                    className={`p-1.5 cursor-pointer rounded flex items-center gap-1 text-xs ${editor.isActive('table', { align: 'center' }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    title="Align Table Center"
+                >
+                    <div className="flex flex-col gap-[2px] items-center">
+                        <div className="w-3 h-[2px] bg-current"></div>
+                        <div className="w-2 h-[2px] bg-current"></div>
+                        <div className="w-3 h-[2px] bg-current"></div>
+                    </div>
+                </button>
+                <button
+                    type='button'
+                    onClick={() => editor.chain().focus().updateAttributes('table', { align: 'right' }).run()}
+                    className={`p-1.5 cursor-pointer rounded flex items-center gap-1 text-xs ${editor.isActive('table', { align: 'right' }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    title="Align Table Right"
+                >
+                    <div className="flex flex-col gap-[2px] items-end">
+                        <div className="w-3 h-[2px] bg-current"></div>
+                        <div className="w-2 h-[2px] bg-current ml-auto"></div>
+                        <div className="w-3 h-[2px] bg-current"></div>
+                    </div>
+                </button>
+            </div>
+
+            <div className="flex items-center gap-1 border-r border-gray-200 pr-1 mr-1">
+                <button
+                    type='button'
                     onClick={() => editor.chain().focus().addColumnBefore().run()}
                     className="p-1.5 cursor-pointer text-gray-600 hover:bg-gray-100 rounded flex items-center gap-1 text-xs"
                     title="Add Column Left"

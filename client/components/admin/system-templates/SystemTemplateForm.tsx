@@ -39,6 +39,8 @@ export default function SystemTemplateForm({
         status: initialData?.status?.toString() || '1'
     });
 
+    const [templateType, setTemplateType] = useState('email');
+
     useEffect(() => {
         if (initialData) {
             setFormData({
@@ -50,6 +52,10 @@ export default function SystemTemplateForm({
                 emailContent: initialData.emailContent || '',
                 status: initialData.status.toString()
             });
+            // Heuristic to determine type if opening existing
+            if (initialData.emailContent && !initialData.smsContent && !initialData.pushBody && !initialData.emailSubject) {
+                setTemplateType('document');
+            }
         }
     }, [initialData]);
 
@@ -57,6 +63,7 @@ export default function SystemTemplateForm({
         e.preventDefault();
         onSubmit({
             ...formData,
+            // If document, ensure irrelevant fields are cleared or sent as is (likely empty)
             status: parseInt(formData.status)
         });
     };
@@ -84,63 +91,80 @@ export default function SystemTemplateForm({
                             onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                             required
                             color='blue'
-                            disabled={isEditMode} // Usually slug shouldn't change, or be careful
+                            disabled={isEditMode}
+                        />
+                        <ModernDropdown
+                            label="Template Type"
+                            options={[
+                                { value: 'email', label: 'Email / Notification' },
+                                { value: 'document', label: 'Document / Agreement' }
+                            ]}
+                            value={templateType}
+                            onChange={(val) => setTemplateType(val)}
                         />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                        <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
-                            <span className="w-1 h-5 bg-green-500 rounded-full"></span> SMS
-                        </h3>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 ml-1">SMS Content</label>
-                            <textarea
-                                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent min-h-[100px]"
-                                value={formData.smsContent}
-                                onChange={(e) => setFormData({ ...formData, smsContent: e.target.value })}
-                                placeholder="Enter SMS content..."
-                            />
+                {templateType === 'email' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-6">
+                            <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
+                                <span className="w-1 h-5 bg-green-500 rounded-full"></span> SMS
+                            </h3>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 ml-1">SMS Content</label>
+                                <textarea
+                                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent min-h-[100px]"
+                                    value={formData.smsContent}
+                                    onChange={(e) => setFormData({ ...formData, smsContent: e.target.value })}
+                                    placeholder="Enter SMS content..."
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-6">
-                        <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
-                            <span className="w-1 h-5 bg-purple-500 rounded-full"></span> Push Notification
-                        </h3>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 ml-1">Push Notification Body</label>
-                            <textarea
-                                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent min-h-[100px]"
-                                value={formData.pushBody}
-                                onChange={(e) => setFormData({ ...formData, pushBody: e.target.value })}
-                                placeholder="Enter Push Notification body..."
-                            />
+                        <div className="space-y-6">
+                            <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
+                                <span className="w-1 h-5 bg-purple-500 rounded-full"></span> Push Notification
+                            </h3>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 ml-1">Push Notification Body</label>
+                                <textarea
+                                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent min-h-[100px]"
+                                    value={formData.pushBody}
+                                    onChange={(e) => setFormData({ ...formData, pushBody: e.target.value })}
+                                    placeholder="Enter Push Notification body..."
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 <div className="space-y-6">
                     <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
-                        <span className="w-1 h-5 bg-blue-500 rounded-full"></span> Email Configuration
+                        <span className={`w-1 h-5 rounded-full ${templateType === 'email' ? 'bg-blue-500' : 'bg-orange-500'}`}></span>
+                        {templateType === 'email' ? 'Email Configuration' : 'Document Body'}
                     </h3>
-                    <FloatingInput
-                        id="emailSubject"
-                        label="Email Subject"
-                        value={formData.emailSubject}
-                        onChange={(e) => setFormData({ ...formData, emailSubject: e.target.value })}
-                        required
-                        color='blue'
-                    />
+
+                    {templateType === 'email' && (
+                        <FloatingInput
+                            id="emailSubject"
+                            label="Email Subject"
+                            value={formData.emailSubject}
+                            onChange={(e) => setFormData({ ...formData, emailSubject: e.target.value })}
+                            required
+                            color='blue'
+                        />
+                    )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 ml-1">Email Content</label>
+                        <label className="text-sm font-medium text-gray-700 ml-1">
+                            {templateType === 'email' ? 'Email Content' : 'Agreement / Document Content'}
+                        </label>
                         <TipTapEditor
                             label=""
                             value={formData.emailContent}
                             onChange={(val) => setFormData({ ...formData, emailContent: val })}
-                            placeholder="Design your email template here..."
+                            placeholder={templateType === 'email' ? "Design your email template here..." : "Draft your agreement here..."}
                         />
                     </div>
                 </div>

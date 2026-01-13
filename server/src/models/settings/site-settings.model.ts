@@ -8,6 +8,7 @@ export interface ISiteSettings extends Document {
         lightLogo: string;
         darkLogo: string;
         favicon: string;
+        bookingPrefix: string;
     };
     contact: {
         email: string;
@@ -44,6 +45,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
             lightLogo: { type: String, default: '' },
             darkLogo: { type: String, default: '' },
             favicon: { type: String, default: '' },
+            bookingPrefix: { type: String, default: 'QZ' },
         },
         contact: {
             email: { type: String, default: '' },

@@ -6,6 +6,10 @@ export const queryKeys = {
     admin: {
         me: 'adminMe',
     },
+    dashboard: {
+        stats: 'dashboardStats',
+        analytics: 'dashboardAnalytics',
+    },
     brand: {
         adminList: 'adminBrandList',
         publicList: 'publicBrandList',
@@ -27,5 +31,8 @@ export const queryKeys = {
     cancellationReasons: {
         list: 'cancellationReasonList',
         detail: 'cancellationReasonDetail',
+    },
+    orders: {
+        adminList: 'adminOrderList',
     },
 };

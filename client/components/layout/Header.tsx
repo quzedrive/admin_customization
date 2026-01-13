@@ -12,20 +12,24 @@ import Link from 'next/link'
 export const navList = [
   {
     name: "Home",
-    href: "#Home",
+    href: "/",
   },
   {
-    name: "Tariffs for our fleet",
-    href: "#tariffs",
+    name: "Experiences",
+    href: "/experiences",
   },
   {
-    name: "About Us",
-    href: "#about",
+    name: "Investor Relations",
+    href: "/investor-relations",
   },
-  // {
-  //   name: "Book Now",
-  //   href: "#book",
-  // }
+  {
+    name: "Our Fleet",
+    href: "/our-fleet",
+  },
+  {
+    name: "Track",
+    href: "/track",
+  }
 ]
 
 export default function Header() {
@@ -34,10 +38,23 @@ export default function Header() {
   const [showUserPopup, setShowUserPopup] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
+
+      setVisible(isVisible);
+      setPrevScrollPos(currentScrollPos);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [prevScrollPos]);
 
   function navToggler() {
     setToggleNav(!toggleNav);
@@ -48,7 +65,9 @@ export default function Header() {
   if (!mounted) return null; // Prevent hydration mismatch
 
   return (
-    <header className="absolute top-0 left-0 w-full z-50 flex justify-between items-center bg-transparent pt-5 px-[5.4%]">
+    <header
+      className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center transition-transform duration-300 ease-in-out px-[5.4%] pt-5 ${visible ? 'translate-y-0' : '-translate-y-full'} ${prevScrollPos > 10 ? 'bg-white backdrop-blur-md pb-5 shadow-sm' : 'bg-transparent'}`}
+    >
 
       <Link href='/' className='p-0'>
         <Image
@@ -61,7 +80,7 @@ export default function Header() {
       </Link>
 
       {/* Show nav on all pages */}
-      <nav className={`hidden md:flex items-center font-roboto ${pathname === '/' ? 'text-white' : 'text-black'}`}>
+      <nav className={`hidden md:flex items-center font-roboto ${pathname === '/' && prevScrollPos < 10 ? 'text-white' : 'text-black'}`}>
         <ul className="flex justify-center items-center gap-16 ">
           {/* Map through navList to create navigation items */}
           {navList.map((item, index) => (
@@ -71,20 +90,10 @@ export default function Header() {
                 className="relative group 4xl:text-xl"
               >
                 {item.name}
-                <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${pathname === '/' ? 'bg-white' : 'bg-black'}`}></span>
+                <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${pathname === '/' && prevScrollPos < 10 ? 'bg-white' : 'bg-black'}`}></span>
               </a>
             </li>
           ))}
-          <li className="relative group pt-2">
-            <a
-              href='#'
-              onClick={() => setShowUserPopup(!showUserPopup)}
-              className="relative group 4xl:text-xl"
-            >
-              Book
-              <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${pathname === '/' ? 'bg-white' : 'bg-black'}`}></span>
-            </a>
-          </li>
         </ul>
       </nav>
 

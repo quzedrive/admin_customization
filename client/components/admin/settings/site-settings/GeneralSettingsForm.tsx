@@ -23,6 +23,7 @@ export default function GeneralSettingsForm({ data, baseTiming }: GeneralSetting
         lightLogo: '',
         darkLogo: '',
         favicon: '',
+        bookingPrefix: '',
         baseTiming: ''
     });
 
@@ -37,6 +38,7 @@ export default function GeneralSettingsForm({ data, baseTiming }: GeneralSetting
                 lightLogo: data.lightLogo || '',
                 darkLogo: data.darkLogo || '',
                 favicon: data.favicon || '',
+                bookingPrefix: data.bookingPrefix || '',
                 baseTiming: baseTiming || ''
             });
         }
@@ -168,6 +170,17 @@ export default function GeneralSettingsForm({ data, baseTiming }: GeneralSetting
                             placeholder="Enter base timing in hours"
                         />
                         <p className="text-xs text-gray-500 mt-1">Default booking duration in hours.</p>
+                    </div>
+                    <div>
+                        <FloatingInput
+                            label="Booking ID Prefix"
+                            value={formData.bookingPrefix}
+                            onChange={(e) => handleChange('bookingPrefix', e.target.value)}
+                            color='blue'
+                            placeholder="e.g. QZ"
+                            required
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Prefix for generated Order IDs (e.g. QZ → QZ2024...)</p>
                     </div>
                 </div>
             </div>

@@ -35,6 +35,8 @@ import { Toolbar } from './Toolbar';
 import { FontFamily } from './extensions/FontFamily';
 import { Indent } from './extensions/Indent';
 import { FontSize } from './extensions/FontSize';
+import { Div } from './extensions/Div';
+import { GlobalStyle } from './extensions/GlobalStyle';
 import { TableBubbleMenu } from './components/TableBubbleMenu';
 import { ResizableImage } from './components/ResizableImage';
 
@@ -144,12 +146,14 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
                 }
             }),
             TextAlign.configure({
-                types: ['heading', 'paragraph'],
+                types: ['heading', 'paragraph', 'table-cell', 'table-header'],
             }),
             TextStyle,
             FontFamily,
             FontSize,
             Indent,
+            Div,
+            GlobalStyle,
             Color,
             Highlight.configure({
                 multicolor: true,
@@ -157,18 +161,71 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
             Table.configure({
                 resizable: true,
                 HTMLAttributes: {
-                    class: 'border-collapse table-auto w-full border border-gray-300',
+                    class: 'border-collapse table-auto !w-auto border border-gray-300',
                 },
+            }).extend({
+                addAttributes() {
+                    return {
+                        ...this.parent?.(),
+                        align: {
+                            default: 'center',
+                            parseHTML: element => element.getAttribute('data-align') || element.style.marginLeft === 'auto' && element.style.marginRight === 'auto' ? 'center' : 'left',
+                            renderHTML: attributes => {
+                                let style = '';
+                                if (attributes.align === 'left') style = 'margin-right: auto !important; margin-left: 0 !important;';
+                                else if (attributes.align === 'right') style = 'margin-left: auto !important; margin-right: 0 !important;';
+                                else style = 'margin-left: auto !important; margin-right: auto !important;';
+
+                                return {
+                                    'data-align': attributes.align,
+                                    style: style
+                                }
+                            }
+                        }
+                    }
+                }
             }),
             TableRow,
             TableHeader.configure({
                 HTMLAttributes: {
-                    class: 'bg-gray-100 border border-gray-300 p-2 font-bold text-left',
+                    class: 'bg-gray-100 border border-gray-300 p-2 font-bold text-left align-top relative',
+                }
+            }).extend({
+                addAttributes() {
+                    return {
+                        ...this.parent?.(),
+                        height: {
+                            default: null,
+                            parseHTML: element => element.style.height,
+                            renderHTML: attributes => {
+                                if (!attributes.height) return {};
+                                return {
+                                    style: `height: ${attributes.height}`
+                                }
+                            }
+                        }
+                    }
                 }
             }),
             TableCell.configure({
                 HTMLAttributes: {
-                    class: 'border border-gray-300 p-2',
+                    class: 'border border-gray-300 p-2 align-top relative',
+                }
+            }).extend({
+                addAttributes() {
+                    return {
+                        ...this.parent?.(),
+                        height: {
+                            default: null,
+                            parseHTML: element => element.style.height,
+                            renderHTML: attributes => {
+                                if (!attributes.height) return {};
+                                return {
+                                    style: `height: ${attributes.height}`
+                                }
+                            }
+                        }
+                    }
                 }
             }),
             Placeholder.configure({
@@ -177,7 +234,7 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
         ],
         editorProps: {
             attributes: {
-                class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl text-black mx-3 my-1 focus:outline-none min-h-[150px] max-w-none [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:mb-2 [&_h3]:mt-4 [&_p]:my-2 [&_hr]:my-6 [&>:first-child]:mt-0 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:before:content-['“'] [&_blockquote]:before:text-gray-400 [&_blockquote]:before:mr-1 [&_blockquote]:after:content-['”'] [&_blockquote]:after:text-gray-400 [&_blockquote]:after:ml-1 [&_pre]:bg-gray-100 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-4 [&_code]:bg-gray-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono",
+                class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl text-black mx-3 my-1 focus:outline-none min-h-[150px] max-w-none [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:mb-2 [&_h3]:mt-4 [&_p]:my-2 [&_hr]:my-6 [&>:first-child]:mt-0 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:before:content-['“'] [&_blockquote]:before:text-gray-400 [&_blockquote]:before:mr-1 [&_blockquote]:after:content-['”'] [&_blockquote]:after:text-gray-400 [&_blockquote]:after:ml-1 [&_pre]:bg-gray-100 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-4 [&_code]:bg-gray-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono [&_table]:mx-auto [&_td]:resize-y [&_td]:overflow-hidden [&_th]:resize-y [&_th]:overflow-hidden [&_td]:min-h-[24px] [&_th]:min-h-[24px]",
             },
         },
         content: value,
@@ -204,6 +261,18 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
                 <Toolbar editor={editor} />
                 {editor && <TableBubbleMenu editor={editor} />}
                 <EditorContent editor={editor} className="px-4 py-3 min-h-[300px] cursor-text" />
+                <style jsx global>{`
+                    .ProseMirror table {
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                    .ProseMirror td, .ProseMirror th {
+                        position: relative;
+                        vertical-align: top;
+                        /* Ensure resize handle is visible */
+                        min-height: 24px; 
+                    }
+                `}</style>
             </div>
             {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
         </div>

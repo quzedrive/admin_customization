@@ -29,7 +29,7 @@ export const updateGeneral = async (req: Request, res: Response) => {
     try {
         console.log('Update General Body:', req.body); // DEBUG LOG
         const settings = await getSettingsDocument();
-        const { siteTitle, description, keywords, lightLogo, darkLogo, favicon } = req.body;
+        const { siteTitle, description, keywords, lightLogo, darkLogo, favicon, bookingPrefix } = req.body;
 
         settings.general = {
             ...settings.general,
@@ -39,6 +39,7 @@ export const updateGeneral = async (req: Request, res: Response) => {
             lightLogo: lightLogo ?? settings.general.lightLogo,
             darkLogo: darkLogo ?? settings.general.darkLogo,
             favicon: favicon ?? settings.general.favicon,
+            bookingPrefix: bookingPrefix ?? settings.general.bookingPrefix,
         };
 
         await settings.save();

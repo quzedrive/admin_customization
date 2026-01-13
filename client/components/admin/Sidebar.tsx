@@ -18,7 +18,8 @@ import {
     Mails,
     CarFront,
     TicketX,
-    BookOpenText
+    BookOpenText,
+    ShoppingBag
 } from 'lucide-react';
 import { cn } from '@/components/utils/cn';
 import { useAdminLogoutMutation } from '@/lib/hooks/mutations/useAdminLogoutMutation';
@@ -68,6 +69,14 @@ const menuItems = [
                 subItems: [
                     { name: 'All Cancellations', icon: List, href: '/admin/cancellation-reason-management/list-page' },
                     { name: 'Add Cancellation', icon: PlusCircle, href: '/admin/cancellation-reason-management/add-page' }
+                ]
+            },
+            {
+                name: 'Order Management',
+                icon: ShoppingBag,
+                href: '#',
+                subItems: [
+                    { name: 'All Orders', icon: List, href: '/admin/order-management/list-page' },
                 ]
             },
         ]

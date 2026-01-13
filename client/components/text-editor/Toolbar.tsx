@@ -3,9 +3,10 @@ import {
     Bold, Italic, Underline as UnderlineIcon,
     AlignLeft, AlignCenter, AlignRight, AlignJustify,
     Link as LinkIcon, Image as ImageIcon, Undo, Redo,
-    Minus, Table as TableIcon, Indent as IndentIcon, Outdent as OutdentIcon
+    Minus, Table as TableIcon, Indent as IndentIcon, Outdent as OutdentIcon,
+    Code as CodeIcon
 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { MenuButton } from './components/MenuButton';
 import { HeadingDropdown } from './components/HeadingDropdown';
 import { ListStyleDropdown } from './components/ListStyleDropdown';
@@ -15,9 +16,12 @@ import { FontFamilyDropdown } from './components/FontFamilyDropdown';
 import { TableSelector } from './components/TableSelector';
 import { LinkDropdown } from './components/LinkDropdown';
 import { ImageDropdown } from './components/ImageDropdown';
+import { EditHTMLModal } from './components/EditHTMLModal';
 
 export const Toolbar = ({ editor }: { editor: Editor | null }) => {
     if (!editor) return null;
+
+    const [isHTMLModalOpen, setIsHTMLModalOpen] = useState(false);
 
     const setLink = () => {
         const previousUrl = editor.getAttributes('link').href;
@@ -120,7 +124,19 @@ export const Toolbar = ({ editor }: { editor: Editor | null }) => {
                 <MenuButton onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().chain().focus().redo().run()} title="Redo">
                     <Redo className="w-4 h-4" />
                 </MenuButton>
+
+                <div className="w-px h-5 bg-gray-200 mx-2" />
+
+                <MenuButton onClick={() => setIsHTMLModalOpen(true)} title="Edit Source Code (HTML)" isActive={isHTMLModalOpen}>
+                    <CodeIcon className="w-4 h-4" />
+                </MenuButton>
             </div>
+
+            <EditHTMLModal
+                editor={editor}
+                isOpen={isHTMLModalOpen}
+                onClose={() => setIsHTMLModalOpen(false)}
+            />
         </div>
     );
 };

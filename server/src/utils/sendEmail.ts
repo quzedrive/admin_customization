@@ -7,6 +7,12 @@ interface EmailOptions {
     subject: string;
     message: string;
     html?: string;
+    attachments?: Array<{
+        filename: string;
+        content?: any;
+        path?: string;
+        contentType?: string;
+    }>;
 }
 
 const sendEmail = async (options: EmailOptions) => {
@@ -46,6 +52,7 @@ const sendEmail = async (options: EmailOptions) => {
         subject: options.subject,
         text: options.message, // Fallback plain text
         html: options.html || options.message.replace(/\n/g, '<br>'), // HTML content or converted text
+        attachments: options.attachments,
     };
 
     // 5. Send Email

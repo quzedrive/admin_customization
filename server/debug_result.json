@@ -1,0 +1,41 @@
+[
+  {
+    "_id": "695f44e293d796f0e750cedd",
+    "name": "Reset Password",
+    "slug": "reset_password",
+    "smsContent": "",
+    "pushBody": "RESET EMAIL LINK",
+    "emailSubject": "Reset Password Link",
+    "emailContent": "<p><strong>Reset Your Password</strong></p><p>Hello,  </p><p>We received a request to reset your password. </p><p><a class=\"text-blue-600 hover:text-blue-800 underline cursor-pointer\" href=\"{{link}}\"><strong>Reset Password</strong></a></p><p>This reset link will expire in <span style=\"font-size: 18px;\"><strong>{{expire}}</strong></span></p><p>If you didn't request a password reset, you can safely ignore this email.</p><p>@ 2026 Quzee Drive. All rights reserved.</p>",
+    "status": 1,
+    "createdAt": "2026-01-08T05:47:14.312Z",
+    "updatedAt": "2026-01-08T05:47:14.312Z",
+    "__v": 0
+  },
+  {
+    "_id": "6960a83e0b539d42b7d92fdb",
+    "name": "Test",
+    "slug": "test",
+    "smsContent": "",
+    "pushBody": "",
+    "emailSubject": "TEST",
+    "emailContent": "",
+    "status": 0,
+    "createdAt": "2026-01-09T07:03:26.260Z",
+    "updatedAt": "2026-01-09T07:04:31.791Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965de4f502829f49d1769d6",
+    "name": "Order Received",
+    "slug": "order-received\t",
+    "smsContent": "Order Received",
+    "pushBody": "Order Received",
+    "emailSubject": "Order Received",
+    "emailContent": "<p><span style=\"font-size: 18px;\"><strong>Booking Received</strong></span></p><p></p><p>Hi {{name}},</p><p></p><p>Thank you for choosing us!</p><p>We have successfully received your booking request and it is currently being processed.</p><p></p><p><span style=\"font-size: 18px;\"><strong>Booking Details</strong></span></p><p></p><p>Order ID</p><p>#{{orderId}}</p><p></p><p>Car Model</p><p>{{carName}}</p><p></p><p>Package Selected</p><p>{{selectedPackage}}</p><p></p><p>Trip Start</p><p>{{tripStart}}</p><p></p><p>Pickup Location</p><p>{{location}}</p><p></p><p>Our team will review your booking details and get back to you shortly with the confirmation.</p><p>Regards,</p><p>{{companyName}}</p><p>{{supportEmail}}</p><p></p>",
+    "status": 1,
+    "createdAt": "2026-01-13T05:55:27.481Z",
+    "updatedAt": "2026-01-13T05:55:27.481Z",
+    "__v": 0
+  }
+]

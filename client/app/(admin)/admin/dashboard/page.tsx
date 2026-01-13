@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useAdminLoginQueries } from '@/lib/hooks/queries/useAdminLoginQueries';
+import { useDashboardQueries } from '@/lib/hooks/queries/useDashboardQueries';
 import {
   Building2,
   CheckCircle2,
@@ -11,15 +12,66 @@ import {
   MessageSquare,
   TrendingUp,
   Users,
-  RefreshCcw // Import Refresh icon
+  RefreshCcw,
+  Car,
+  Tags
 } from 'lucide-react';
 import { cn } from '@/components/utils/cn';
+import Link from 'next/link';
+import { useDashboardAnalytics } from '@/lib/hooks/queries/useDashboardQueries';
+import OrdersTrendChart from '@/components/admin/dashboard/OrdersTrendChart';
+import OrderStatusChart from '@/components/admin/dashboard/OrderStatusChart';
+import PopularCarsChart from '@/components/admin/dashboard/PopularCarsChart';
+import BrandDistributionChart from '@/components/admin/dashboard/BrandDistributionChart';
+
 
 function AdminDashboardPage() {
-  const { data, refetch, isRefetching } = useAdminLoginQueries();
+  const [period, setPeriod] = React.useState('monthly');
+  const { data: adminData } = useAdminLoginQueries();
+  const { stats, refetch, isRefetching, isLoading } = useDashboardQueries();
+  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(period);
 
-  const stats = [
-    // ... stats array
+  const statCards = [
+    {
+      label: 'Total Bookings',
+      value: stats?.orders?.total || 0,
+      icon: ClipboardList,
+      color: 'text-blue-600',
+      bg: 'bg-blue-50',
+      link: '/admin/order-management/list-page'
+    },
+    {
+      label: 'Pending Approvals',
+      value: stats?.orders?.pending || 0, // Using pending count
+      icon: CheckCircle2,
+      color: 'text-orange-600',
+      bg: 'bg-orange-50',
+      link: '/admin/order-management/list-page?status=0'
+    },
+    {
+      label: 'Completed Rides',
+      value: stats?.orders?.completed || 0,
+      icon: CheckCircle2,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50',
+      link: '/admin/order-management/list-page?status=5' // Assuming 5 is RIDE_COMPLETED
+    },
+    {
+      label: 'Active Cars',
+      value: stats?.cars?.active || 0,
+      icon: Car,
+      color: 'text-green-600',
+      bg: 'bg-green-50',
+      link: '/admin/cars/list-page'
+    },
+    {
+      label: 'Brands',
+      value: stats?.brands?.total || 0,
+      icon: Tags,
+      color: 'text-purple-600',
+      bg: 'bg-purple-50',
+      link: '/admin/brand-management/list-page'
+    }
   ];
 
   return (
@@ -27,7 +79,7 @@ function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">Welcome back, <span className="font-semibold text-gray-700">{data?.admin?.username || 'Admin'}</span></p>
+          <p className="text-gray-500 mt-1">Welcome back, <span className="font-semibold text-gray-700">{adminData?.admin?.username || 'Admin'}</span></p>
         </div>
         <button
           onClick={() => refetch()}
@@ -41,62 +93,59 @@ function AdminDashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between transition-transform hover:-translate-y-1 hover:shadow-md">
-            <div>
-              <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-              <h3 className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</h3>
-            </div>
-            <div className={cn("p-3 rounded-xl", stat.bg)}>
-              <stat.icon className={cn("w-6 h-6", stat.color)} />
+        {statCards.map((stat, idx) => (
+          <div key={idx} className="block group">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between transition-all hover:-translate-y-1 hover:shadow-md h-full">
+              <div>
+                <p className="text-sm font-medium text-gray-500">{stat.label}</p>
+                <h3 className="text-3xl font-bold text-gray-900 mt-2">
+                  {isLoading ? '...' : stat.value}
+                </h3>
+              </div>
+              <div className={cn("p-3 rounded-xl transition-colors group-hover:bg-opacity-80", stat.bg)}>
+                <stat.icon className={cn("w-6 h-6", stat.color)} />
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Growth Chart Section */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-blue-600" />
-              Property Growth
-            </h3>
-            <p className="text-sm text-gray-500 mt-1">New properties added over time</p>
-          </div>
-          <div className="flex bg-gray-100 p-1 rounded-lg self-start">
-            {['7 Days', 'Monthly', 'Yearly'].map((filter, i) => (
-              <button
-                key={filter}
-                className={cn(
-                  "px-4 py-1.5 text-xs font-medium rounded-md transition-all",
-                  i === 0 ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                )}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
+      {/* Analytics Charts Section */}
+      <div className="space-y-6">
+        {/* Row 1: Trends */}
+        <div className="h-[400px]">
+          {analyticsLoading ? (
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex items-center justify-center text-gray-400">Loading Trends...</div>
+          ) : (
+            <OrdersTrendChart
+              data={analytics?.trend || []}
+              period={period}
+              onFilterChange={setPeriod}
+            />
+          )}
         </div>
 
-        {/* Chart Placeholder */}
-        <div className="h-64 flex items-end justify-between gap-2 px-4 border-b border-gray-100 pb-0">
-          {[40, 70, 45, 90, 60, 80, 50, 65, 85, 95, 75, 60].map((h, i) => (
-            <div key={i} className="w-full bg-blue-50 rounded-t-lg relative group h-full flex flex-col justify-end">
-              <div
-                style={{ height: `${h}%` }}
-                className="w-full bg-blue-500/10 group-hover:bg-blue-500/20 rounded-t-sm transition-all relative"
-              >
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                  {h}
-                </div>
+        {/* Row 2: Status, Brand, Top Cars */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {analyticsLoading ? (
+            <>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[400px] flex items-center justify-center text-gray-400">Loading Status...</div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[400px] flex items-center justify-center text-gray-400">Loading Brands...</div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[400px] lg:col-span-2 flex items-center justify-center text-gray-400">Loading Cars...</div>
+            </>
+          ) : (
+            <>
+              <div className="h-[400px]">
+                <OrderStatusChart data={analytics?.statusDistribution || []} />
               </div>
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-between text-xs text-gray-400 mt-4 px-2">
-          <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-          <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+              <div className="h-[400px]">
+                <BrandDistributionChart data={analytics?.carsByBrand || []} />
+              </div>
+              <div className="lg:col-span-2">
+                <PopularCarsChart data={analytics?.popularCars || []} />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

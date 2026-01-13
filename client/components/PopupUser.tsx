@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { UserForm, UserFormError } from '@/types/user';
-import sendUser from '@/utils/sendUser';
+import { useOrderMutations } from '@/lib/hooks/mutations/useOrderMutations';
 import SuccesMsg from '../app/thank-you/page';
 
 import Flatpickr from "react-flatpickr";
@@ -23,6 +23,9 @@ type ContactModalProps = {
 
 export default function ContactModal({ onClose, leadData, setLeadData }: ContactModalProps) {
   const router = useRouter();
+  const { useCreateOrder } = useOrderMutations();
+  const createOrderMutation = useCreateOrder();
+
   const [formData, setFormData] = useState<UserForm>({
     name: leadData?.name || '',
     phone: leadData?.phone || '',
@@ -32,15 +35,17 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
     location: leadData?.location || '',
     message: leadData?.message || '',
     carName: leadData?.carName || '',
+    carSlug: leadData?.carSlug || '',
     selectedPackage: leadData?.selectedPackage || ''
   });
   const [errors, setErrors] = useState<Partial<UserFormError>>({});
   const [mathProblem, setMathProblem] = useState<{ a: number, b: number, answer: number } | null>(null);
   const [securityAnswer, setSecurityAnswer] = useState<string>('');
-  const [loading, setLoading] = useState(false);
   const [showMsg, setShowMsg] = useState(false); // Add this line
   const TripStartRef = useRef<any>(null);
   const TripEndRef = useRef<any>(null);
+
+  const loading = createOrderMutation.isPending;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,40 +71,40 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      setLoading(true);
-      const result = await sendUser(formData);
-
-      if (result.success) {
-        setFormData({
-          location: '',
-          tripStart: new Date(),
-          tripEnd: new Date(),
-          email: '',
-          name: '',
-          phone: '',
-          message: '',
-          carName: '',
-          selectedPackage: ''
-        });
-        if (setLeadData) {
-          setLeadData({
+      createOrderMutation.mutate(formData, {
+        onSuccess: () => {
+          setFormData({
             location: '',
-            tripStart: new Date(),
-            tripEnd: new Date(),
+            tripStart: '',
+            tripEnd: '',
+            email: '',
             name: '',
             phone: '',
+            message: '',
             carName: '',
             selectedPackage: ''
           });
+          if (setLeadData) {
+            setLeadData({
+              location: '',
+              tripStart: '',
+              tripEnd: '',
+              name: '',
+              phone: '',
+              carName: '',
+              selectedPackage: ''
+            });
+          }
+          setSecurityAnswer('');
+          setShowMsg(true); // Show success message
+          // onClose(); // Don't close immediately if showing message
+          // router.push('/thank-you'); 
+        },
+        onError: (error) => {
+          console.error('Submission failed:', error);
+          // Toast is already handled in the mutation hook
         }
-        setSecurityAnswer('');
-        setLoading(false);
-        onClose(); // Close the modal first
-        router.push('/thank-you'); // Add type parameter
-      } else {
-        console.error('Submission failed:', result.error);
-        setLoading(false); // Add this to handle error case
-      }
+      });
     }
   };
 
@@ -137,7 +142,7 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
     const a = Math.floor(Math.random() * 10) + 1;
     const b = Math.floor(Math.random() * 10) + 1;
     setMathProblem({ a, b, answer: a + b });
-  }, [errors]);
+  }, []);
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -145,12 +150,47 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
     }
   };
 
+  if (showMsg) {
+    return (
+      <div
+        onClick={handleOverlayClick}
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex p-1 flex-col gap-3 items-center justify-center"
+      >
+        <div className="w-full flex max-w-lg bg-white rounded-[20px] shadow-2xl mx-auto p-8 relative flex-col items-center justify-center text-center">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
+          <p className="text-gray-600 mb-6">Your booking request has been received. We will contact you shortly.</p>
+          <button
+            onClick={onClose}
+            className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       onClick={handleOverlayClick}
       className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex p-1 flex-col gap-3 items-center justify-center"
     >
       <div className="w-full flex flex-col md:flex-row max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl bg-white rounded-[20px] overflow-hidden shadow-2xl mx-auto ">
+        {/* ... rest of the modal ... */}
 
         {/* Left Side */}
         <div
@@ -191,7 +231,7 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
 
           </button>
 
-          <form onSubmit={handleSubmit} className="flex w-full mx-5 lg:mx-0 flex-col space-y-6 xl:pt-4 text-black">
+          <form onSubmit={handleSubmit} noValidate className="flex w-full mx-5 lg:mx-0 flex-col space-y-6 xl:pt-4 text-black">
 
             {/* Row 1: Name & Phone */}
             <div className="flex flex-col xl:flex-row gap-4 mt-3">
