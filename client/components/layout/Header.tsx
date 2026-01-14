@@ -33,6 +33,8 @@ export const navList = [
 ]
 
 export default function Header() {
+  const transparentHeaderRoutes = ['/', '/our-fleet', '/about-us', '/track'];
+
   const pathname = usePathname();
   const [toggleNav, setToggleNav] = useState(false);
   const [showUserPopup, setShowUserPopup] = useState(false);
@@ -81,7 +83,7 @@ export default function Header() {
         </Link>
 
         {/* Show nav on all pages */}
-        <nav className={`hidden md:flex items-center font-roboto ${pathname === '/' && prevScrollPos < 10 ? 'text-white' : 'text-black'}`}>
+        <nav className={`hidden md:flex items-center font-roboto ${transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 ? 'text-white' : 'text-black'}`}>
           <ul className="flex justify-center items-center gap-16 ">
             {/* Map through navList to create navigation items */}
             {navList.map((item, index) => (
@@ -91,7 +93,7 @@ export default function Header() {
                   className="relative group 4xl:text-xl"
                 >
                   {item.name}
-                  <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${pathname === '/' && prevScrollPos < 10 ? 'bg-white' : 'bg-black'}`}></span>
+                  <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 ? 'bg-white' : 'bg-black'}`}></span>
                 </a>
               </li>
             ))}

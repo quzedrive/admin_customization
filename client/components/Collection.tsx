@@ -1,16 +1,16 @@
 'use client';
 import { useCarQueries } from '@/lib/hooks/queries/useCarQueries';
 import CarCard from '@/modals/cards/CarCard';
-import CarCardSkeleton from '@/modals/cards/CarCardSkeleton';
 import { Loader2 } from 'lucide-react';
+import CarCardSkeleton from './skeletons/CarCardSkeleton';
 
 export default function Collection() {
     const { useGetPublicCars } = useCarQueries();
     const { data: cars, isLoading, isError } = useGetPublicCars();
 
     const renderSkeletons = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {Array.from({ length: 8 }).map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
                 <CarCardSkeleton key={i} />
             ))}
         </div>
@@ -61,7 +61,7 @@ export default function Collection() {
                         <p>No cars available at the moment.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                         {carList.map((car: any) => (
                             <CarCard key={car._id} car={car} />
                         ))}
