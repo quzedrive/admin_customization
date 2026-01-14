@@ -20,8 +20,7 @@ export default function TrackPage() {
 
   return (
     <main className="bg-white min-h-screen flex flex-col">
-      <Header />
-
+  
       <div className="flex-1">
         <TrackHero onTrack={handleTrack} isLoading={status === 'loading'} />
 
@@ -31,7 +30,7 @@ export default function TrackPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-white py-20 overflow-hidden"
+              className="bg-white pt-20 overflow-hidden"
             >
               <div className="text-center mb-16 px-4">
                 <span className="text-green-500 font-bold tracking-wider uppercase text-sm mb-2 block">Live Status</span>
@@ -45,7 +44,6 @@ export default function TrackPage() {
         </AnimatePresence>
       </div>
 
-      <Footer />
     </main>
   );
 }

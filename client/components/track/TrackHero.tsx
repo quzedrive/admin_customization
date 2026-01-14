@@ -21,7 +21,7 @@ export default function TrackHero({ onTrack, isLoading }: TrackHeroProps) {
     };
 
     return (
-        <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Background */}
             <div className="absolute inset-0 z-0">
                 <Image

@@ -51,7 +51,6 @@ export default function OurFleetPage() {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <Header />
 
       {/* Header Banner */}
       <div className="bg-black pt-32 pb-16 px-[5.4%] text-center">
@@ -155,8 +154,6 @@ export default function OurFleetPage() {
 
         </div>
       </div>
-
-      <Footer />
     </main>
   );
 }
