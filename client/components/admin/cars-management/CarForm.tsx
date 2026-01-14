@@ -204,6 +204,13 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         }
     };
 
+    const handleImageChange = (newImages: any) => {
+        setFormData(prev => ({ ...prev, images: newImages || [] }));
+        if (errors.images && (newImages || []).length > 0) {
+            setErrors(prev => ({ ...prev, images: '' }));
+        }
+    };
+
     // Specifications Handlers
     const addSpec = (spec?: { icon: string; text: string }) => {
         setFormData(prev => ({
@@ -211,6 +218,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
             specifications: [...prev.specifications, spec || { icon: '', text: '' }]
         }));
     };
+
 
     const removeSpec = (index: number) => {
         setFormData(prev => ({
@@ -348,6 +356,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
             <CarMedia
                 formData={formData}
                 handleImageUpload={handleImageUpload}
+                handleImageChange={handleImageChange}
                 uploading={uploading}
                 errors={errors}
             />

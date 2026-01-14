@@ -34,3 +34,11 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
         res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
+
+export const admin = (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (req.admin) { // Assuming if they pass protect() and have admin obj, they are admin. Add role check if schema supports it.
+        next();
+    } else {
+        res.status(401).json({ message: 'Not authorized as an admin' });
+    }
+};

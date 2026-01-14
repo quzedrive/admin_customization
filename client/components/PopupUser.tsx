@@ -36,7 +36,7 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
     message: leadData?.message || '',
     carName: leadData?.carName || '',
     carSlug: leadData?.carSlug || '',
-    selectedPackage: leadData?.selectedPackage || ''
+    selectedPackage: leadData?.selectedPackage || 'Base Package'
   });
   const [errors, setErrors] = useState<Partial<UserFormError>>({});
   const [mathProblem, setMathProblem] = useState<{ a: number, b: number, answer: number } | null>(null);

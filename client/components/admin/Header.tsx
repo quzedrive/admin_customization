@@ -11,6 +11,7 @@ interface HeaderProps {
     isDesktopCollapsed: boolean;
 }
 
+import NotificationDropdown from './layout/NotificationDropdown';
 import ProfileOffcanvas from '@/modals/admin/ProfileOffcanvas';
 import { useState } from 'react';
 
@@ -22,7 +23,7 @@ export default function Header({ onMobileMenuClick, onDesktopMenuClick, isDeskto
     const [isThemeOpen, setIsThemeOpen] = useState(false);
 
     console.log(data);
-    
+
 
     return (
         <>
@@ -46,10 +47,7 @@ export default function Header({ onMobileMenuClick, onDesktopMenuClick, isDeskto
 
                 <div className="flex items-center gap-2">
 
-                    <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                        <Bell size={20} />
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                    </button>
+                    <NotificationDropdown />
 
                     <button
                         onClick={() => setIsThemeOpen(true)}

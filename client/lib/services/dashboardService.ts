@@ -12,5 +12,10 @@ export const dashboardServices = {
     getAnalytics: async (period = 'monthly') => {
         const response = await client.get(`${BASE_URL}/analytics`, { params: { period } });
         return response.data;
+    },
+
+    getChartData: async (type: string, period: string) => {
+        const response = await client.get(`${BASE_URL}/chart-data`, { params: { type, period } });
+        return response.data.data;
     }
 };

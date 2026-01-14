@@ -20,29 +20,34 @@ interface CarBasicDetailsProps {
 export default function CarBasicDetails({ formData, handleChange, handleSelectChange, handleStatusChange, errors, brands = [] }: CarBasicDetailsProps) {
     return (
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-                <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                    <CarFront size={20} />
+
+
+            <div className='w-full flex justify-between items-center border-b border-gray-100'>
+                <div className="flex items-center gap-3 ">
+                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                        <CarFront size={20} />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900">Car Details</h2>
+                        <p className="text-sm text-gray-500">Basic information about the vehicle</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 className="text-lg font-bold text-gray-900">Car Details</h2>
-                    <p className="text-sm text-gray-500">Basic information about the vehicle</p>
+                <div className="flex justify-end mb-4">
+                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                        <span className="text-sm font-medium text-gray-700">Car Status</span>
+                        <StatusToggle
+                            status={formData.status}
+                            onToggle={() => handleStatusChange(formData.status === 1 ? 2 : 1)}
+                            color="blue"
+                        />
+                        <span className={`text-xs font-semibold ${formData.status === 1 ? 'text-blue-600' : 'text-gray-500'}`}>
+                            {formData.status === 1 ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <div className="flex justify-end mb-4">
-                <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
-                    <span className="text-sm font-medium text-gray-700">Car Status</span>
-                    <StatusToggle
-                        status={formData.status}
-                        onToggle={() => handleStatusChange(formData.status === 1 ? 2 : 1)}
-                        color="blue"
-                    />
-                    <span className={`text-xs font-semibold ${formData.status === 1 ? 'text-blue-600' : 'text-gray-500'}`}>
-                        {formData.status === 1 ? 'Active' : 'Inactive'}
-                    </span>
-                </div>
-            </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 

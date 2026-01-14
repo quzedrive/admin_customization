@@ -33,3 +33,13 @@ export const useDashboardAnalytics = (period = 'monthly') => {
         isRefetching
     };
 };
+
+export const useDashboardChart = (type: string, period: string) => {
+    const { data, isLoading } = useQuery({
+        queryKey: ['dashboard-chart', type, period],
+        queryFn: () => dashboardServices.getChartData(type, period),
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+
+    return { data, isLoading };
+};

@@ -35,4 +35,7 @@ export const queryKeys = {
     orders: {
         adminList: 'adminOrderList',
     },
+    notifications: {
+        all: 'allNotifications',
+    },
 };

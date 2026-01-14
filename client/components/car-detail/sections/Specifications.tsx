@@ -26,7 +26,7 @@ function Specifications({ specifications, isLoading = false }: SpecificationsPro
                     <p className='text-sm md:text-base font-medium text-center max-w-3xl'>Explore the car’s essential specifications and comfort features — from transmission and fuel type to safety and convenience — designed for a smooth self-drive experience</p>
                 </div>
 
-                <div className='flex flex-wrap gap-10 w-full items-center justify-center  gap-8'>
+                <div className='flex flex-wrap gap-10 md:gap-14 w-full items-center justify-center  gap-8'>
                     {specifications?.map((spec, index) => (
                         <div
                             key={index}

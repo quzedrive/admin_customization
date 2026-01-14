@@ -294,7 +294,7 @@ export default function Hero({ car }: HeroProps) {
                 <div className="flex flex-col-reverse md:flex-row gap-4 h-fit">
                     {/* Thumbnails - Left Side (Desktop) / Bottom (Mobile) */}
                     {car.images?.length > 1 && (
-                        <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto md:max-h-[500px] scrollbar-none md:w-24 flex-shrink-0">
+                        <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto md:max-h-[500px] no-scrollbar md:w-24 flex-shrink-0">
                             {car.images.map((img: any, idx: number) => {
                                 const url = getImageUrl(img);
                                 const isSelected = url === selectedImage;
@@ -318,13 +318,13 @@ export default function Hero({ car }: HeroProps) {
                     )}
 
                     {/* Main Image */}
-                    <div className="relative flex-1 aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-50 border border-gray-100">
+                    <div className="relative flex-1 w-full overflow-hidden rounded-2xl bg-gray-50 border border-gray-100">
                         {selectedImage ? (
                             <Image
                                 src={selectedImage}
                                 alt={car.name}
                                 fill
-                                className="object-contain p-4"
+                                className="object-cover p-4"
                                 priority
                             />
                         ) : (
@@ -616,7 +616,9 @@ export default function Hero({ car }: HeroProps) {
                             ? calculationDetails.isOnRequest
                                 ? `Long Duration (${calculationDetails.totalHours} Hours) - On Request`
                                 : `${calculationDetails.totalHours} Hours - ₹${calculationDetails.price.toLocaleString()}`
-                            : ''
+                            : selectedPkg
+                                ? `${selectedPkg.package?.name || selectedPkg.package?.time} - ₹${(selectedPkg.discountPrice && selectedPkg.discountPrice > 0 ? selectedPkg.discountPrice : selectedPkg.price).toLocaleString()}`
+                                : ''
                     } as any}
                     setLeadData={(data) => dispatch(setSearchFormData(data))}
                 />

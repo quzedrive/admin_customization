@@ -205,7 +205,7 @@ export default function HeroSearchForm() {
               }}
             >
               <div className="flex items-center justify-between">
-                <label className={`text-xs font-bold uppercase tracking-wide cursor-pointer ${errors.car ? 'text-red-500' : 'text-gray-800'}`}>Car Type</label>
+                <label className={`text-xs font-bold uppercase tracking-wide cursor-pointer ${errors.car ? 'text-red-500' : 'text-gray-800'}`}>Select Car</label>
                 {errors.car && <span className="text-[10px] text-red-500 font-medium">{errors.car}</span>}
               </div>
               <div className="flex items-center justify-between">

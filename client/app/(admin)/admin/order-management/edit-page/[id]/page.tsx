@@ -9,6 +9,7 @@ import { useCarQueries } from '@/lib/hooks/queries/useCarQueries';
 import { ChevronLeft, Save, Loader2, Calendar, MapPin, User, Mail, Phone, Car, CreditCard, MessageSquare, StickyNote, UserCheck, ShieldCheck, Trash2, SquareX } from 'lucide-react';
 import ModernDropdown from '@/components/inputs/ModernDropDown';
 import CancelOrderModal from '@/components/admin/order-management/list-page/CancelOrderModal';
+import ApproveOrderModal from '@/components/admin/order-management/ApproveOrderModal';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import {
     ORDER_STATUS_LABELS,
@@ -67,12 +68,28 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
     const [adminNotes, setAdminNotes] = useState(''); // Assuming we might want to add this field later or map it to 'message' if editable
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [approveModalOpen, setApproveModalOpen] = useState(false);
+    const [finalPrice, setFinalPrice] = useState<number>(0);
 
     useEffect(() => {
         if (order) {
             setStatus(order.status.toString());
             setPaymentStatus(order.paymentStatus.toString());
             // setAdminNotes(order.adminNotes || ''); // generic placeholder
+
+            if (order.finalPrice) {
+                setFinalPrice(order.finalPrice);
+            } else if (order.selectedPackage) {
+                try {
+                    // Logic to parse "₹"
+                    const pricePart = order.selectedPackage.split('₹')[1];
+                    if (pricePart) {
+                        setFinalPrice(parseInt(pricePart.replace(/,/g, '')));
+                    }
+                } catch (e) {
+                    console.error("Failed to parse price", e);
+                }
+            }
         }
     }, [order]);
 
@@ -85,6 +102,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                 data: {
                     status: parseInt(status),
                     paymentStatus: parseInt(paymentStatus),
+                    finalPrice: finalPrice
                     // message: adminNotes // If we decide to allow editing message
                 }
             });
@@ -93,6 +111,23 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
         } catch (error) {
             console.error("Failed to update order", error);
         }
+    };
+
+    const handleStatusChange = (val: string) => {
+        if (val === '1') { // Approved
+            setApproveModalOpen(true);
+        } else if (val === '3') { // Cancelled
+            setCancelModalOpen(true);
+        } else {
+            setStatus(val);
+        }
+    };
+
+    const handleApproveConfirm = (price: number) => {
+        setFinalPrice(price);
+        setStatus('1');
+        setApproveModalOpen(false);
+        toast.success("Price confirmed! Click Save to apply changes.");
     };
 
     const processCancelStatus = (reasonId: string, reasonText: string) => {
@@ -107,6 +142,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
             }, {
                 onSuccess: () => {
                     setCancelModalOpen(false);
+                    setStatus('3'); // Visually update to Cancelled
                 }
             });
         }
@@ -193,7 +229,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                                     .filter(([k]) => k !== '0')
                                     .map(([k, v]) => ({ value: k, label: v }))}
                                 value={status}
-                                onChange={setStatus}
+                                onChange={handleStatusChange}
                             />
                             <ModernDropdown
                                 label="Payment Status"
@@ -398,7 +434,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                             <button
                                 onClick={handleSave}
                                 disabled={updateOrderMutation.isPending}
-                                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="w-full cursor-pointer flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {updateOrderMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                                 Save Changes
@@ -414,6 +450,13 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                     </div>
                 </div>
             </div>
+
+            <ApproveOrderModal
+                isOpen={approveModalOpen}
+                onClose={() => setApproveModalOpen(false)}
+                onConfirm={handleApproveConfirm}
+                initialPrice={finalPrice}
+            />
 
             <CancelOrderModal
                 isOpen={cancelModalOpen}

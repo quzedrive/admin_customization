@@ -65,8 +65,31 @@ export default function TopBar({ carName }: { carName?: string }) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Scroll detection for dynamic sticky positioning matching Header
+    const [isHeaderVisible, setIsHeaderVisible] = React.useState(true);
+    const [prevScrollPos, setPrevScrollPos] = React.useState(0);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollPos = window.scrollY;
+            // Header logic: visible if scrolling up or at top (< 10)
+            const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
+            setIsHeaderVisible(isVisible);
+            setPrevScrollPos(currentScrollPos);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [prevScrollPos]);
+
     return (
-        <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm w-full py-4 px-[5.4%]">
+        <div
+            className="sticky z-40 bg-white border-b border-gray-100 shadow-sm w-full py-4 px-[5.4%]"
+            style={{
+                top: isHeaderVisible ? '100px' : '0px', // Adjust overlapping height (Header is ~104px)
+                transition: 'top 0.3s ease-in-out'
+            }}
+        >
             <div className="flex items-center justify-center gap-4 md:gap-8 max-w-[1920px] mx-auto">
 
                 {/* Search Criteria Group */}

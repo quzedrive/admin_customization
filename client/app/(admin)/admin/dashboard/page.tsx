@@ -13,23 +13,38 @@ import {
   TrendingUp,
   Users,
   RefreshCcw,
+  Clock,
   Car,
-  Tags
+  Tags,
+  IndianRupee,
 } from 'lucide-react';
 import { cn } from '@/components/utils/cn';
 import Link from 'next/link';
-import { useDashboardAnalytics } from '@/lib/hooks/queries/useDashboardQueries';
+import { useDashboardAnalytics, useDashboardChart } from '@/lib/hooks/queries/useDashboardQueries';
 import OrdersTrendChart from '@/components/admin/dashboard/OrdersTrendChart';
 import OrderStatusChart from '@/components/admin/dashboard/OrderStatusChart';
 import PopularCarsChart from '@/components/admin/dashboard/PopularCarsChart';
 import BrandDistributionChart from '@/components/admin/dashboard/BrandDistributionChart';
+import RevenueByCarChart from '@/components/admin/dashboard/RevenueByCarChart';
+import RevenueTrendChart from '@/components/admin/dashboard/RevenueTrendChart';
+import HoursTrendChart from '@/components/admin/dashboard/HoursTrendChart';
 
 
 function AdminDashboardPage() {
-  const [period, setPeriod] = React.useState('monthly');
+  const [revenuePeriod, setRevenuePeriod] = React.useState('monthly');
+  const [hoursPeriod, setHoursPeriod] = React.useState('monthly');
+  const [ordersPeriod, setOrdersPeriod] = React.useState('monthly');
+
   const { data: adminData } = useAdminLoginQueries();
   const { stats, refetch, isRefetching, isLoading } = useDashboardQueries();
-  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(period);
+
+  // General analytics for lists (Status, Brand, Popular Cars) - defaulting to monthly
+  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics('monthly');
+
+  // Independent Chart Queries
+  const { data: revenueData, isLoading: revenueLoading } = useDashboardChart('revenue', revenuePeriod);
+  const { data: hoursData, isLoading: hoursLoading } = useDashboardChart('hours', hoursPeriod);
+  const { data: ordersData, isLoading: ordersLoading } = useDashboardChart('orders', ordersPeriod);
 
   const statCards = [
     {
@@ -41,12 +56,20 @@ function AdminDashboardPage() {
       link: '/admin/order-management/list-page'
     },
     {
-      label: 'Completed Rides',
-      value: stats?.orders?.completed || 0,
-      icon: CheckCircle2,
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-50',
-      link: '/admin/order-management/list-page' // Assuming 5 is RIDE_COMPLETED
+      label: 'Total Hours Rided',
+      value: `${(stats?.hours?.total || 0).toLocaleString()} Hours`,
+      icon: Clock,
+      color: 'text-orange-600',
+      bg: 'bg-orange-50',
+      link: '/admin/order-management/list-page'
+    },
+    {
+      label: 'Total Revenue',
+      value: `₹${(stats?.revenue?.total || 0).toLocaleString()}`,
+      icon: IndianRupee,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50',
+      link: '/admin/order-management/list-page?status=5'
     },
     {
       label: 'Active Cars',
@@ -55,14 +78,6 @@ function AdminDashboardPage() {
       color: 'text-green-600',
       bg: 'bg-green-50',
       link: '/admin/cars-management/list-page'
-    },
-    {
-      label: 'Brands',
-      value: stats?.brands?.total || 0,
-      icon: Tags,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
-      link: '/admin/brand-management/list-page'
     }
   ];
 
@@ -86,7 +101,7 @@ function AdminDashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, idx) => (
-          <Link href={stat.link}   key={idx} className="block group">
+          <Link href={stat.link} key={idx} className="block group">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between transition-all hover:-translate-y-1 hover:shadow-md h-full">
               <div>
                 <p className="text-sm font-medium text-gray-500">{stat.label}</p>
@@ -104,26 +119,71 @@ function AdminDashboardPage() {
 
       {/* Analytics Charts Section */}
       <div className="space-y-6">
-        {/* Row 1: Trends */}
-        <div className="h-[400px]">
+
+        {/* Row 1: Trend Comparisons (Revenue vs Hours) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-[400px]">
+            {revenueLoading ? (
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex items-center justify-center text-gray-400">Loading Revenue Trend...</div>
+            ) : (
+              <RevenueTrendChart
+                data={revenueData || []}
+                period={revenuePeriod}
+                onFilterChange={setRevenuePeriod}
+              />
+            )}
+          </div>
+          <div className="h-[400px]">
+            {hoursLoading ? (
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex items-center justify-center text-gray-400">Loading Usage Trend...</div>
+            ) : (
+              <HoursTrendChart
+                data={hoursData || []}
+                period={hoursPeriod}
+                onFilterChange={setHoursPeriod}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Row 2: Top Lists (Revenue By Car vs Popular Cars) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {analyticsLoading ? (
+            <>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[400px] flex items-center justify-center text-gray-400">Loading Revenue Data...</div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[400px] flex items-center justify-center text-gray-400">Loading Popular Cars...</div>
+            </>
+          ) : (
+            <>
+              <div className="h-full min-h-[400px]">
+                <RevenueByCarChart data={analytics?.revenueByCar || []} />
+              </div>
+              <div className="h-full min-h-[400px]">
+                <PopularCarsChart data={analytics?.popularCars || []} />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Row 3: Booking Trend */}
+        <div className="h-[400px]">
+          {ordersLoading ? (
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex items-center justify-center text-gray-400">Loading Trends...</div>
           ) : (
             <OrdersTrendChart
-              data={analytics?.trend || []}
-              period={period}
-              onFilterChange={setPeriod}
+              data={ordersData || []}
+              period={ordersPeriod}
+              onFilterChange={setOrdersPeriod}
             />
           )}
         </div>
 
-        {/* Row 2: Status, Brand, Top Cars */}
+        {/* Row 4: Details (Status & Brand) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {analyticsLoading ? (
             <>
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[400px] flex items-center justify-center text-gray-400">Loading Status...</div>
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[400px] flex items-center justify-center text-gray-400">Loading Brands...</div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[400px] lg:col-span-2 flex items-center justify-center text-gray-400">Loading Cars...</div>
             </>
           ) : (
             <>
@@ -132,9 +192,6 @@ function AdminDashboardPage() {
               </div>
               <div className="h-[400px]">
                 <BrandDistributionChart data={analytics?.carsByBrand || []} />
-              </div>
-              <div className="lg:col-span-2">
-                <PopularCarsChart data={analytics?.popularCars || []} />
               </div>
             </>
           )}

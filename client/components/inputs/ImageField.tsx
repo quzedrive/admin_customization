@@ -435,10 +435,10 @@ export default function ImageField({
             {
                 previewModal && (
                     <div
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                        className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
                         onClick={() => setPreviewModal(null)}
                     >
-                        <div className="relative max-w-4xl max-h-[90vh] w-full">
+                        <div className="relative max-w-4xl max-h-[70vh] w-full">
                             <button
                                 type="button"
                                 onClick={() => setPreviewModal(null)}

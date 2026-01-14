@@ -10,6 +10,9 @@ import { status } from '../constants/status';
 import { generateBookingId } from '../utils/generators';
 
 import SiteSettings from '../models/settings/site-settings.model';
+import Notification from '../models/notification.model';
+import { getIO } from '../socket';
+import { NotificationStatus } from '../constants/notification';
 
 // @desc    Create a new order (Public)
 // @route   POST /api/orders
@@ -39,6 +42,25 @@ export const createOrder = async (req: Request, res: Response) => {
             bookingId,
             // status and paymentStatus use defaults
         });
+
+        // Create & Emit Notification
+        try {
+            const notification = await Notification.create({
+                title: 'New Order Received',
+                message: `New booking #${bookingId} from ${name}`,
+                type: 'order',
+                link: `/admin/order-management/edit-page/${order._id}`,
+                status: NotificationStatus.NEW
+            });
+
+            try {
+                getIO().emit('new_notification', notification);
+            } catch (ioError) {
+                console.error('Socket IO Emit Error:', ioError);
+            }
+        } catch (notifError) {
+            console.error('Notification Creation Error:', notifError);
+        }
 
         // Fetch email template
         console.log('Fetching system template: order-received');
@@ -234,6 +256,7 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                 .replace(/{{supportEmail}}/g, supportEmail)
                 .replace(/{{link}}/g, orderLink)
                 .replace(/{{cancelReason}}/g, order.cancelReason || '')
+                .replace(/{{finalPrice}}/g, order.finalPrice ? order.finalPrice.toString() : (order.selectedPackage ? order.selectedPackage.replace(/[^0-9]/g, '') : ''))
                 .replace(/{{submissionTime}}/g, submissionTime);
 
             emailContent = replacer(emailContent);
@@ -241,8 +264,16 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
             // PDF Generation Logic for Confirmation
             let attachments: any[] = [];
             if (slug === 'order_confirmed') {
+                console.log('Attempting to generate PDF for order_confirmed');
                 try {
                     const agreementTemplate = await SystemTemplate.findOne({ slug: 'rental_agreement' });
+
+                    if (!agreementTemplate) {
+                        console.log('Warning: rental_agreement template not found');
+                    } else if (agreementTemplate.status !== status.active) {
+                        console.log('Warning: rental_agreement template is inactive');
+                    }
+
                     if (agreementTemplate && agreementTemplate.status === status.active) {
                         const agreementHtml = replacer(agreementTemplate.emailContent); // Using emailContent field for document body
                         const pdfBuffer = await generatePDF(agreementHtml);

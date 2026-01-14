@@ -7,11 +7,12 @@ import { CarFormData } from '../types';
 interface CarMediaProps {
     formData: CarFormData;
     handleImageUpload: (files: File[] | File | null) => void;
+    handleImageChange: (value: any) => void;
     uploading: boolean;
     errors: Record<string, string>;
 }
 
-export default function CarMedia({ formData, handleImageUpload, uploading, errors }: CarMediaProps) {
+export default function CarMedia({ formData, handleImageUpload, handleImageChange, uploading, errors }: CarMediaProps) {
     return (
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
             <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
@@ -29,7 +30,7 @@ export default function CarMedia({ formData, handleImageUpload, uploading, error
                     label="Car Gallery"
                     multiple={true}
                     maxFiles={10}
-                    onChange={() => { }} // Not used for manual upload pattern
+                    onChange={(val) => handleImageChange(val)}
                     onFileChange={(files) => handleImageUpload(files as File[])}
                     value={formData.images}
                     disabled={uploading}
