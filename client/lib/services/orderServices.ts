@@ -34,5 +34,11 @@ export const orderServices = {
     cancelOrder: async (id: string) => {
         const response = await client.delete(`${BASE_URL}/admin/${id}`);
         return response.data;
+    },
+
+    // Public: Track order
+    getTrackedOrder: async (id: string) => {
+        const response = await client.get(`${BASE_URL}/track/${id}`);
+        return response.data;
     }
 };

@@ -34,6 +34,7 @@ export const queryKeys = {
     },
     orders: {
         adminList: 'adminOrderList',
+        tracking: 'trackOrder',
     },
     notifications: {
         all: 'allNotifications',

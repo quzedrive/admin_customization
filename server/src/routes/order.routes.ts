@@ -1,5 +1,5 @@
 import express from 'express';
-import { createOrder, getAdminOrders, updateOrder, cancelOrder } from '../controllers/order.controller';
+import { createOrder, getAdminOrders, updateOrder, cancelOrder, getPublicOrderStatus } from '../controllers/order.controller';
 import { protect } from '../middlewares/auth.middleware';
 
 const router = express.Router();
@@ -15,5 +15,8 @@ router.put('/admin/:id', protect, updateOrder);
 
 // Admin: Delete (cancel) an order
 router.delete('/admin/:id', protect, cancelOrder);
+
+// Public: Track order status
+router.get('/track/:id', getPublicOrderStatus);
 
 export default router;

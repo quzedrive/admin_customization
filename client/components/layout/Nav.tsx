@@ -3,21 +3,29 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react'
-import PopupHost from './PopupHost'
+import PopupHost from '../PopupHost'
 
-export const navList =[
+export const navList = [
   {
     name: "Home",
-    href: "#Home",
-  },
-  {
-    name: "Tariffs for our fleet",
-    href: "#tariffs",
+    href: "/",
   },
   {
     name: "About Us",
-    href: "#about",
+    href: "/about-us",
   },
+  {
+    name: "Investor Relations",
+    href: "/investor-relations",
+  },
+  {
+    name: "Our Fleet",
+    href: "/our-fleet",
+  },
+  {
+    name: "Track",
+    href: "/track",
+  }
 ]
 
 

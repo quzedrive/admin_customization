@@ -413,3 +413,33 @@ export const cancelOrder = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server Error' });
     }
 };
+
+// @desc    Get public order status (Public)
+// @route   GET /api/orders/track/:id
+// @access  Public
+export const getPublicOrderStatus = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        let query: any = {};
+
+        // Check if id is a valid ObjectId
+        if (id.match(/^[0-9a-fA-F]{24}$/)) {
+            query._id = id;
+        } else {
+            // Otherwise assume it's a booking ID
+            query.bookingId = id;
+        }
+
+        const order = await Order.findOne(query).select('status bookingId carName tripStart tripEnd location createdAt');
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        res.json(order);
+    } catch (error: any) {
+        console.error('Get Public Order Status Error:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};

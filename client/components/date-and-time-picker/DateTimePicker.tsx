@@ -43,6 +43,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 placeholder={placeholder}
                 variant="borderless"
                 allowClear={false}
+                disabledDate={(current) => current && current < dayjs().startOf('day')}
                 inputReadOnly
                 suffixIcon={<ChevronDown size={16} className={isForm ? "text-gray-400" : "text-blue-500"} />}
                 style={{

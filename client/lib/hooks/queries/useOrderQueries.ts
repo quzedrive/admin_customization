@@ -11,7 +11,18 @@ export const useOrderQueries = () => {
         });
     };
 
+    const useTrackOrder = (id: string, options?: any) => {
+        return useQuery<any>({
+            queryKey: [queryKeys.orders.tracking, id],
+            queryFn: () => orderServices.getTrackedOrder(id),
+            enabled: !!id,
+            retry: false,
+            ...options
+        });
+    };
+
     return {
-        useAdminOrders
+        useAdminOrders,
+        useTrackOrder
     };
 };

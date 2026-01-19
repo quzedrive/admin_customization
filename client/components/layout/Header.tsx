@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import PopupHost from '../PopupHost';
 import PopupUser from '../PopupUser'
-import Nav from '../Nav';
+import Nav from './Nav';
 import Image from 'next/image';
 import Link from 'next/link'
+import { Menu } from 'lucide-react';
 
 export const navList = [
   {
@@ -126,15 +127,10 @@ export default function Header() {
             )}
             <button
               onClick={navToggler}
-              className="md:hidden md:p-8 hover:bg-gray-100 rounded-full transition-colors"
+              className={`md:hidden md:p-8 hover:bg-gray-100 rounded-full transition-colors ${transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 ? 'text-white' : 'text-black'} `}
               aria-label="Open menu"
             >
-              <Image
-                src='/menu.svg'
-                alt='Menu'
-                width={40}
-                height={40}
-              />
+              <Menu />
             </button>
           </>
         )}
