@@ -318,13 +318,13 @@ export default function Hero({ car }: HeroProps) {
                     )}
 
                     {/* Main Image */}
-                    <div className="relative flex-1 w-full overflow-hidden rounded-2xl bg-gray-50 border border-gray-100">
+                    <div className="relative w-full h-[300px] md:h-[500px] flex-1 overflow-hidden rounded-2xl bg-gray-50 border border-gray-100">
                         {selectedImage ? (
                             <Image
                                 src={selectedImage}
                                 alt={car.name}
                                 fill
-                                className="object-cover p-4"
+                                className="object-contain p-4"
                                 priority
                             />
                         ) : (

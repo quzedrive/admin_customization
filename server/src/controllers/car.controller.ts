@@ -208,6 +208,7 @@ export const createCar = async (req: Request, res: Response) => {
 // A common pattern is to delete old refs and create new ones if the array is fully replaced.
 export const updateCar = async (req: Request, res: Response) => {
     try {
+        console.log(`[Update Car] Request ID: ${req.params.id}`);
         const car = await Car.findById(req.params.id);
         if (!car) {
             return res.status(404).json({ message: 'Car not found' });
@@ -229,12 +230,8 @@ export const updateCar = async (req: Request, res: Response) => {
             specifications,
             host,
             status: carStatus,
-            slug: manualSlug // Optional if manually passed, but we generate from name typically
+            slug: manualSlug
         } = req.body;
-
-        // Logic for slug update:
-        // 1. If manualSlug is provided and different from current, use it (and check unique).
-        // 2. If name changes and NO manualSlug provided, generate from name.
 
         let newSlug = car.slug;
         let shouldCheckUnique = false;
@@ -271,85 +268,110 @@ export const updateCar = async (req: Request, res: Response) => {
 
         // Update Packages
         if (packages && Array.isArray(packages)) {
-            // Strategy: 
-            // 1. If it's a new mapping (no _id), create it.
-            // 2. If it's an existing mapping (has _id), update it.
-            // 3. (Optional) If mappings are missing from this list but exist in DB, delete them? 
-            //    For now, let's assume we replace the list of references in the Car, but we might leave orphaned docs if we aren't careful.
-            //    Better: Delete all old mappings for this car and recreate/re-link? Or update in place.
-            //    Let's go with: Update existing if ID match, Create new otherwise. Rebuild the `car.packages` array.
+            try {
+                const finalPackageIds = [];
+                for (const pkg of packages) {
+                    if (pkg._id && !pkg._id.toString().startsWith('new_')) { // Ensure valid ID format if needed, simplistic check
+                        // Existing CarPackage doc, update it
+                        // Safe Cast for pkg.package if it comes as object
+                        const packageId = (pkg.package as any)?._id || pkg.package;
 
-            const finalPackageIds = [];
+                        await CarPackage.findByIdAndUpdate(pkg._id, {
+                            package: packageId,
+                            price: pkg.price,
+                            discountPrice: pkg.discountPrice,
+                            halfDayPrice: pkg.halfDayPrice,
+                            isActive: pkg.isActive
+                        });
+                        finalPackageIds.push(pkg._id);
+                    } else {
+                        // New mapping
+                        const packageId = (pkg.package as any)?._id || pkg.package;
 
-            for (const pkg of packages) {
-                if (pkg._id) {
-                    // Existing CarPackage doc, update it
-                    await CarPackage.findByIdAndUpdate(pkg._id, {
-                        package: pkg.package,
-                        price: pkg.price,
-                        discountPrice: pkg.discountPrice,
-                        halfDayPrice: pkg.halfDayPrice,
-                        isActive: pkg.isActive
-                    });
-                    finalPackageIds.push(pkg._id);
-                } else {
-                    // New mapping
-                    const newCarPkg = await CarPackage.create({
-                        car: car._id,
-                        package: pkg.package,
-                        price: pkg.price,
-                        discountPrice: pkg.discountPrice,
-                        halfDayPrice: pkg.halfDayPrice,
-                        isActive: pkg.isActive
-                    });
-                    finalPackageIds.push(newCarPkg._id);
+                        const newCarPkg = await CarPackage.create({
+                            car: car._id,
+                            package: packageId,
+                            price: pkg.price,
+                            discountPrice: pkg.discountPrice,
+                            halfDayPrice: pkg.halfDayPrice,
+                            isActive: pkg.isActive
+                        });
+                        finalPackageIds.push(newCarPkg._id);
+                    }
                 }
+                car.packages = finalPackageIds as any;
+            } catch (pkgError) {
+                console.error('[Update Car] Package Error:', pkgError);
+                throw new Error(`Package Update Failed: ${(pkgError as any).message}`);
             }
-            car.packages = finalPackageIds as any; // Cast mainly for TS if it complains about ObjectId vs String
         }
 
-        // Update Images (If provided, we replace. For more granular control, we'd need add/remove logic)
+        // Update Images
         if (images && Array.isArray(images)) {
-            // For simplicity, we are assuming the frontend sends the "final" state of images.
-            // If they are new URLs (strings), we create records. If they are existing IDs, we keep them? 
-            // Or maybe we treat them all as new for this specific "separate model" requirement if they are ephemeral?
-            // Better approach: If it looks like an ID, keep it. If it looks like a URL, create new.
-            const newImageIds = [];
-            for (const img of images) {
-                if (typeof img === 'string' && img.startsWith('http')) {
-                    const newImage = await CarImage.create({ url: img });
-                    newImageIds.push(newImage._id);
-                } else if (img._id || (typeof img === 'string' && !img.startsWith('http'))) {
-                    // Assume it's an ID or object with _id
-                    newImageIds.push(img._id || img);
+            try {
+                const newImageIds = [];
+                for (const img of images) {
+                    if (typeof img === 'string') {
+                        // Check if it is a valid ObjectId (24 hex characters)
+                        if (img.match(/^[0-9a-fA-F]{24}$/)) {
+                            newImageIds.push(img);
+                        } else {
+                            // Treat as URL or Data URI (base64) -> Create new CarImage
+                            // This handles http, https, relative paths, and data: URIs
+                            const newImage = await CarImage.create({ url: img });
+                            newImageIds.push(newImage._id);
+                        }
+                    } else if (img && img._id) {
+                        // It's an Object with _id
+                        newImageIds.push(img._id);
+                    }
                 }
+                car.images = newImageIds;
+            } catch (imgError) {
+                console.error('[Update Car] Image Error:', imgError);
+                throw new Error(`Image Update Failed: ${(imgError as any).message}`);
             }
-            car.images = newImageIds;
         }
 
         // Update Specifications
         if (specifications && Array.isArray(specifications)) {
-            const newSpecIds = [];
-            for (const spec of specifications) {
-                // If it has an ID, keep it (or update it? Let's assume replace for simplicity or create new if no ID)
-                if (spec._id) {
-                    // Optional update logic could go here
-                    newSpecIds.push(spec._id);
-                } else {
-                    const newSpec = await CarSpecification.create({
-                        icon: spec.icon,
-                        text: spec.text
-                    });
-                    newSpecIds.push(newSpec._id);
+            try {
+                const newSpecIds = [];
+                for (const spec of specifications) {
+                    // Filter out empty specs
+                    if (!spec.icon && !spec.text) continue;
+
+                    if (spec._id) {
+                        newSpecIds.push(spec._id);
+                    } else {
+                        // Validate required fields before create
+                        if (!spec.icon || !spec.text) {
+                            // Skip or fill defaults? Model requires them.
+                            // If partial data, maybe skip or use 'N/A'?
+                            // Let's Skip to prevent crash.
+                            // console.warn('Skipping invalid spec:', spec);
+                            continue;
+                        }
+                        const newSpec = await CarSpecification.create({
+                            icon: spec.icon,
+                            text: spec.text
+                        });
+                        newSpecIds.push(newSpec._id);
+                    }
                 }
+                car.specifications = newSpecIds;
+            } catch (specError) {
+                console.error('[Update Car] Spec Error:', specError);
+                throw new Error(`Spec Update Failed: ${(specError as any).message}`);
             }
-            car.specifications = newSpecIds;
         }
 
         const updatedCar = await car.save();
+        console.log(`[Update Car] Success: ${updatedCar._id}`);
         res.status(200).json(updatedCar);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        console.error('[Update Car] Fatal Error:', error);
+        res.status(500).json({ message: error.message, stack: process.env.NODE_ENV === 'development' ? error.stack : undefined });
     }
 };
 

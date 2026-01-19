@@ -29,16 +29,38 @@ const NotificationDropdown = () => {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Queries & Mutations
-    const { data: queryData } = useNotifications();
+    const {
+        data: queryData,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useNotifications();
     const { markAsReadMutation, markAllAsReadMutation, deleteNotificationMutation } = useNotificationMutations();
 
     // Sync Query Data to Local State
     useEffect(() => {
         if (queryData) {
-            setNotifications(queryData.notifications);
-            setUnreadCount(queryData.unreadCount);
+            // Flatten pages
+            const allNotifications = queryData.pages.flatMap(page => page.notifications);
+            setNotifications(allNotifications);
+
+            // Unread count from the latest page (or first page)
+            if (queryData.pages.length > 0) {
+                setUnreadCount(queryData.pages[0].unreadCount);
+            }
         }
     }, [queryData]);
+
+    // Scroll Handler
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop <= clientHeight + 50) { // Load when near bottom
+            if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        }
+    };
+
 
     // Socket Connection
     useEffect(() => {
@@ -153,8 +175,10 @@ const NotificationDropdown = () => {
                             )}
                         </div>
 
-                        {/* List */}
-                        <div className="max-h-[20rem] overflow-y-auto no-scrollbar">
+                        <div
+                            className="max-h-[20rem] overflow-y-auto no-scrollbar"
+                            onScroll={handleScroll}
+                        >
                             {notifications.length === 0 ? (
                                 <div className="p-8 text-center text-gray-500 flex flex-col items-center">
                                     <Bell className="w-12 h-12 mb-3 text-gray-200" />
@@ -204,7 +228,11 @@ const NotificationDropdown = () => {
                                     ))}
                                 </ul>
                             )}
+                            {isFetchingNextPage && (
+                                <div className="p-2 text-center text-xs text-gray-400">Loading more...</div>
+                            )}
                         </div>
+
                     </motion.div>
                 )}
             </AnimatePresence>

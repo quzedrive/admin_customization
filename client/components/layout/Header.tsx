@@ -20,10 +20,6 @@ export const navList = [
     href: "/about-us",
   },
   {
-    name: "Investor Relations",
-    href: "/investor-relations",
-  },
-  {
     name: "Our Fleet",
     href: "/our-fleet",
   },
