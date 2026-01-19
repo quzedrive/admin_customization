@@ -11,7 +11,7 @@ import Layout from "@/components/layout/Layout";
 import { ReduxProvider } from "@/redux/store/provider";
 import TanstackProvider from "@/lib/providers/TanstackProvider";
 import AppearanceProvider from "@/components/providers/AppearanceProvider";
-
+import client from "@/lib/api/client";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,16 +26,63 @@ const montserrat = Montserrat({
   display: 'swap',
 })
 
+async function fetchSettings() {
+  try {
+    const { data } = await client.get('/settings/site-settings');
+    return data;
+  } catch (error) {
+    // console.error("Failed to load settings in metadata");
+    return null;
+  }
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const host = h.get("host") ?? "";
-  const isTarget = host === "quzeedrive-kappa.vercel.app";
+  const isTarget = host === "admin-customization.vercel.app";
+
+  const settings = await fetchSettings();
+
+  const title = settings?.seo?.metaTitle || settings?.general?.siteTitle || "Quzeedrive";
+  const description = settings?.seo?.metaDescription || settings?.general?.description || "A car rental & touring app";
+  const favicon = settings?.general?.favicon || "/favicon.ico";
 
   return {
-    title: "Quzeedrive",
-    description: "A car rental & touring app",
+    title: {
+      default: title,
+      template: `%s | ${settings?.general?.siteTitle || "Quzeedrive"}`,
+    },
+    description: description,
+    keywords: settings?.general?.keywords
+      ? (settings.general.keywords as string).split(',').map((k: string) => k.trim())
+      : [],
+    icons: {
+      icon: favicon,
+      shortcut: favicon,
+      apple: favicon,
+    },
+    authors: [{ name: "Quzeedrive" }],
+    creator: "Quzeedrive",
+    publisher: "Quzeedrive",
+    category: "Technology",
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+      url: `https://${host}`,
+      title: title as string,
+      description: description as string,
+      siteName: settings?.general?.siteTitle || "Quzeedrive",
+      images: [
+        {
+          url: settings?.seo?.ogImage || "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: `${settings?.general?.siteTitle || "Quzeedrive"} - Mobile App & Web Development`,
+        },
+      ],
+    },
     robots: isTarget
-      ? { index: false, follow: false } // -> <meta name="robots" content="noindex, nofollow">
+      ? { index: false, follow: false }
       : { index: true, follow: true },
   };
 }

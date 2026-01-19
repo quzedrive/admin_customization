@@ -79,7 +79,9 @@ export const createOrder = async (req: Request, res: Response) => {
             // Replace variables
             emailContent = emailContent
                 .replace(/{{name}}/g, name)
-                .replace(/{{orderId}}/g, order._id.toString().slice(-6).toUpperCase())
+                .replace(/{{email}}/g, email)
+                .replace(/{{phone}}/g, phone)
+                .replace(/{{orderId}}/g, bookingId)
                 .replace(/{{carName}}/g, carName || 'N/A')
                 .replace(/{{selectedPackage}}/g, selectedPackage || 'N/A')
                 .replace(/{{tripStart}}/g, startDate)

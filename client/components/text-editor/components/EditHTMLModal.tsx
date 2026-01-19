@@ -11,10 +11,23 @@ interface EditHTMLModalProps {
 export const EditHTMLModal = ({ editor, isOpen, onClose }: EditHTMLModalProps) => {
     const [htmlContent, setHtmlContent] = useState('');
 
+    const prettifyHTML = (html: string) => {
+        let formatted = '';
+        let indent = '';
+        const tab = '  ';
+        html.split(/>\s*</).forEach(function (node) {
+            if (node.match(/^\/\w/)) indent = indent.substring(tab.length);
+            formatted += indent + '<' + node + '>\r\n';
+            if (node.match(/^<?\w[^>]*[^\/]$/)) indent += tab;
+        });
+        return formatted.substring(1, formatted.length - 3);
+    }
+
     useEffect(() => {
         if (isOpen && editor) {
             const content = editor.getHTML();
-            setHtmlContent(content);
+            // Basic beautify
+            setHtmlContent(prettifyHTML(content));
         }
     }, [isOpen, editor]);
 
@@ -228,28 +241,48 @@ export const EditHTMLModal = ({ editor, isOpen, onClose }: EditHTMLModalProps) =
         });
     };
 
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    // ... prettifyHTML ...
+
+    // ... useEffect ...
+
+    // ... processHTML...
+
     const handleSave = async () => {
         if (editor) {
+            setIsUpdating(true);
             try {
                 const processedContent = await processHTML(htmlContent);
                 editor.commands.setContent(processedContent);
             } catch (e) {
                 console.error("Failed to set content", e);
+            } finally {
+                setIsUpdating(false);
+                onClose();
             }
+        } else {
+            onClose();
         }
-        onClose();
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl flex flex-col max-h-[90vh]">
+        <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                    onClose();
+                }
+            }}
+        >
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-7xl flex flex-col h-[90vh]">
                 <div className="flex items-center justify-between p-4 border-b border-gray-100">
                     <h3 className="text-lg font-semibold text-gray-900">Edit Source Code</h3>
                     <button
                         onClick={onClose}
-                        className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+                        className="p-1 cursor-pointer hover:bg-gray-100 rounded-full transition-colors text-gray-500"
                     >
                         <X size={20} />
                     </button>
@@ -271,16 +304,24 @@ export const EditHTMLModal = ({ editor, isOpen, onClose }: EditHTMLModalProps) =
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors"
+                        className="px-4 py-2 cursor-pointer text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors"
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
-                        onClick={handleSave}
-                        className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium shadow-sm shadow-blue-500/20 transition-all"
+                        onClick={() => setHtmlContent(prettifyHTML(htmlContent))}
+                        className="px-4 py-2 cursor-pointer text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium transition-colors"
                     >
-                        Update Content
+                        Format Code
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={isUpdating}
+                        className={`px-4 py-2 cursor-pointer text-white rounded-lg text-sm font-medium shadow-sm shadow-blue-500/20 transition-all ${isUpdating ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    >
+                        {isUpdating ? 'Updating...' : 'Update Content'}
                     </button>
                 </div>
             </div>

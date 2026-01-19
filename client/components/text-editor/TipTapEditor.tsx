@@ -14,7 +14,22 @@ import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Heading from '@tiptap/extension-heading';
 import Code from '@tiptap/extension-code';
-import CodeBlock from '@tiptap/extension-code-block';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { all, createLowlight } from 'lowlight';
+import css from 'highlight.js/lib/languages/css';
+import js from 'highlight.js/lib/languages/javascript';
+import ts from 'highlight.js/lib/languages/typescript';
+import html from 'highlight.js/lib/languages/xml';
+
+// Create lowlight instance
+const lowlight = createLowlight(all);
+
+// Register common languages explicitly if needed, but 'all' covers most.
+// lowlight.register('html', html);
+// lowlight.register('css', css);
+// lowlight.register('js', js);
+// lowlight.register('ts', ts);
+
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
@@ -66,7 +81,12 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
                 levels: [1, 2, 3],
             }),
             Code,
-            CodeBlock,
+            CodeBlockLowlight.configure({
+                lowlight,
+                HTMLAttributes: {
+                    class: 'hljs',
+                },
+            }),
             BulletList.extend({
                 addAttributes() {
                     return {
@@ -161,24 +181,19 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
             Table.configure({
                 resizable: true,
                 HTMLAttributes: {
-                    class: 'border-collapse table-auto !w-auto border border-gray-300',
+                    class: '',
                 },
             }).extend({
                 addAttributes() {
                     return {
                         ...this.parent?.(),
                         align: {
-                            default: 'center',
-                            parseHTML: element => element.getAttribute('data-align') || element.style.marginLeft === 'auto' && element.style.marginRight === 'auto' ? 'center' : 'left',
+                            default: null,
+                            parseHTML: element => element.getAttribute('data-align'),
                             renderHTML: attributes => {
-                                let style = '';
-                                if (attributes.align === 'left') style = 'margin-right: auto !important; margin-left: 0 !important;';
-                                else if (attributes.align === 'right') style = 'margin-left: auto !important; margin-right: 0 !important;';
-                                else style = 'margin-left: auto !important; margin-right: auto !important;';
-
+                                if (!attributes.align) return {};
                                 return {
                                     'data-align': attributes.align,
-                                    style: style
                                 }
                             }
                         }
@@ -188,7 +203,7 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
             TableRow,
             TableHeader.configure({
                 HTMLAttributes: {
-                    class: 'bg-gray-100 border border-gray-300 p-2 font-bold text-left align-top relative',
+                    class: 'font-bold text-left align-top relative',
                 }
             }).extend({
                 addAttributes() {
@@ -209,7 +224,7 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
             }),
             TableCell.configure({
                 HTMLAttributes: {
-                    class: 'border border-gray-300 p-2 align-top relative',
+                    class: 'align-top relative',
                 }
             }).extend({
                 addAttributes() {
@@ -234,7 +249,7 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
         ],
         editorProps: {
             attributes: {
-                class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl text-black mx-3 my-1 focus:outline-none min-h-[150px] max-w-none [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:mb-2 [&_h3]:mt-4 [&_p]:my-2 [&_hr]:my-6 [&>:first-child]:mt-0 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:before:content-['“'] [&_blockquote]:before:text-gray-400 [&_blockquote]:before:mr-1 [&_blockquote]:after:content-['”'] [&_blockquote]:after:text-gray-400 [&_blockquote]:after:ml-1 [&_pre]:bg-gray-100 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-4 [&_code]:bg-gray-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono [&_table]:mx-auto [&_td]:resize-y [&_td]:overflow-hidden [&_th]:resize-y [&_th]:overflow-hidden [&_td]:min-h-[24px] [&_th]:min-h-[24px]",
+                class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl text-black mx-3 my-1 focus:outline-none min-h-[150px] max-w-none [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:mb-2 [&_h3]:mt-4 [&_p]:my-2 [&_hr]:my-6 [&>:first-child]:mt-0 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:before:content-['“'] [&_blockquote]:before:text-gray-400 [&_blockquote]:before:mr-1 [&_blockquote]:after:content-['”'] [&_blockquote]:after:text-gray-400 [&_blockquote]:after:ml-1 [&_pre]:bg-gray-100 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-4 [&_code]:bg-gray-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono",
             },
         },
         content: value,
@@ -262,9 +277,66 @@ const TipTapEditor = ({ label, value, onChange, error, placeholder = 'Start writ
                 {editor && <TableBubbleMenu editor={editor} />}
                 <EditorContent editor={editor} className="px-4 py-3 min-h-[300px] cursor-text" />
                 <style jsx global>{`
+                    /* Syntax Highlighting */
+                    pre {
+                        background: #0d0d0d;
+                        color: #fff;
+                        font-family: 'JetBrainsMono', monospace;
+                        padding: 0.75rem 1rem;
+                        border-radius: 0.5rem;
+                    }
+                    code {
+                        color: inherit;
+                        padding: 0;
+                        background: none;
+                        font-size: 0.8rem;
+                    }
+                    .hljs-comment,
+                    .hljs-quote {
+                        color: #616161;
+                    }
+                    .hljs-variable,
+                    .hljs-template-variable,
+                    .hljs-attribute,
+                    .hljs-tag,
+                    .hljs-name,
+                    .hljs-regexp,
+                    .hljs-link,
+                    .hljs-name,
+                    .hljs-selector-id,
+                    .hljs-selector-class {
+                        color: #f98181;
+                    }
+                    .hljs-number,
+                    .hljs-meta,
+                    .hljs-built_in,
+                    .hljs-builtin-name,
+                    .hljs-literal,
+                    .hljs-type,
+                    .hljs-params {
+                        color: #fbbc88;
+                    }
+                    .hljs-string,
+                    .hljs-symbol,
+                    .hljs-bullet {
+                        color: #b9f18d;
+                    }
+                    .hljs-title,
+                    .hljs-section {
+                        color: #faf594;
+                    }
+                    .hljs-keyword,
+                    .hljs-selector-tag {
+                        color: #70cff8;
+                    }
+                    .hljs-emphasis {
+                        font-style: italic;
+                    }
+                    .hljs-strong {
+                        font-weight: 700;
+                    }
                     .ProseMirror table {
-                        margin-left: auto;
-                        margin-right: auto;
+                        border-collapse: collapse;
                     }
                     .ProseMirror td, .ProseMirror th {
                         position: relative;
