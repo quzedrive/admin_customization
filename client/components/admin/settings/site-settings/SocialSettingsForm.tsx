@@ -60,24 +60,28 @@ export default function SocialSettingsForm({ data }: SocialSettingsFormProps) {
                     value={formData.twitter}
                     onChange={(e) => handleChange('twitter', e.target.value)}
                     icon={Twitter}
+                    color='blue'
                 />
                 <FloatingInput
                     label="Instagram URL"
                     value={formData.instagram}
                     onChange={(e) => handleChange('instagram', e.target.value)}
                     icon={Instagram}
+                    color='blue'
                 />
                 <FloatingInput
                     label="LinkedIn URL"
                     value={formData.linkedin}
                     onChange={(e) => handleChange('linkedin', e.target.value)}
                     icon={Linkedin}
+                    color='blue'
                 />
                 <FloatingInput
                     label="YouTube URL"
                     value={formData.youtube}
                     onChange={(e) => handleChange('youtube', e.target.value)}
                     icon={Youtube}
+                    color='blue'
                 />
             </div>
 

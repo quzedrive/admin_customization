@@ -1,22 +1,16 @@
 import { Schema, Document, model } from 'mongoose';
 
 export interface IEmailConfig extends Document {
-    host: string;
-    port: number;
-    user: string;
-    pass: string;
-    secure: boolean;
+    apiKey: string;
+    apiSecret: string;
     fromEmail: string;
     fromName: string;
 }
 
 const EmailConfigSchema = new Schema<IEmailConfig>(
     {
-        host: { type: String, default: '' },
-        port: { type: Number, default: 587 },
-        user: { type: String, default: '' },
-        pass: { type: String, default: '' },
-        secure: { type: Boolean, default: false },
+        apiKey: { type: String, default: '' },
+        apiSecret: { type: String, default: '' },
         fromEmail: { type: String, default: '' },
         fromName: { type: String, default: '' },
     },

@@ -17,11 +17,8 @@ export default function IntegrationsSettingsForm() {
 
     // Forms State
     const [emailForm, setEmailForm] = useState({
-        host: '',
-        port: 587,
-        user: '',
-        pass: '',
-        secure: false,
+        apiKey: '',
+        apiSecret: '',
         fromEmail: '',
         fromName: ''
     });
@@ -39,11 +36,8 @@ export default function IntegrationsSettingsForm() {
     useEffect(() => {
         if (emailData) {
             setEmailForm({
-                host: emailData.host || '',
-                port: emailData.port || 587,
-                user: emailData.user || '',
-                pass: emailData.pass || '',
-                secure: emailData.secure || false,
+                apiKey: emailData.apiKey || '',
+                apiSecret: emailData.apiSecret || '',
                 fromEmail: emailData.fromEmail || '',
                 fromName: emailData.fromName || ''
             });
@@ -106,45 +100,26 @@ export default function IntegrationsSettingsForm() {
                         <Mail size={24} />
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Email Configuration (SMTP)</h3>
-                        <p className="text-sm text-gray-500">Configure your mail server settings for sending emails.</p>
+                        <h3 className="text-lg font-semibold text-gray-900">Email Configuration (Mailjet)</h3>
+                        <p className="text-sm text-gray-500">Configure your Mailjet API credentials for sending emails.</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="col-span-1">
                         <FloatingInput
-                            label="SMTP Host"
-                            value={emailForm.host}
-                            onChange={(e) => handleEmailChange('host', e.target.value)}
-                            placeholder="smtp.example.com"
+                            label="API Key"
+                            value={emailForm.apiKey}
+                            onChange={(e) => handleEmailChange('apiKey', e.target.value)}
                             color='blue'
                         />
                     </div>
                     <div className="col-span-1">
                         <FloatingInput
-                            label="SMTP Port"
-                            type="number"
-                            value={emailForm.port}
-                            onChange={(e) => handleEmailChange('port', parseInt(e.target.value) || 0)}
-                            placeholder="587"
-                            color='blue'
-                        />
-                    </div>
-                    <div className="col-span-1">
-                        <FloatingInput
-                            label="SMTP User"
-                            value={emailForm.user}
-                            onChange={(e) => handleEmailChange('user', e.target.value)}
-                            color='blue'
-                        />
-                    </div>
-                    <div className="col-span-1">
-                        <FloatingInput
-                            label="SMTP Password"
+                            label="API Secret"
                             type="password"
-                            value={emailForm.pass}
-                            onChange={(e) => handleEmailChange('pass', e.target.value)}
+                            value={emailForm.apiSecret}
+                            onChange={(e) => handleEmailChange('apiSecret', e.target.value)}
                             color='blue'
                         />
                     </div>
@@ -168,19 +143,6 @@ export default function IntegrationsSettingsForm() {
                                 color='blue'
                             />
                         </div>
-                    </div>
-
-                    <div className="col-span-full flex items-center gap-3">
-                        <input
-                            type="checkbox"
-                            id="secure"
-                            checked={emailForm.secure}
-                            onChange={(e) => handleEmailChange('secure', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                        <label htmlFor="secure" className="text-sm text-gray-700 select-none">
-                            Use Secure Connection (SSL/TLS)
-                        </label>
                     </div>
                 </div>
 

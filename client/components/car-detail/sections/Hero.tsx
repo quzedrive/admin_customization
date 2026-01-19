@@ -9,19 +9,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store/store';
 import { setSearchFormData } from '@/redux/slices/searchSlice';
 import dayjs from 'dayjs';
+import Link from 'next/link';
 
 interface HeroProps {
     car: any; // Type defined in parent usage or comprehensive type
+    settings: any;
 }
 
-export default function Hero({ car }: HeroProps) {
+export default function Hero({ car, settings }: HeroProps) {
     const [selectedImage, setSelectedImage] = useState<string>('');
     const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);
     const [pendingPkgId, setPendingPkgId] = useState<string | null>(null);
-
-    const { useSiteSettings } = useSiteSettingsQueries();
-    const { data: settings } = useSiteSettings();
 
     const dispatch = useDispatch();
     const { formData } = useSelector((state: RootState) => state.search);
@@ -490,16 +489,13 @@ export default function Hero({ car }: HeroProps) {
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-auto">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setShowPopup(true);
-                                                        }}
+                                                    <Link
+                                                        href={`tel:${settings?.contact?.phone || ''}`}
                                                         className="w-full py-2 bg-white text-blue-700 font-bold rounded-lg text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
                                                     >
                                                         <Phone size={14} />
                                                         On Request
-                                                    </button>
+                                                    </Link>
                                                 </div>
                                             </div>
                                         );
@@ -577,14 +573,14 @@ export default function Hero({ car }: HeroProps) {
                                         <span className="text-xl font-bold text-gray-900 block mb-1">7 Days</span>
                                         <span className="text-sm font-medium text-gray-600">For Long Booking</span>
                                     </div>
-                                    <button
-                                        onClick={() => setShowPopup(true)}
+                                    <Link
+                                        href={`tel:${settings?.contact?.phone || ''}`}
                                         className="cursor-pointer bg-blue-500 hover:bg-blue-600 !text-white text-sm font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors uppercase antialiased"
                                         style={{ color: '#ffffff' }}
                                     >
                                         <Phone size={16} fill="currentColor" className="text-white" />
                                         On Request
-                                    </button>
+                                    </Link>
                                 </div>
                             )}
 

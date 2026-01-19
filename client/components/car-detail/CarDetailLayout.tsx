@@ -13,10 +13,14 @@ import Specifications from './sections/Specifications';
 import Cta from './sections/Cta';
 import Faqs from './sections/Faqs';
 import RelatedCars from './sections/RelatedCars';
+import { useSiteSettingsQueries } from '@/lib/hooks/queries/useSiteSettingsQueries';
 
 function CarDetailLayout({ detail }: { detail: string }) {
     const { useGetCarBySlug } = useCarQueries();
     const { data: car, isLoading, error } = useGetCarBySlug(detail);
+    const {useSiteSettings} = useSiteSettingsQueries();
+    const { data: settings } = useSiteSettings();
+
 
     // For debugging/verification
     useEffect(() => {
@@ -34,9 +38,9 @@ function CarDetailLayout({ detail }: { detail: string }) {
             {isLoading && <Loader />}
             <div className='pt-28 relative'>
                 <TopBar carName={car?.name} />
-                {isLoading ? <HeroSkeleton /> : <Hero car={car} />}
+                {isLoading ? <HeroSkeleton /> : <Hero car={car} settings={settings} />}
                 {isLoading ? <SpecificationsSkeleton /> : <Specifications specifications={car?.specifications} isLoading={isLoading} />}
-                <Cta />
+                <Cta contactNumber={settings?.contact?.phone || ''}/>
                 <Faqs />
                 {isLoading ? <RelatedCarsSkeleton /> : (car && <RelatedCars currentCarId={car._id} type={car.type} />)}
             </div>

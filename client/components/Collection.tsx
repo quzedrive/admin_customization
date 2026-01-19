@@ -3,6 +3,7 @@ import { useCarQueries } from '@/lib/hooks/queries/useCarQueries';
 import CarCard from '@/modals/cards/CarCard';
 import { Loader2 } from 'lucide-react';
 import CarCardSkeleton from './skeletons/CarCardSkeleton';
+import Link from 'next/link';
 
 export default function Collection() {
     const { useGetPublicCars } = useCarQueries();
@@ -10,7 +11,7 @@ export default function Collection() {
 
     const renderSkeletons = () => (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-8">
-            {Array.from({ length: 6 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
                 <CarCardSkeleton key={i} />
             ))}
         </div>
@@ -40,8 +41,8 @@ export default function Collection() {
         );
     }
 
-    // Ensure we have an array to map
-    const carList = Array.isArray(cars) ? cars : [];
+    // Ensure we have an array to map (handle pagination response structure)
+    const carList = cars?.cars || (Array.isArray(cars) ? cars : []);
 
     return (
         <section id='tariffs' className="w-full flex flex-col justify-center items-center py-16 gap-12 bg-gray-50/50">
@@ -62,11 +63,18 @@ export default function Collection() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {carList.map((car: any) => (
+                        {carList.slice(0, 3).map((car: any) => (
                             <CarCard key={car._id} car={car} />
                         ))}
                     </div>
                 )}
+
+                <div className='w-full flex justify-center items-center'>
+                    <Link href='/our-fleet' className='bg-[#BFA06A] !text-white px-6 py-3 rounded-full hover:bg-[#a88b58] hover:scale-105 transition-all duration-300 cursor-pointer'>
+                        Load More
+                    </Link>
+                </div>
+
             </div>
         </section>
     );

@@ -8,7 +8,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import toast from "react-hot-toast";
 import { useCarQueries } from '@/lib/hooks/queries/useCarQueries';
 import DateTimePicker from '../date-and-time-picker/DateTimePicker';
-import { ChevronDown, Loader, Search } from 'lucide-react';
+import { ArrowDown, ChevronDown, Loader, Search } from 'lucide-react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store/store';
@@ -26,9 +26,15 @@ export default function HeroSearchForm() {
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>('bottom');
 
   // Fetch Cars
-  const { useGetPublicCars } = useCarQueries();
-  const { data: carsData } = useGetPublicCars();
-  const cars = Array.isArray(carsData) ? carsData : (carsData as any)?.cars || [];
+  const { useGetPublicCarsInfinite } = useCarQueries();
+  const {
+    data: carsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetPublicCarsInfinite();
+
+  const cars = carsData?.pages.flatMap((page: any) => page.cars || page) || [];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -134,7 +140,7 @@ export default function HeroSearchForm() {
   };
 
   return (
-    <section className='w-[95vw] md:w-full xl:w-full 2xl:w-[95%] 4xl:w-[80%] max-w-[1400px] mx-auto'>
+    <section className='w-full max-w-[1400px] mx-auto'>
       <form onSubmit={handleSubmit} noValidate className="relative mt-8 w-full font-inter">
         <div className="bg-white rounded-[20px] shadow-xl px-4 py-6 flex flex-col lg:flex-row items-stretch lg:items-center gap-4 lg:gap-0 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
 
@@ -218,23 +224,49 @@ export default function HeroSearchForm() {
 
             {isDropdownOpen && (
               <div
-                className={`absolute left-0 right-0 z-50 bg-white rounded-xl shadow-xl border border-gray-100 p-1 overflow-y-auto no-scrollbar ${dropdownPosition === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+                className={`absolute left-0 right-0 z-50 bg-white rounded-xl shadow-xl border border-gray-100 p-1 ${dropdownPosition === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
                   }`}
-                style={{ maxHeight: '15rem' }}
               >
-                {cars.length > 0 ? (
-                  cars.map((car: any) => (
-                    <div
-                      key={car._id}
-                      className="px-4 py-2.5 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
-                      onClick={() => handleCarSelect(car)}
-                    >
-                      <p className="text-sm font-semibold text-gray-800">{car.name}</p>
-                      <p className="text-xs text-gray-500 capitalize">{car.type} • {car.transmission}</p>
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-3 text-sm text-gray-500 text-center">No cars available</div>
+                <div
+                  className="overflow-y-auto no-scrollbar"
+                  style={{ maxHeight: '15rem' }}
+                  onScroll={(e) => {
+                    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+                    if (scrollHeight - scrollTop <= clientHeight + 50) {
+                      if (hasNextPage && !isFetchingNextPage) {
+                        fetchNextPage();
+                      }
+                    }
+                  }}
+                >
+                  {cars.length > 0 ? (
+                    <>
+                      {cars.map((car: any) => (
+                        <div
+                          key={car._id}
+                          className="px-4 py-2.5 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                          onClick={() => handleCarSelect(car)}
+                        >
+                          <p className="text-sm font-semibold text-gray-800">{car.name}</p>
+                          <p className="text-xs text-gray-500 capitalize">{car.type} • {car.transmission}</p>
+                        </div>
+                      ))}
+                      {isFetchingNextPage && (
+                        <div className="py-2 flex justify-center">
+                          <Loader className="animate-spin text-gray-500" size={16} />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="px-4 py-3 text-sm text-gray-500 text-center">No cars available</div>
+                  )}
+                </div>
+
+                {/* Visual Cue for More Content - Fixed at bottom of container */}
+                {cars.length > 3 && (
+                  <div className='absolute bottom-0 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm w-[90%] flex justify-center py-1 rounded-b-lg pointer-events-none'>
+                    <ChevronDown size={14} className="text-gray-400 animate-bounce" />
+                  </div>
                 )}
               </div>
             )}

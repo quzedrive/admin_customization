@@ -36,6 +36,12 @@ export const getAllCars = async (req: Request, res: Response) => {
 // @access  Public
 export const getPublicCars = async (req: Request, res: Response) => {
     try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+
+        const total = await Car.countDocuments({ status: status.active });
+
         const cars = await Car.find({ status: status.active })
             .populate('images')
             .populate('specifications')
@@ -44,8 +50,19 @@ export const getPublicCars = async (req: Request, res: Response) => {
                 match: { isActive: true }, // Only get active package mappings
                 populate: { path: 'package' } // Populate the actual Package details
             })
-            .sort({ createdAt: -1 });
-        res.status(200).json(cars);
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            cars,
+            pagination: {
+                total,
+                page,
+                pages: Math.ceil(total / limit),
+                limit
+            }
+        });
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }

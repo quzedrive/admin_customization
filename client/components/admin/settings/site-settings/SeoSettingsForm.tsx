@@ -19,6 +19,10 @@ export default function SeoSettingsForm({ data }: SeoSettingsFormProps) {
         ogImage: ''
     });
 
+    const [pendingFile, setPendingFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
+
     useEffect(() => {
         if (data) {
             setFormData({
@@ -33,24 +37,56 @@ export default function SeoSettingsForm({ data }: SeoSettingsFormProps) {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleFileUpload = async (file: File | null) => {
+    const handleFileChange = (file: File | null) => {
         if (!file) {
             handleChange('ogImage', '');
+            setPendingFile(null);
             return;
         }
 
-        try {
-            const url = await fileServices.uploadFile(file, 'settings');
-            handleChange('ogImage', url);
-        } catch (error) {
-            console.error('Upload failed', error);
-            toast.error('Failed to upload image');
-        }
+        // Store file for later upload
+        setPendingFile(file);
+
+        // Show local preview
+        const objectUrl = URL.createObjectURL(file);
+        handleChange('ogImage', objectUrl);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        updateMutation.mutate(formData);
+        setLoading(true);
+        setUploading(true);
+
+        const dataToSubmit = { ...formData };
+
+        try {
+            if (pendingFile) {
+                try {
+                    console.log('Uploading file:', pendingFile.name, 'Size:', pendingFile.size, 'Type:', pendingFile.type);
+                    const url = await fileServices.uploadFile(pendingFile, 'settings');
+                    console.log('Upload successful, URL:', url);
+                    dataToSubmit.ogImage = url;
+                } catch (error: any) {
+                    console.error('Failed to upload ogImage:', error);
+                    const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Unknown upload error';
+                    toast.error(`Upload failed: ${errorMessage}`);
+                    setLoading(false);
+                    setUploading(false);
+                    return;
+                }
+            }
+
+            updateMutation.mutate(dataToSubmit, {
+                onSettled: () => {
+                    setLoading(false);
+                    setUploading(false);
+                    setPendingFile(null);
+                }
+            });
+        } catch (error) {
+            setLoading(false);
+            setUploading(false);
+        }
     };
 
     return (
@@ -76,7 +112,7 @@ export default function SeoSettingsForm({ data }: SeoSettingsFormProps) {
                     <ImageField
                         label="Default OG Image (Social Share Image)"
                         value={formData.ogImage}
-                        onFileChange={(file) => handleFileUpload(file as File)} // Fixed: Correctly passes file
+                        onFileChange={(file) => handleFileChange(file as File)}
                         helperText="Recommended size: 1200x630px"
                     />
                 </div>
@@ -85,10 +121,10 @@ export default function SeoSettingsForm({ data }: SeoSettingsFormProps) {
             <div className="flex justify-end pt-4">
                 <button
                     type="submit"
-                    disabled={updateMutation.isPending}
-                    className="cursor-pointer px-8 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                    disabled={loading || uploading || updateMutation.isPending}
+                    className="cursor-pointer px-8 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    {uploading ? 'Uploading Image...' : (loading || updateMutation.isPending ? 'Saving...' : 'Save Changes')}
                 </button>
             </div>
         </form>

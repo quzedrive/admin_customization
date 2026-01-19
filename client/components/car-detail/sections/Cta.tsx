@@ -1,8 +1,9 @@
 import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import React from 'react'
 
-function Cta() {
+function Cta({ contactNumber }: { contactNumber: string }) {
     return (
         <div className='w-full '>
             <div className='max-w-7xl mx-auto w-full flex justify-center items-center gap-4 py-12 px-4'>
@@ -25,9 +26,12 @@ function Cta() {
                             7-day bookings are handled directly with the car owner
                             to ensure availability and smooth coordination
                         </p>
-                        <button className='px-5 py-3 bg-black text-white rounded-full flex items-center gap-2 hover:gap-3 cursor-pointer hover:scale-105 transition-all duration-300'>
+                        <Link 
+                        href={`tel:${contactNumber}`} 
+                        className='px-5 py-3 bg-black text-white rounded-full flex items-center gap-2 hover:gap-3 cursor-pointer hover:scale-105 transition-all duration-300'
+                        >
                             On Request <ArrowRight />
-                        </button>
+                        </Link>
                     </div>
 
                 </div>

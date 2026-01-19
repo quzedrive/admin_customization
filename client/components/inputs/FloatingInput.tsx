@@ -39,6 +39,10 @@ const colorClasses = {
 };
 
 const FloatingInput: React.FC<FloatingInputProps> = ({ label, className = '', color = 'teal', error, icon: Icon, type = 'text', ...props }) => {
+    // Generate a unique ID if one isn't provided to ensure label focusing works
+    const generatedId = React.useId();
+    const inputId = props.id || generatedId;
+
     // If error exists, force red color
     const usedColor = error ? 'red' : color;
     const activeColor = colorClasses[usedColor] || colorClasses['teal'];
@@ -49,13 +53,13 @@ const FloatingInput: React.FC<FloatingInputProps> = ({ label, className = '', co
             <div className="w-full">
                 <div className="relative">
                     <textarea
-                        {...(props as any)}
-                        id={props.id}
+                        {...props}
+                        id={inputId}
                         className={`block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border-2 ${error ? 'border-red-500' : 'border-gray-300'} appearance-none focus:outline-none focus:ring-0 peer ${activeColor.input} ${className} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 min-h-[100px]`}
                         placeholder=" "
                     />
                     <label
-                        htmlFor={props.id}
+                        htmlFor={inputId}
                         className={`absolute text-sm cursor-text ${error ? 'text-red-500' : 'text-gray-500'} duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-3 peer-placeholder-shown:top-0 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1 ${activeColor.label}`}
                     >
                         {label}
@@ -72,7 +76,7 @@ const FloatingInput: React.FC<FloatingInputProps> = ({ label, className = '', co
                 <input
                     {...props}
                     type={type}
-                    id={props.id}
+                    id={inputId}
                     className={`block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border-2 ${error ? 'border-red-500' : 'border-gray-300'} appearance-none focus:outline-none focus:ring-0 peer ${activeColor.input} ${className} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 ${Icon ? 'pl-10' : ''}`}
                     placeholder=" "
                 />
@@ -82,7 +86,7 @@ const FloatingInput: React.FC<FloatingInputProps> = ({ label, className = '', co
                     </div>
                 )}
                 <label
-                    htmlFor={props.id}
+                    htmlFor={inputId}
                     className={`absolute text-sm cursor-text ${error ? 'text-red-500' : 'text-gray-500'} duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 ${Icon ? 'left-8' : 'left-1'} ${activeColor.label}`}
                 >
                     {label}

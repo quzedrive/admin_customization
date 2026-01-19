@@ -8,7 +8,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className='realtive w-full flex flex-col items-center justify-start xl:justify-center lg:h-screen p-4 pt-20 lg:p-16'
+      className='relative w-full flex flex-col items-center justify-center lg:h-screen min-h-screen p-4 pt-20 lg:p-16'
       style={{ backgroundImage: "url('/hero.webp')", backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <div className='pt-12 md:pt-28'>

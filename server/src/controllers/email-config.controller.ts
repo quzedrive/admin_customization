@@ -10,13 +10,12 @@ export const getEmailConfig = async (req: Request, res: Response) => {
         const config = await EmailConfig.getSingleton();
         const configObj = config.toObject();
 
-        // Reveal only prefix of password
-        if (configObj.pass) {
+        if (configObj.apiSecret) {
             try {
-                const decrypted = decrypt(configObj.pass);
-                configObj.pass = maskSecret(decrypted);
+                const decrypted = decrypt(configObj.apiSecret);
+                configObj.apiSecret = maskSecret(decrypted);
             } catch (e) {
-                configObj.pass = ''; // Clear if decryption fails
+                configObj.apiSecret = '';
             }
         }
 
@@ -32,34 +31,28 @@ export const getEmailConfig = async (req: Request, res: Response) => {
 export const updateEmailConfig = async (req: Request, res: Response) => {
     try {
         const config = await EmailConfig.getSingleton();
-        const { host, port, user, pass, secure, fromEmail, fromName } = req.body;
+        const { apiKey, apiSecret, fromEmail, fromName } = req.body;
 
-        config.host = host ?? config.host;
-        config.port = port ?? config.port;
-        config.user = user ?? config.user;
-        config.secure = secure ?? config.secure;
+        config.apiKey = apiKey ?? config.apiKey;
         config.fromEmail = fromEmail ?? config.fromEmail;
         config.fromName = fromName ?? config.fromName;
 
-        // Handle Password Update
-        if (pass) {
-            // Check if pass is the masked version (starts with 5 chars + 10 asterisks)
+        // Handle API Secret Update
+        if (apiSecret) {
             let isMasked = false;
-            if (config.pass) {
+            if (config.apiSecret) {
                 try {
-                    const decryptedCurrent = decrypt(config.pass);
+                    const decryptedCurrent = decrypt(config.apiSecret);
                     const maskedCurrent = maskSecret(decryptedCurrent);
-                    if (pass === maskedCurrent) {
+                    if (apiSecret === maskedCurrent) {
                         isMasked = true;
                     }
                 } catch (e) {
                     // ignore decryption error
                 }
             }
-
-            // Only update if it's NOT the masked version (meaning user typed a new password)
             if (!isMasked) {
-                config.pass = encrypt(pass);
+                config.apiSecret = encrypt(apiSecret);
             }
         }
 
@@ -67,9 +60,11 @@ export const updateEmailConfig = async (req: Request, res: Response) => {
 
         // Return masked version
         const configObj = config.toObject();
-        if (configObj.pass) {
-            const decrypted = decrypt(configObj.pass);
-            configObj.pass = maskSecret(decrypted);
+        if (configObj.apiSecret) {
+            try {
+                const decrypted = decrypt(configObj.apiSecret);
+                configObj.apiSecret = maskSecret(decrypted);
+            } catch (e) { configObj.apiSecret = ''; }
         }
 
         res.status(200).json(configObj);

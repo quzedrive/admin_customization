@@ -10,8 +10,8 @@ export const carServices = {
     },
 
     // Public: Get all public cars
-    getPublicCars: async () => {
-        const response = await client.get(`${BASE_URL}/public`);
+    getPublicCars: async (page = 1, limit = 10) => {
+        const response = await client.get(`${BASE_URL}/public?page=${page}&limit=${limit}`);
         return response.data;
     },
 

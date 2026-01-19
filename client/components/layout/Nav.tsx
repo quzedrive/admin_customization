@@ -74,7 +74,6 @@ export default function Nav({
           ))}
         </div>
 
-        <Link href="#contact">
           <button
             onClick={() => {
               close(); // close the menu
@@ -91,7 +90,6 @@ export default function Nav({
               className="w-12 h-auto ml-2 inline-block"
             />
           </button>
-        </Link>
       </div>
     </div>
   );

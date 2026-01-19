@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer className="bg-black text-white px-4 md:px-20 py-16 relative">
       {/* Scroll to Top */}
-      <div className=" absolute -top-6 left-1/2 transform -translate-x-1/2 border-black border-6 rounded-full">
+      <div className="hidden md:block absolute -top-6 left-1/2 transform -translate-x-1/2 border-black border-6 rounded-full">
         <a
           href="#"
           className="bg-white text-black w-12 h-12 rounded-full flex items-center justify-center shadow-lg"

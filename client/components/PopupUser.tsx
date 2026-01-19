@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { UserForm, UserFormError } from '@/types/user';
 import { useOrderMutations } from '@/lib/hooks/mutations/useOrderMutations';
-import SuccesMsg from '../app/thank-you/page';
+// import SuccesMsg from '../app/thank-you/page'; // Commented out to avoid build errors if path is wrong, logic handled inline
 
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
@@ -21,7 +21,7 @@ type ContactModalProps = {
   setLeadData?: (data: Partial<UserForm>) => void;
 };
 
-export default function ContactModal({ onClose, leadData, setLeadData }: ContactModalProps) {
+export default function PopupUser({ onClose, leadData, setLeadData }: ContactModalProps) {
   const router = useRouter();
   const { useCreateOrder } = useOrderMutations();
   const createOrderMutation = useCreateOrder();
@@ -41,7 +41,7 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
   const [errors, setErrors] = useState<Partial<UserFormError>>({});
   const [mathProblem, setMathProblem] = useState<{ a: number, b: number, answer: number } | null>(null);
   const [securityAnswer, setSecurityAnswer] = useState<string>('');
-  const [showMsg, setShowMsg] = useState(false); // Add this line
+  const [showMsg, setShowMsg] = useState(false);
   const TripStartRef = useRef<any>(null);
   const TripEndRef = useRef<any>(null);
 
@@ -97,12 +97,9 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
           }
           setSecurityAnswer('');
           setShowMsg(true); // Show success message
-          // onClose(); // Don't close immediately if showing message
-          // router.push('/thank-you'); 
         },
         onError: (error) => {
           console.error('Submission failed:', error);
-          // Toast is already handled in the mutation hook
         }
       });
     }
@@ -189,13 +186,11 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
       onClick={handleOverlayClick}
       className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex p-1 flex-col gap-3 items-center justify-center"
     >
-      <div className="w-full flex flex-col md:flex-row max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl bg-white rounded-[20px] overflow-hidden shadow-2xl mx-auto ">
-        {/* ... rest of the modal ... */}
-
+      <div className="w-full flex flex-col md:flex-row max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-white rounded-[20px] overflow-hidden shadow-2xl mx-auto ">
         {/* Left Side */}
         <div
-          className="hidden md:flex relative showBg w-full md:w-1/2 bg-[#0c0c27] lg:border-[16px] lg:rounded-l-4xl text-white p-4 md:p-8  md:flex-col justify-between"
-          style={{ backgroundImage: "url('/car.webp')", backgroundSize: 'cover', backgroundPosition: 'center' }}
+          className="hidden md:flex relative showBg w-full md:w-1/2 bg-[#0c0c27] lg:border-[16px] lg:rounded-4xl text-white p-4 md:p-8  md:flex-col justify-between"
+          style={{ backgroundImage: "url('/pop-up-bg-1.webp')", backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
           {/* mobile */}
           <button
@@ -208,17 +203,18 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
 
           </button>
           <div className='py-2 md:py-4'>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4 text-black capitalize">
-              Every good drive begins <span className='text-[#F16A10]'>with a plan</span>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4 text-white capitalize">
+              Every good drive begins <span className=''>with a plan</span>
             </h2>
-            <p className="hidden md:block text-base xl:text-lg 3xl:text-xl tracking-wide text-gray-900 mr-24">
+            <p className="hidden md:block text-base xl:text-lg 3xl:text-xl tracking-wide text-white mr-24">
               Share a few details we’ll take care of the rest. The road is waiting
             </p>
           </div>
         </div>
 
         {/* Right Side */}
-        <div className="w-full h-full md:w-1/2 py-4 px-4 sm:px-6 md:p-6 relative overflow-y-auto max-h-[90vh] flex items-center">
+
+        <div className="w-full h-full md:w-1/2 py-4 px-4 sm:px-6 md:p-6 relative overflow-y-auto max-h-[90vh] flex flex-col">
           <button
             onClick={onClose}
             className=" absolute top-4 right-4 !text-3xl font-bold text-gray-600  hover:!text-red-600 cursor-pointer"
@@ -231,7 +227,7 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
 
           </button>
 
-          <form onSubmit={handleSubmit} noValidate className="flex w-full mx-5 lg:mx-0 flex-col space-y-6 xl:pt-4 text-black">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col space-y-6 pt-12 md:pt-0 xl:pt-4 text-black my-auto">
 
             {/* Row 1: Name & Phone */}
             <div className="flex flex-col xl:flex-row gap-4 mt-3">
@@ -305,13 +301,13 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
             </div>
 
             {/* Row 4: Trip Start & End */}
-            <div className="flex flex-col w-full xl:flex-row gap-3 mt-1 md:mt-0 lg:gap-6">
+            <div className="flex flex-col md:flex-row gap-4 w-full">
               {/* Trip Start */}
-              {/* Mobile: Flatpickr */}
-              <div className='w-full' >
-                <div className="w-full lg:border-b border-gray-300 mb-8 md:mb-0">
-                  <div className="w-full lg:hidden relative">
-                    <label htmlFor='tripStartMobPopup' className="absolute left-0 top-2 border-b border-neutral-300 pb-2 md:pb-0 w-full">
+              <div className='flex-1 w-full'>
+                <div className="w-full lg:border-b border-gray-300 relative">
+                  {/* Mobile: Flatpickr */}
+                  <div className="w-full lg:hidden relative py-2 border-b border-gray-300">
+                    <label htmlFor='tripStartMobPopup' className="textarea-md block w-full text-gray-900">
                       {formData.tripStart
                         ? (() => {
                           const pad = (n: number) => String(n).padStart(2, '0');
@@ -332,7 +328,7 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
                     <input
                       id='tripStartMobPopup'
                       type="datetime-local"
-                      className="w-full text-base py-2 absolute opacity-0 pointer-events-auto"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       value={formData.tripStart
                         ? (() => {
                           const pad = (n: number) => String(n).padStart(2, '0');
@@ -396,8 +392,8 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
                     />
                   </div>
                 </div>
-                {errors.tripStart && <span className="text-red-300 text-sm hidden md:block">{errors.tripStart}</span>}
-                {/* After your <input type="datetime-local" ... /> for Trip Start */}
+                {errors.tripStart && <span className="text-red-300 text-sm hidden md:block mt-1">{errors.tripStart}</span>}
+                {/* Mobile Error */}
                 {formData.tripStart && new Date(formData.tripStart) < new Date() && (
                   <span className="text-red-400 text-xs pt-1 block md:hidden">
                     Date and time must be greater than or equal to {(() => {
@@ -412,12 +408,13 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
                   </span>
                 )}
               </div>
+
               {/* Trip End */}
-              <div className='w-full' >
-                <div className="w-full lg:border-b border-gray-300">
+              <div className='flex-1 w-full'>
+                <div className="w-full lg:border-b border-gray-300 relative">
                   {/* Mobile: datetime-local input styled like Trip Start */}
-                  <div className="flex flex-col lg:hidden relative">
-                    <label htmlFor='tripEndMobPopup' className="absolute left-0 top-2 border-b border-neutral-300 w-full pb-2 md:pb-0">
+                  <div className="w-full lg:hidden relative py-2 border-b border-gray-300">
+                    <label htmlFor='tripEndMobPopup' className="textarea-md block w-full text-gray-900">
                       {formData.tripEnd
                         ? (() => {
                           const pad = (n: number) => String(n).padStart(2, '0');
@@ -432,13 +429,13 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
                             </span>
                           );
                         })()
-                        : <span className='text-gray-400 pb-2 md:pb-0'>Select trip end date and time</span>
+                        : <span className='text-gray-400'>Select trip end date and time</span>
                       }
                     </label>
                     <input
                       id='tripEndMobPopup'
                       type="datetime-local"
-                      className="w-full border-b border-neutral-300 bg-transparent text-base py-1  absolute opacity-0 pointer-events-auto"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       value={formData.tripEnd
                         ? (() => {
                           const pad = (n: number) => String(n).padStart(2, '0');
@@ -508,7 +505,7 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
                     />
                   </div>
                 </div>
-                {errors.tripEnd && <span className="text-red-300 text-sm hidden md:block">{errors.tripEnd}</span>}
+                {errors.tripEnd && <span className="text-red-300 text-sm hidden md:block mt-1">{errors.tripEnd}</span>}
                 {formData.tripEnd && (() => {
                   const pad = (n: number) => String(n).padStart(2, '0');
                   let minDate = formData.tripStart
@@ -521,7 +518,7 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
                     const ampm = hours >= 12 ? 'PM' : 'AM';
                     hours = hours % 12 || 12;
                     return (
-                      <span className="text-red-400 text-xs pt-9 -mb-10 block md:hidden">
+                      <span className="text-red-400 text-xs pt-1 block md:hidden">
                         Date and time must be greater than or equal to {`${pad(minDate.getDate())}-${pad(minDate.getMonth() + 1)}-${minDate.getFullYear()} ${hours}:${minutes} ${ampm}`}
                       </span>
                     );
@@ -556,26 +553,34 @@ export default function ContactModal({ onClose, leadData, setLeadData }: Contact
             {errors.securityAnswer && <span className="text-red-300 text-sm">{errors.securityAnswer}</span>}
 
             {/* Row 7: Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-fit flex items-center gap-2 px-6 py-3 xl:px-8 rounded-full font-semibold transition-all
-                ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r cursor-pointer from-blue-500 to-blue-700 !text-white hover:from-blue-600'}
-              `}
-            >
-              {loading ? (
-                <>
-                  <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Booking...
-                </>
-              ) : (
-                'BOOK NOW'
-              )}
-            </button>
+            <div className="w-full flex justify-center pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full text-white cursor-pointer flex justify-center items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all uppercase tracking-wider text-sm
+                  ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}
+                `}
+              >
+                {loading ? (
+                  <>
+                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Booking...
+                  </>
+                ) : (
+                  <>
+                    Let's Go
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12H19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M12 5L19 12L12 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
           </form>
 
         </div>
-      </div >
-    </div >
+      </div>
+    </div>
   );
 }
