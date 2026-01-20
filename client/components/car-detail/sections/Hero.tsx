@@ -531,7 +531,7 @@ export default function Hero({ car, settings }: HeroProps) {
                                                 </div>
                                             )}
                                             {/* Header: Name + Badge */}
-                                            <div className="w-full flex items-center gap-2 mb-2">
+                                            <div className="w-full flex flex-wrap items-center gap-2 mb-2">
                                                 <span className={`text-base font-bold ${isPkgSelected ? 'text-blue-500' : 'text-gray-900'}`}>
                                                     {pkg.package?.time}
                                                 </span>
@@ -544,13 +544,13 @@ export default function Hero({ car, settings }: HeroProps) {
                                             </div>
 
                                             {/* Price Section */}
-                                            <div className="flex items-center gap-3 mt-auto">
+                                            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0 mt-auto">
                                                 <span className={`text-2xl font-bold ${isPkgSelected ? 'text-blue-500' : 'text-gray-950'}`}>
                                                     ₹{(hasDiscount ? pkg.discountPrice : pkg.price)?.toLocaleString()}
                                                 </span>
 
                                                 {hasDiscount && (
-                                                    <span className="text-sm font-bold text-red-400 line-through decoration-2">
+                                                    <span className="text-xs sm:text-sm font-bold text-red-400 line-through decoration-2 opacity-80">
                                                         ₹{pkg.price?.toLocaleString()}
                                                     </span>
                                                 )}
