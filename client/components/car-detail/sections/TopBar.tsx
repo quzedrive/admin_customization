@@ -87,39 +87,71 @@ export default function TopBar({ carName }: { carName?: string }) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [prevScrollPos]);
 
+    // Mobile Expand State
+    const [isMobileExpanded, setIsMobileExpanded] = React.useState(false);
+
     return (
         <div
-            className="sticky z-40 bg-white border-b border-gray-100 shadow-sm w-full py-4 px-[5.4%]"
-            style={{
-                top: isHeaderVisible ? '100px' : '0px', // Adjust overlapping height (Header is ~104px)
-                transition: 'top 0.3s ease-in-out'
-            }}
+            className={`sticky z-40 bg-white border-b border-gray-100 shadow-sm w-full py-2 md:py-4 px-[5.4%] transition-all duration-300 ease-in-out ${isHeaderVisible ? 'top-[86px] md:top-[104px]' : 'top-0'}`}
         >
-            <div className="flex items-center justify-center gap-4 md:gap-8 max-w-[1920px] mx-auto">
+            <div className="max-w-[1920px] mx-auto relative">
 
-                {/* Search Criteria Group */}
-                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 bg-white">
+                {/* Mobile Collapsed View */}
+                <div
+                    className={`md:hidden flex items-center justify-between bg-gray-50 border border-gray-100 px-4 py-3 rounded-xl cursor-pointer transition-all ${isMobileExpanded ? 'hidden' : 'flex'}`}
+                    onClick={() => setIsMobileExpanded(true)}
+                >
+                    <div className="flex flex-col gap-1">
+                        <span className="text-blue-500 font-bold text-sm">
+                            {formData.carName || carName || "Select Car"}
+                        </span>
+                        <span className="text-[10px] text-gray-600 font-medium">
+                            {startDate ? dayjs(startDate).format('DD-MM-YYYY') : 'DD-MM-YYYY'} & {startDate ? dayjs(startDate).format('hh.mm A') : '--.--'}
+                            <span className="mx-1 text-gray-300">|</span>
+                            {endDate ? dayjs(endDate).format('DD-MM-YYYY') : 'DD-MM-YYYY'} & {endDate ? dayjs(endDate).format('hh.mm A') : '--.--'}
+                        </span>
+                    </div>
+                    <div className="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm border border-gray-200">
+                        <ChevronDown size={16} className="text-blue-500" />
+                    </div>
+                </div>
+
+                {/* Expanded Search Criteria Group (Mobile Overlay + Desktop Inline) */}
+                <div className={`
+                    ${isMobileExpanded ? 'absolute top-0 left-0 w-full bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col gap-4 z-50' : 'hidden'}
+                    md:flex md:flex-row md:items-center md:justify-center md:gap-6 md:bg-white md:static md:w-full md:p-0 md:shadow-none md:border-none
+                `}>
+
+                    {/* Mobile Header (Close Button) */}
+                    <div className="flex md:hidden justify-between items-center mb-1">
+                        <span className="text-xs font-bold text-gray-400">MODIFY SEARCH</span>
+                        <button onClick={(e) => { e.stopPropagation(); setIsMobileExpanded(false); }} className="p-1 bg-gray-50 rounded-full">
+                            <ChevronDown size={18} className="rotate-180 text-gray-500" />
+                        </button>
+                    </div>
 
                     {/* Trip Starts */}
-                    <DateTimePicker
-                        label="TRIP STARTS"
-                        value={startDate}
-                        onChange={(date) => handleDateChange('tripStart', date)}
-                        placeholder="Select Date"
-                    />
+                    <div className="w-full md:w-auto">
+                        <DateTimePicker
+                            label="TRIP STARTS"
+                            value={startDate}
+                            onChange={(date) => handleDateChange('tripStart', date)}
+                            placeholder="Select Date"
+                        />
+                    </div>
 
                     {/* Trip Ends */}
-                    <DateTimePicker
-                        label="TRIP ENDS"
-                        value={endDate}
-                        onChange={(date) => handleDateChange('tripEnd', date)}
-                        placeholder="Select Date"
-                    />
-
-
+                    <div className="w-full md:w-auto">
+                        <DateTimePicker
+                            label="TRIP ENDS"
+                            value={endDate}
+                            onChange={(date) => handleDateChange('tripEnd', date)}
+                            placeholder="Select Date"
+                        />
+                    </div>
 
                     {/* Car Type Dropdown */}
-                    <div className="flex flex-col bg-gray-50 px-4 py-2 rounded-lg border border-gray-100 w-fit cursor-pointer relative group" ref={dropdownRef}>
+                    <div className="w-full md:w-auto flex flex-col bg-gray-50 px-4 py-2 rounded-lg border border-gray-100 cursor-pointer relative group" ref={dropdownRef}>
                         <div
                             className="flex flex-col gap-1 w-full"
                             onClick={() => {
@@ -133,16 +165,16 @@ export default function TopBar({ carName }: { carName?: string }) {
                             }}
                         >
                             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">CAR TYPE</span>
-                            <div className="flex items-center justify-between gap-4 text-sm font-bold text-[#3B82F6]">
-                                <span className="whitespace-nowrap">{formData.carName || carName || "Select Car"}</span>
-                                <ChevronDown size={16} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            <div className="flex items-center justify-between gap-4 text-sm font-bold text-[#3B82F6] w-full">
+                                <span className="whitespace-nowrap flex-1">{formData.carName || carName || "Select Car"}</span>
+                                <ChevronDown size={16} className={`text-gray-400 shrink-0 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </div>
 
                         {/* Dropdown Menu */}
                         {isDropdownOpen && (
                             <div
-                                className={`absolute left-0 z-50 min-w-full w-max bg-white rounded-xl shadow-xl border border-gray-100 p-1 ${dropdownPosition === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}`}
+                                className={`absolute left-0 z-50 min-w-full w-full md:w-max bg-white rounded-xl shadow-xl border border-gray-100 p-1 ${dropdownPosition === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}`}
                             >
                                 <div
                                     className="overflow-y-auto no-scrollbar"
@@ -192,8 +224,9 @@ export default function TopBar({ carName }: { carName?: string }) {
                     {/* Modify Search Button */}
                     <Link
                         href={`/${formData.carSlug || '#'}`}
-                        className="flex items-center gap-2 bg-[#1A1A1A] hover:bg-black !text-white px-8 py-3.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-colors ml-4 antialiased"
+                        className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#1A1A1A] hover:bg-black !text-white px-6 py-3.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-colors md:ml-4 antialiased whitespace-nowrap"
                         style={{ color: '#ffffff' }}
+                        onClick={() => setIsMobileExpanded(false)}
                     >
                         MODIFY SEARCH
                         <ArrowRight size={14} className="text-white" />

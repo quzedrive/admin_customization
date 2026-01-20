@@ -287,13 +287,13 @@ export default function Hero({ car, settings }: HeroProps) {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 ">
                 {/* ... Left Column ... */}
                 {/* Left Column: Image Gallery */}
-                <div className="flex flex-col-reverse md:flex-row gap-4 h-fit">
+                <div className="flex flex-col md:flex-row gap-4 w-full">
                     {/* Thumbnails - Left Side (Desktop) / Bottom (Mobile) */}
                     {car.images?.length > 1 && (
-                        <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto md:max-h-[500px] no-scrollbar md:w-24 flex-shrink-0">
+                        <div className="flex order-2 md:order-none md:flex-col gap-4 overflow-x-auto md:overflow-y-auto md:max-h-[500px] no-scrollbar md:w-24 flex-shrink-0">
                             {car.images.map((img: any, idx: number) => {
                                 const url = getImageUrl(img);
                                 const isSelected = url === selectedImage;
@@ -317,7 +317,7 @@ export default function Hero({ car, settings }: HeroProps) {
                     )}
 
                     {/* Main Image */}
-                    <div className="relative w-full h-[300px] md:h-[500px] flex-1 overflow-hidden rounded-2xl bg-gray-50 border border-gray-100">
+                    <div className="relative order-1 md:order-none w-full md:w-auto md:flex-1 h-[300px] md:h-[500px] shrink-0 md:shrink-0 overflow-hidden rounded-2xl bg-gray-50 border border-gray-100">
                         {selectedImage ? (
                             <Image
                                 src={selectedImage}
