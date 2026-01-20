@@ -14,9 +14,9 @@ export default function Footer() {
       </div>
 
       {/* Footer Content Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {/* Logo + About */}
-        <div className='max-w-120 col-span-2 py-4 md:px-16'>
+        <div className='max-w-120 col-span-1 sm:col-span-2 md:col-span-2 pb-4 md:px-16'>
           <Image
             src="/logo (2).png"
             alt="Quzeedrive Logo"
@@ -30,7 +30,7 @@ export default function Footer() {
         </div>
 
         {/* Quick Links */}
-        <div>
+        <div className='col-span-1 sm:col-span-1 md:col-span-1 pt-0 md:pt-4'>
           <h4 className="font-semibold mb-4">Quick Links</h4>
           <ul className="space-y-2 text-sm text-gray-300">
             <li><a href="#">Home</a></li>
@@ -43,7 +43,7 @@ export default function Footer() {
         </div>
  
         {/* Company Info  */}
-        <div>
+        <div className='col-span-1 sm:col-span-1 md:col-span-1 pt-0 md:pt-4'>
           <h4 className="font-semibold mb-4">Company</h4>
           <ul className="space-y-2 text-sm text-gray-300">
             <li><a href='tel:+9363763309'>📞 +91 93637 63309 - Host</a></li>
