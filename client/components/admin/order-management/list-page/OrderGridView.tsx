@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Phone, Car, MapPin, Clock, UserCheck, Pencil, Trash2, SquareX } from 'lucide-react';
+import { Phone, Car, MapPin, Clock, UserCheck, Pencil, Trash2, SquareX, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS } from '@/components/admin/order-management/constants';
 
@@ -11,9 +11,10 @@ interface OrderGridViewProps {
     viewHostDetails: (details: any) => void;
     confirmDelete: (id: string) => void;
     cancelOrder: (id: string) => void;
+    onUpdatePaymentStatus: (id: string, currentStatus: number) => void;
 }
 
-export default function OrderGridView({ orders, formatDate, viewHostDetails, confirmDelete, cancelOrder }: OrderGridViewProps) {
+export default function OrderGridView({ orders, formatDate, viewHostDetails, confirmDelete, cancelOrder, onUpdatePaymentStatus }: OrderGridViewProps) {
     return (
         <motion.div
             key="grid"
@@ -86,6 +87,13 @@ export default function OrderGridView({ orders, formatDate, viewHostDetails, con
                                                 <UserCheck size={16} />
                                             </button>
                                         )}
+                                        <button
+                                            onClick={() => onUpdatePaymentStatus(order._id, order.paymentStatus)}
+                                            className="p-1.5 cursor-pointer text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-100"
+                                            title="Update Payment Status"
+                                        >
+                                            <CreditCard size={16} />
+                                        </button>
                                         <Link
                                             href={`/admin/order-management/edit-page/${order.bookingId || order._id}`}
                                             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

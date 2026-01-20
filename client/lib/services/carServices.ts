@@ -50,4 +50,15 @@ export const carServices = {
         const response = await client.patch(`${BASE_URL}/${id}/status`, { status });
         return response.data;
     },
+
+    toggleFeatured: async ({ id, status }: { id: string; status?: number }) => {
+        const response = await client.patch(`${BASE_URL}/${id}/featured`, { status });
+        return response.data;
+    },
+
+    // Public: Get featured cars
+    getFeaturedCars: async () => {
+        const response = await client.get(`${BASE_URL}/public/featured`);
+        return response.data;
+    },
 };

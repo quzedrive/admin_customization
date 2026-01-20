@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCarQueries } from '@/lib/hooks/queries/useCarQueries';
 import { useCarMutations } from '@/lib/hooks/mutations/useCarMutations';
-import { Plus, Search, LayoutGrid, LayoutList, Loader2, MoreVertical, Pencil, Trash2, CarFront, Users, Fuel, Gauge } from 'lucide-react';
+import { Plus, Search, LayoutGrid, LayoutList, Loader2, MoreVertical, Pencil, Trash2, CarFront, Users, Fuel, Gauge, Star } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ModernDropdown from '@/components/inputs/ModernDropDown';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
@@ -25,7 +25,7 @@ export default function CarListPage() {
 
   const { useGetAllCars } = useCarQueries();
   const { data: cars, isLoading } = useGetAllCars();
-  const { deleteCarMutation, toggleStatusMutation } = useCarMutations();
+  const { deleteCarMutation, toggleStatusMutation, toggleFeaturedMutation } = useCarMutations();
 
   // Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -76,6 +76,12 @@ export default function CarListPage() {
     toggleStatusMutation.mutate({ id, status: newStatus });
   };
 
+  const handleFeaturedToggle = (id: string, currentFeatured: number) => {
+    // Toggle between 1 (Active) and 2 (Inactive)
+    const newFeatured = currentFeatured === 1 ? 2 : 1;
+    toggleFeaturedMutation.mutate({ id, status: newFeatured });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -109,7 +115,7 @@ export default function CarListPage() {
             />
           </div>
           <div className="grid grid-cols-2 sm:flex gap-3">
-            <div className="w-full sm:w-36">
+            <div className="w-full col-span-2 sm:col-span-1 sm:w-36">
               <ModernDropdown
                 options={[{ value: '', label: 'All Types' }, ...CAR_TYPES]}
                 value={typeFilter}
@@ -117,7 +123,7 @@ export default function CarListPage() {
                 placeholder="Type"
               />
             </div>
-            <div className="w-full sm:w-44">
+            <div className="w-full col-span-2 sm:col-span-1 sm:w-44">
               <ModernDropdown
                 options={[{ value: '', label: 'All Transmissions' }, ...TRANSMISSION_TYPES]}
                 value={transmissionFilter}
@@ -145,8 +151,8 @@ export default function CarListPage() {
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
             {/* Pagination Size Control */}
             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
-              <span className="whitespace-nowrap">Show</span>
-              <div className="w-24 sm:w-40">
+              <span className="whitespace-nowrap hidden sm:block">Show</span>
+              <div className="w-40">
                 <ModernDropdown
                   options={PAGINATION_SIZES}
                   value={itemsPerPage.toString()}
@@ -212,6 +218,14 @@ export default function CarListPage() {
                     <div className="absolute top-3 right-3 bg-white px-3 py-1.5 rounded-full text-sm font-bold text-gray-900 shadow-sm">
                       ${car.hourlyCharge}/hr
                     </div>
+                    <button
+                      onClick={() => handleFeaturedToggle(car._id, car.featured)}
+                      className={`absolute cursor-pointer top-3 left-3 p-2 rounded-full shadow-sm transition-colors ${car.featured === 1 ? 'bg-yellow-100 text-yellow-600' : 'bg-white text-gray-400 hover:text-yellow-500'}`}
+                      title={car.featured === 1 ? "Remove from Featured" : "Add to Featured"}
+                      disabled={toggleFeaturedMutation.isPending && toggleFeaturedMutation.variables?.id === car._id}
+                    >
+                      <Star size={16} fill={car.featured === 1 ? "currentColor" : "none"} />
+                    </button>
                   </div>
 
                   <div className="p-5 flex-1 flex flex-col">
@@ -283,6 +297,7 @@ export default function CarListPage() {
                     <tr>
                       <th className="px-6 py-4">Car Info</th>
                       <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Featured</th>
                       <th className="px-6 py-4">Pricing</th>
                       <th className="px-6 py-4">Packages</th>
                       <th className="px-6 py-4 text-right">Actions</th>
@@ -311,6 +326,17 @@ export default function CarListPage() {
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${car.status === 1 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                             {car.status === 1 ? 'Active' : 'Inactive'}
                           </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => handleFeaturedToggle(car._id, car.featured)}
+                            disabled={toggleFeaturedMutation.isPending && toggleFeaturedMutation.variables?.id === car._id}
+                            className={`p-1.5 cursor-pointer rounded-lg transition-colors ${car.featured === 1 ? 'text-yellow-500 bg-yellow-50' : 'text-gray-300 hover:text-yellow-500'
+                              }`}
+                            title={car.featured === 1 ? "Remove from Featured" : "Add to Featured"}
+                          >
+                            <Star size={18} fill={car.featured === 1 ? "currentColor" : "none"} />
+                          </button>
                         </td>
                         <td className="px-6 py-4">
                           <div className="font-medium text-gray-900">${car.hourlyCharge}/hr</div>

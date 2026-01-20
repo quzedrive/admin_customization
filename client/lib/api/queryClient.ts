@@ -24,9 +24,10 @@ export const queryKeys = {
     appearanceSettings: 'appearance-settings',
     systemTemplates: 'system-templates',
     cars: {
-        adminList: 'adminCarList',
-        publicList: 'publicCarList',
-        detail: 'carDetail',
+        adminList: 'cars-admin-list',
+        publicList: 'cars-public-list',
+        detail: 'car-detail',
+        featured: 'cars-featured',
     },
     cancellationReasons: {
         list: 'cancellationReasonList',

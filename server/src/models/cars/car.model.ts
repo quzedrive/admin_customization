@@ -33,6 +33,7 @@ export interface ICar extends Document {
         };
     };
     status: number;
+    featured: number;
 }
 
 const CarSchema = new Schema(
@@ -70,6 +71,7 @@ const CarSchema = new Schema(
             }
         },
         status: { type: Number, default: status.active },
+        featured: { type: Number, default: 2 }, // Default to Inactive (2) based on featuredStatus
     },
     { collection: 'cars', timestamps: true }
 );

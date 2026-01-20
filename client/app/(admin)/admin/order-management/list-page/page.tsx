@@ -10,6 +10,7 @@ import ModernDropdown from '@/components/inputs/ModernDropDown';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import HostDetailsModal from '@/components/admin/order-management/list-page/HostDetailsModal';
 import CancelOrderModal from '@/components/admin/order-management/list-page/CancelOrderModal';
+import UpdatePaymentStatusModal from '@/components/admin/order-management/list-page/UpdatePaymentStatusModal';
 import OrderGridView from '@/components/admin/order-management/list-page/OrderGridView';
 import OrderTableView from '@/components/admin/order-management/list-page/OrderTableView';
 import StatusStatsCards from '@/components/admin/order-management/list-page/StatusStatsCards';
@@ -52,7 +53,9 @@ export default function OrderListPage() {
   // Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [currentPaymentStatus, setCurrentPaymentStatus] = useState<number>(0);
 
   // Host Details Modal State
   const [hostModalOpen, setHostModalOpen] = useState(false);
@@ -104,6 +107,28 @@ export default function OrderListPage() {
       }, {
         onSuccess: () => {
           setCancelModalOpen(false);
+          setSelectedOrderId(null);
+        }
+      });
+    }
+  };
+
+  const handleUpdatePaymentStatus = (id: string, currentStatus: number) => {
+    setSelectedOrderId(id);
+    setCurrentPaymentStatus(currentStatus);
+    setPaymentModalOpen(true);
+  };
+
+  const processPaymentStatusUpdate = (status: number) => {
+    if (selectedOrderId) {
+      updateOrderMutation.mutate({
+        id: selectedOrderId,
+        data: {
+          paymentStatus: status
+        }
+      }, {
+        onSuccess: () => {
+          setPaymentModalOpen(false);
           setSelectedOrderId(null);
         }
       });
@@ -200,7 +225,7 @@ export default function OrderListPage() {
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
-              <span className="whitespace-nowrap">Show</span>
+              <span className="whitespace-nowrap hidden md:block">Show</span>
               <div className="w-40">
                 <ModernDropdown
                   options={PAGINATION_SIZES}
@@ -254,6 +279,7 @@ export default function OrderListPage() {
                 viewHostDetails={viewHostDetails}
                 confirmDelete={confirmDelete}
                 cancelOrder={handleCancelStatus}
+                onUpdatePaymentStatus={handleUpdatePaymentStatus}
               />
             ) : (
               <OrderTableView
@@ -262,6 +288,7 @@ export default function OrderListPage() {
                 viewHostDetails={viewHostDetails}
                 confirmDelete={confirmDelete}
                 cancelOrder={handleCancelStatus}
+                onUpdatePaymentStatus={handleUpdatePaymentStatus}
               />
             )}
           </AnimatePresence>
@@ -310,6 +337,14 @@ export default function OrderListPage() {
         isOpen={cancelModalOpen}
         onClose={() => setCancelModalOpen(false)}
         onConfirm={processCancelStatus}
+        isLoading={updateOrderMutation.isPending}
+      />
+
+      <UpdatePaymentStatusModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        onConfirm={processPaymentStatusUpdate}
+        currentStatus={currentPaymentStatus}
         isLoading={updateOrderMutation.isPending}
       />
 

@@ -26,7 +26,13 @@ export const ORDER_STATUS_COLORS = {
 export const PAYMENT_STATUS_COLORS = {
     0: 'text-red-600',
     1: 'text-green-600',
-    2: 'text-orange-600',
+    2: 'text-yellow-600',
+};
+
+export const PAYMENT_STATUS_DOT_COLORS = {
+    0: 'bg-red-600',
+    1: 'bg-green-600',
+    2: 'bg-yellow-500',
 };
 
 export const PAGINATION_SIZES = [

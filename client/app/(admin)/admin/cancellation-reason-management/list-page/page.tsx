@@ -109,7 +109,7 @@ export default function CancellationReasonListPage() {
             {/* Filters & Controls */}
             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
                 {/* Search & Sort */}
-                <div className="flex flex-1 gap-4 w-full md:w-auto">
+                <div className="flex flex-1 flex-wrap gap-4 w-full md:w-auto">
                     <div className="relative flex-1 md:max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
@@ -143,10 +143,8 @@ export default function CancellationReasonListPage() {
                             placeholder="Items"
                         />
                     </div>
-                </div>
 
-                {/* View Options */}
-                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                    {/* View Mode */}
                     <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
                         <button
                             onClick={() => setViewMode('table')}
@@ -164,6 +162,8 @@ export default function CancellationReasonListPage() {
                         </button>
                     </div>
                 </div>
+
+               
             </div>
 
             {/* Content Area */}

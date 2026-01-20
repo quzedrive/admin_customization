@@ -47,11 +47,19 @@ export const useCarQueries = () => {
         });
     };
 
+    const useGetFeaturedCars = () => {
+        return useQuery({
+            queryKey: [queryKeys.cars.featured],
+            queryFn: carServices.getFeaturedCars,
+        });
+    };
+
     return {
         useGetAllCars,
         useGetPublicCars,
         useGetPublicCarsInfinite,
         useGetCarById,
-        useGetCarBySlug
+        useGetCarBySlug,
+        useGetFeaturedCars
     };
 };

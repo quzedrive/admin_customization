@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Mail, Phone, Clock, MapPin, UserCheck, Pencil, Trash2, SquareX } from 'lucide-react';
+import { Mail, Phone, Car, MapPin, Clock, UserCheck, Pencil, Trash2, SquareX, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS } from '@/components/admin/order-management/constants';
 
@@ -11,9 +11,10 @@ interface OrderTableViewProps {
     viewHostDetails: (details: any) => void;
     confirmDelete: (id: string) => void;
     cancelOrder: (id: string) => void;
+    onUpdatePaymentStatus: (id: string, currentStatus: number) => void;
 }
 
-export default function OrderTableView({ orders, formatDate, viewHostDetails, confirmDelete, cancelOrder }: OrderTableViewProps) {
+export default function OrderTableView({ orders, formatDate, viewHostDetails, confirmDelete, cancelOrder, onUpdatePaymentStatus }: OrderTableViewProps) {
     return (
         <motion.div
             key="table"
@@ -113,6 +114,13 @@ export default function OrderTableView({ orders, formatDate, viewHostDetails, co
                                                 </button>
                                             </>
                                         )}
+                                        <button
+                                            onClick={() => onUpdatePaymentStatus(order._id, order.paymentStatus)}
+                                            className="p-1.5 cursor-pointer text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-100"
+                                            title="Update Payment Status"
+                                        >
+                                            <CreditCard size={16} />
+                                        </button>
                                         <button
                                             onClick={() => confirmDelete(order._id)}
                                             className="p-1.5 cursor-pointer text-red-500 hover:bg-red-50 rounded-lg transition-colors"

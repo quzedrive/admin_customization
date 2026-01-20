@@ -122,7 +122,7 @@ function AdminDashboardPage() {
 
         {/* Row 1: Trend Comparisons (Revenue vs Hours) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-[400px]">
+          <div className="min-h-[400px]">
             {revenueLoading ? (
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex items-center justify-center text-gray-400">Loading Revenue Trend...</div>
             ) : (
@@ -133,7 +133,7 @@ function AdminDashboardPage() {
               />
             )}
           </div>
-          <div className="h-[400px]">
+          <div className="min-h-[400px]">
             {hoursLoading ? (
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex items-center justify-center text-gray-400">Loading Usage Trend...</div>
             ) : (
@@ -166,7 +166,7 @@ function AdminDashboardPage() {
         </div>
 
         {/* Row 3: Booking Trend */}
-        <div className="h-[400px]">
+        <div className="min-h-[400px]">
           {ordersLoading ? (
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex items-center justify-center text-gray-400">Loading Trends...</div>
           ) : (
@@ -187,10 +187,10 @@ function AdminDashboardPage() {
             </>
           ) : (
             <>
-              <div className="h-[400px]">
+              <div className="min-h-[400px]">
                 <OrderStatusChart data={analytics?.statusDistribution || []} />
               </div>
-              <div className="h-[400px]">
+              <div className="min-h-[400px]">
                 <BrandDistributionChart data={analytics?.carsByBrand || []} />
               </div>
             </>

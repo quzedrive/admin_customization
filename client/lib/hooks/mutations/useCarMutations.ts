@@ -59,10 +59,23 @@ export const useCarMutations = () => {
         },
     });
 
+    const toggleFeaturedMutation = useMutation({
+        mutationFn: carServices.toggleFeatured,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [queryKeys.cars.adminList] });
+            queryClient.invalidateQueries({ queryKey: [queryKeys.cars.publicList] });
+            toast.success('Featured status updated');
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Failed to update featured status');
+        },
+    });
+
     return {
         createCarMutation,
         updateCarMutation,
         deleteCarMutation,
         toggleStatusMutation,
+        toggleFeaturedMutation,
     };
 };

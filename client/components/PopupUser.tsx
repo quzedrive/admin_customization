@@ -329,6 +329,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
                       id='tripStartMobPopup'
                       type="datetime-local"
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled
                       value={formData.tripStart
                         ? (() => {
                           const pad = (n: number) => String(n).padStart(2, '0');
@@ -360,6 +361,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
                   {/* Desktop: DatePicker */}
                   <div className="hidden lg:block">
                     <DatePicker
+                    disabled
                       placeholder="Trip Start"
                       showTime={{
                         format: "h:mm A",
@@ -435,6 +437,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
                     <input
                       id='tripEndMobPopup'
                       type="datetime-local"
+                      disabled
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       value={formData.tripEnd
                         ? (() => {
@@ -464,6 +467,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
                   <div className="hidden lg:block">
                     <DatePicker
                       placeholder="Trip end"
+                      disabled
                       showTime={{
                         format: "h:mm A",
                         use12Hours: true,

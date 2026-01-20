@@ -179,7 +179,7 @@ export default function ProfileOffcanvas({ isOpen, onClose }: ProfileOffcanvasPr
 
 
                                 {/* Placeholder for Settings */}
-                                <button className="w-full p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-4 hover:border-gray-300 hover:bg-gray-50 transition-all group text-left">
+                                {/* <button className="w-full p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-4 hover:border-gray-300 hover:bg-gray-50 transition-all group text-left">
                                     <div className="p-2 bg-gray-100 rounded-lg text-gray-600 group-hover:bg-white group-hover:shadow-sm transition-all shrink-0">
                                         <Settings size={20} />
                                     </div>
@@ -187,7 +187,7 @@ export default function ProfileOffcanvas({ isOpen, onClose }: ProfileOffcanvasPr
                                         <p className="text-sm font-semibold text-gray-700 group-hover:text-gray-900">Account Settings</p>
                                         <p className="text-xs text-gray-400">Manage your preferences</p>
                                     </div>
-                                </button>
+                                </button> */}
                             </div>
                         </div>
 

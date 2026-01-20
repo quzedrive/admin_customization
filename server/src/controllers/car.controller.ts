@@ -3,7 +3,7 @@ import Car from '../models/cars/car.model';
 import CarImage from '../models/cars/car-image.model';
 import CarSpecification from '../models/cars/car-specification.model';
 import CarPackage from '../models/cars/car-package.model';
-import { status } from '../constants/status';
+import { status, featuredStatus } from '../constants/status';
 
 const generateSlug = (name: string) => {
     return name
@@ -450,6 +450,76 @@ export const toggleCarStatus = async (req: Request, res: Response) => {
 
         await car.save();
         res.status(200).json({ message: 'Car status updated', status: car.status });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+// @desc    Toggle car featured status
+// @route   PATCH /api/cars/:id/featured
+// @access  Private
+export const toggleFeaturedStatus = async (req: Request, res: Response) => {
+    try {
+        const car = await Car.findById(req.params.id);
+        if (!car) {
+            return res.status(404).json({ message: 'Car not found' });
+        }
+
+        // Determine new status: defaults to toggle if not provided
+        let newStatus = req.body.status;
+
+        if (newStatus === undefined) {
+            // Toggle logic
+            if (car.featured === featuredStatus.active) {
+                newStatus = featuredStatus.inactive;
+            } else {
+                newStatus = featuredStatus.active;
+            }
+        }
+
+        // Logic check: If setting to Active
+        if (newStatus === featuredStatus.active) {
+            // Check how many are already active
+            const activeFeaturedCount = await Car.countDocuments({
+                featured: featuredStatus.active,
+                status: { $ne: status.deleted } // validation only against non-deleted cars
+            });
+
+            // If we are activating this car, and it wasn't already active
+            if (car.featured !== featuredStatus.active && activeFeaturedCount >= 3) {
+                return res.status(400).json({ message: 'Maximum 3 cars can be featured at a time.' });
+            }
+        }
+
+        car.featured = newStatus;
+        await car.save();
+
+        res.status(200).json({ message: 'Car featured status updated', featured: car.featured });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get featured cars (Public)
+// @route   GET /api/cars/featured
+// @access  Public
+export const getFeaturedCars = async (req: Request, res: Response) => {
+    try {
+        const cars = await Car.find({
+            featured: featuredStatus.active,
+            status: status.active // Ensure car itself is active
+        })
+            .populate('images')
+            .populate('specifications')
+            .populate({
+                path: 'packages',
+                match: { isActive: true },
+                populate: { path: 'package' }
+            })
+            .limit(3); // Double safety
+
+        res.status(200).json(cars);
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }

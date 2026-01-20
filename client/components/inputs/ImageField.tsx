@@ -435,21 +435,24 @@ export default function ImageField({
             {
                 previewModal && (
                     <div
-                        className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                        className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
                         onClick={() => setPreviewModal(null)}
                     >
-                        <div className="relative max-w-4xl max-h-[70vh] w-full">
-                            <button
-                                type="button"
-                                onClick={() => setPreviewModal(null)}
-                                className="absolute top-2 right-2 text-gray-600 bg-white/70 hover:bg-white/80 cursor-pointer p-2  rounded-full  transition-colors"
-                            >
-                                <X size={24} />
-                            </button>
+                        {/* Close Button - Fixed at top right */}
+                        <button
+                            type="button"
+                            onClick={() => setPreviewModal(null)}
+                            className="absolute cursor-pointer top-4 right-4 z-[101] text-white/70 hover:text-white bg-black/50 hover:bg-black/70 p-2.5 rounded-full transition-all"
+                            title="Close Preview"
+                        >
+                            <X size={28} />
+                        </button>
+
+                        <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
                             <img
                                 src={previewModal}
                                 alt="Preview"
-                                className="w-full h-full object-contain rounded-xl"
+                                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl pointer-events-auto"
                                 onClick={(e) => e.stopPropagation()}
                             />
                         </div>

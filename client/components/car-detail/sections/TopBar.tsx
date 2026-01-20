@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown, Loader } from 'lucide-react';
 import DateTimePicker from '@/components/date-and-time-picker/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,9 +32,14 @@ export default function TopBar({ carName }: { carName?: string }) {
     const [dropdownPosition, setDropdownPosition] = React.useState<'top' | 'bottom'>('bottom');
 
     // Fetch public cars for dropdown
-    const { useGetPublicCars } = useCarQueries();
-    const { data: carsData } = useGetPublicCars();
-    const cars = Array.isArray(carsData) ? carsData : (carsData as any)?.cars || [];
+    const { useGetPublicCarsInfinite } = useCarQueries();
+    const {
+        data: carsData,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useGetPublicCarsInfinite();
+    const cars = carsData?.pages.flatMap((page: any) => page.cars || page) || [];
 
     // Convert Redux ISO strings to Dayjs or null
     const startDate = formData.tripStart ? dayjs(formData.tripStart) : null;
@@ -130,29 +135,55 @@ export default function TopBar({ carName }: { carName?: string }) {
                             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">CAR TYPE</span>
                             <div className="flex items-center justify-between gap-4 text-sm font-bold text-[#3B82F6]">
                                 <span className="whitespace-nowrap">{formData.carName || carName || "Select Car"}</span>
-                                <ChevronDown size={16} className={`text-blue-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown size={16} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </div>
 
                         {/* Dropdown Menu */}
                         {isDropdownOpen && (
                             <div
-                                className={`absolute left-0 z-50 min-w-full w-max bg-white rounded-xl shadow-xl border border-gray-100 p-1 overflow-y-auto no-scrollbar ${dropdownPosition === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}`}
-                                style={{ maxHeight: '15rem' }}
+                                className={`absolute left-0 z-50 min-w-full w-max bg-white rounded-xl shadow-xl border border-gray-100 p-1 ${dropdownPosition === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}`}
                             >
-                                {cars.length > 0 ? (
-                                    cars.map((car: any) => (
-                                        <div
-                                            key={car._id}
-                                            className="px-4 py-2.5 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
-                                            onClick={() => handleCarSelect(car)}
-                                        >
-                                            <p className="text-sm font-semibold text-gray-800 whitespace-nowrap">{car.name}</p>
-                                            <p className="text-xs text-gray-500 capitalize">{car.type} • {car.transmission}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="px-4 py-3 text-sm text-gray-500 text-center">No cars available</div>
+                                <div
+                                    className="overflow-y-auto no-scrollbar"
+                                    style={{ maxHeight: '15rem' }}
+                                    onScroll={(e) => {
+                                        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+                                        if (scrollHeight - scrollTop <= clientHeight + 50) {
+                                            if (hasNextPage && !isFetchingNextPage) {
+                                                fetchNextPage();
+                                            }
+                                        }
+                                    }}
+                                >
+                                    {cars.length > 0 ? (
+                                        <>
+                                            {cars.map((car: any) => (
+                                                <div
+                                                    key={car._id}
+                                                    className="px-4 py-2.5 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                                                    onClick={() => handleCarSelect(car)}
+                                                >
+                                                    <p className="text-sm font-semibold text-gray-800 whitespace-nowrap">{car.name}</p>
+                                                    <p className="text-xs text-gray-500 capitalize">{car.type} • {car.transmission}</p>
+                                                </div>
+                                            ))}
+                                            {isFetchingNextPage && (
+                                                <div className="py-2 flex justify-center">
+                                                    <Loader className="animate-spin text-gray-500" size={16} />
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="px-4 py-3 text-sm text-gray-500 text-center">No cars available</div>
+                                    )}
+                                </div>
+
+                                {/* Visual Cue for More Content - Fixed at bottom of container */}
+                                {cars.length > 3 && (
+                                    <div className='absolute bottom-0 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm w-[90%] flex justify-center py-1 rounded-b-lg pointer-events-none'>
+                                        <ChevronDown size={14} className="text-gray-400 animate-bounce" />
+                                    </div>
                                 )}
                             </div>
                         )}

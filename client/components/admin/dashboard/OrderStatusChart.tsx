@@ -73,7 +73,7 @@ const OrderStatusChart: React.FC<OrderStatusChartProps> = ({ data }) => {
                 <h3 className="text-lg font-bold text-gray-900">Order Status</h3>
                 <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-1 rounded-full">Total: {total}</span>
             </div>
-            <div className="flex-1 min-h-[300px]">
+            <div className="flex-1 min-h-[300px] min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie

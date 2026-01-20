@@ -18,12 +18,12 @@ interface HoursTrendChartProps {
 const HoursTrendChart: React.FC<HoursTrendChartProps> = ({ data, period, onFilterChange }) => {
     return (
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h3 className="text-lg font-bold text-gray-900">Ride Hours Trend</h3>
                     <p className="text-sm text-gray-500">Usage Analytics over time</p>
                 </div>
-                <div className="flex bg-gray-50 p-1 rounded-lg">
+                <div className="flex bg-gray-50 p-1 rounded-lg self-start sm:self-auto overflow-x-auto max-w-full">
                     {['weekly', 'monthly', 'yearly'].map((p) => (
                         <button
                             key={p}
@@ -39,7 +39,7 @@ const HoursTrendChart: React.FC<HoursTrendChartProps> = ({ data, period, onFilte
                 </div>
             </div>
 
-            <div className="flex-1 w-full min-h-[300px]">
+            <div className="flex-1 w-full min-h-[300px] min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>

@@ -32,7 +32,7 @@ const BrandDistributionChart: React.FC<BrandDistributionChartProps> = ({ data })
     return (
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
             <h3 className="text-lg font-bold text-gray-900 mb-6">Bookings by Brand</h3>
-            <div className="flex-1 min-h-[300px]">
+            <div className="flex-1 min-h-[300px] min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barGap={2}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />

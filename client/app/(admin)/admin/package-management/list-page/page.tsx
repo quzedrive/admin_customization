@@ -94,7 +94,7 @@ export default function PackageListPage() {
                 </div>
                 <Link
                     href="/admin/package-management/add-page"
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm hover:shadow-md"
+                    className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm hover:shadow-md"
                 >
                     <Plus size={18} />
                     Add Package

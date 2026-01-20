@@ -97,8 +97,8 @@ export default function SystemTemplateListPage() {
             {/* Filters & Controls */}
             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
                 {/* Search & Status Filter */}
-                <div className="flex flex-1 gap-4 w-full md:w-auto">
-                    <div className="relative flex-1 md:max-w-md">
+                <div className="flex flex-1 flex-wrap gap-4 w-full md:w-auto">
+                    <div className="relative w-full md:max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
                             type="text"
@@ -120,11 +120,9 @@ export default function SystemTemplateListPage() {
                             placeholder="Status"
                         />
                     </div>
-                </div>
 
-                {/* View Options */}
-                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-                    <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                    {/* View Mode */}
+                     <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
                         <button
                             onClick={() => setViewMode('table')}
                             className={`cursor-pointer p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -141,6 +139,7 @@ export default function SystemTemplateListPage() {
                         </button>
                     </div>
                 </div>
+
             </div>
 
             {/* Content Area */}

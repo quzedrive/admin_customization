@@ -6,8 +6,8 @@ import CarCardSkeleton from './skeletons/CarCardSkeleton';
 import Link from 'next/link';
 
 export default function Collection() {
-    const { useGetPublicCars } = useCarQueries();
-    const { data: cars, isLoading, isError } = useGetPublicCars();
+    const { useGetFeaturedCars } = useCarQueries();
+    const { data: cars, isLoading, isError } = useGetFeaturedCars();
 
     const renderSkeletons = () => (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-8">
@@ -63,7 +63,7 @@ export default function Collection() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {carList.slice(0, 3).map((car: any) => (
+                        {carList.map((car: any) => (
                             <CarCard key={car._id} car={car} />
                         ))}
                     </div>
