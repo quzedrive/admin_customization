@@ -13,6 +13,8 @@ import SiteSettings from '../models/settings/site-settings.model';
 import Notification from '../models/notification.model';
 import { getIO } from '../socket';
 import { NotificationStatus } from '../constants/notification';
+import QRCode from 'qrcode';
+import { paymentStatus } from '../constants/status';
 
 // @desc    Create a new order (Public)
 // @route   POST /api/orders
@@ -291,7 +293,62 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                 }
             }
 
-            // 1. Send to Customer
+            // 1. Generate QR Code for Payment (if Order Confirmed)
+            if (slug === 'order_confirmed') {
+                const vpa = process.env.MERCHANT_VPA;
+                const merchantName = process.env.MERCHANT_NAME || 'Quzee Drive';
+                const amount = order.finalPrice || 0;
+                const transactionNote = `Order ${order.bookingId || order._id}`;
+                const trRef = order.bookingId || order._id.toString();
+
+                if (vpa && amount > 0) {
+                    // UPI Intent URL
+                    // upi://pay?pa=<vpa>&pn=<name>&am=<amount>&tn=<note>&tr=<ref>
+                    const upiUrl = `upi://pay?pa=${vpa}&pn=${encodeURIComponent(merchantName)}&am=${amount}&tn=${encodeURIComponent(transactionNote)}&tr=${trRef}`;
+
+                    try {
+                        const qrBuffer = await QRCode.toBuffer(upiUrl);
+                        attachments.push({
+                            filename: `payment_qr.png`,
+                            content: qrBuffer,
+                            contentType: 'image/png',
+                            cid: 'payment_qr' // Content-ID for inline images
+                        });
+                        console.log('Payment QR generated successfully');
+
+                        // Inject QR Code into Email Content if placeholder exists, or append it
+                        if (emailContent.includes('</p>')) {
+                            // Simple injection: Find the last closing p tag or a specific placeholder
+                            // User asked to put it in the "Booking Details" area or end.
+                            // Let's append it before the signature or end of body.
+                            const qrHtml = `
+                                <div style="margin: 20px 0; text-align: center;">
+                                    <p><strong>Scan to Pay ₹${amount}</strong></p>
+                                    <img src="cid:payment_qr" alt="Payment QR Code" style="width: 200px; height: 200px;" />
+                                    <p style="font-size: 12px; color: #666;">UPI: ${vpa}</p>
+                                </div>
+                             `;
+
+                            // If template has specific marker, replace it. Else append to end of body or replace last </p>
+                            // Assuming user template ends with </p>
+                            const lastPIndex = emailContent.lastIndexOf('</p>');
+                            if (lastPIndex !== -1) {
+                                // insert before the closing of the last paragraph? No, maybe after.
+                                // Let's try to append it after the "If you need to make any changes..." paragraph if identifying it is hard.
+                                // Safest: Append to the end of content.
+                                emailContent += qrHtml;
+                            } else {
+                                emailContent += qrHtml;
+                            }
+                        }
+
+                    } catch (qrError) {
+                        console.error('Failed to generate Payment QR:', qrError);
+                    }
+                }
+            }
+
+            // 2. Send to Customer
             console.log('Sending email to Customer:', order.email);
             await sendEmail({
                 email: order.email,
@@ -370,6 +427,11 @@ export const updateOrder = async (req: Request, res: Response) => {
             switch (newStatus) {
                 case RideStatus.APPROVE: // 1
                     slug = 'order_confirmed';
+                    // Auto-set Payment Status to Pending if currently Unpaid
+                    if (updatedOrder.paymentStatus === paymentStatus.unpaid) {
+                        updatedOrder.paymentStatus = paymentStatus.pending;
+                        await updatedOrder.save();
+                    }
                     break;
                 case RideStatus.CANCEL: // 3
                     slug = 'order_cancelled';
@@ -433,7 +495,7 @@ export const getPublicOrderStatus = async (req: Request, res: Response) => {
             query.bookingId = id;
         }
 
-        const order = await Order.findOne(query).select('status bookingId carName tripStart tripEnd location createdAt');
+        const order = await Order.findOne(query).select('status bookingId carName tripStart tripEnd location createdAt paymentStatus finalPrice');
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });

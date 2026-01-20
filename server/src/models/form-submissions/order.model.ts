@@ -38,7 +38,9 @@ const OrderSchema = new Schema(
         selectedPackage: { type: String },
         finalPrice: { type: Number },
         status: { type: Number, default: RideStatus.NEW, enum: Object.values(RideStatus) },
-        paymentStatus: { type: Number, default: PaymentStatus.NOT_DONE, enum: Object.values(PaymentStatus) },
+        paymentStatus: { type: Number, default: 0 }, // 0: Unpaid, 1: Pending, 2: Paid, 3: Failed
+        transactionId: { type: String },
+        paymentScreenshot: { type: String },
         cancelReason: { type: String },
         cancelReasonId: { type: Schema.Types.ObjectId, ref: 'CancellationReason' },
         bookingId: { type: String, unique: true, index: true, sparse: true },

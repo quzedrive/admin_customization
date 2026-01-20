@@ -9,6 +9,7 @@ import { useOrderQueries } from '@/lib/hooks/queries/useOrderQueries';
 // import { orderServices } from '@/lib/services/orderServices'; // Removed unused import
 import { Loader2, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function TrackPage() {
   const [trackingId, setTrackingId] = useState('');
@@ -71,7 +72,7 @@ export default function TrackPage() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                       <div className="text-left w-full">
                         <div className="flex items-center justify-start gap-3 mb-2">
-                          <span className="text-gray-400 text-sm font-medium">Vehicle: <br className='md:hidden'/> <span className="text-white font-bold ml-1">{order.carName || 'Custom Vehicle'}</span></span>
+                          <span className="text-gray-400 text-sm font-medium">Vehicle: <br className='md:hidden' /> <span className="text-white font-bold ml-1">{order.carName || 'Custom Vehicle'}</span></span>
                           <span className={`h-6 px-3 inline-flex justify-center items-center rounded-full text-[10px] font-black uppercase tracking-wider
                                     ${order.status === 3 || order.status === 0 ? 'bg-red-500/20 text-red-500' : 'bg-green-600/20 text-green-500'}
                                 `}>
@@ -84,6 +85,39 @@ export default function TrackPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Payment Pending Section */}
+                  {order.paymentStatus === 1 && (
+                    <div className="bg-yellow-500/10 backdrop-blur-md border border-yellow-500/30 rounded-3xl p-6 md:p-8 mb-12 w-full max-w-2xl mx-auto text-center">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500/20 text-yellow-500">
+                          <AlertCircle size={24} />
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold text-white mb-2">Payment Pending</h3>
+                          <p className="text-gray-300">
+                            Your booking is approved! Please complete the payment to confirm your ride.
+                          </p>
+                        </div>
+
+                        <div className="mt-4 bg-white p-4 rounded-xl shadow-lg">
+                          {/* @ts-ignore */}
+                          <QRCodeSVG
+                            value={`upi://pay?pa=${process.env.NEXT_PUBLIC_MERCHANT_VPA || 'admin@upi'}&pn=${encodeURIComponent(process.env.NEXT_PUBLIC_MERCHANT_NAME || 'Quzee Drive')}&am=${order.finalPrice}&tn=${encodeURIComponent(`Order ${order.bookingId}`)}&tr=${order.bookingId}`}
+                            size={200}
+                            level="M"
+                          />
+                        </div>
+                        <p className="text-white font-bold text-lg mt-2">
+                          Amount to Pay: ₹{order.finalPrice?.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-2 max-w-sm">
+                          Scan this QR with any UPI App (GPay, PhonePe, Paytm). <br />
+                          After payment, please send the screenshot/UTR to our support for verification.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Timeline */}
                   <TrackingTimeline status={order.status} />
