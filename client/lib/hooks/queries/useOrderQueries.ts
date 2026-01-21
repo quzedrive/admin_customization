@@ -21,8 +21,17 @@ export const useOrderQueries = () => {
         });
     };
 
+    const usePriceHistory = (id: string) => {
+        return useQuery({
+            queryKey: ['priceHistory', id],
+            queryFn: () => orderServices.getPriceHistory(id),
+            enabled: !!id
+        });
+    };
+
     return {
         useAdminOrders,
-        useTrackOrder
+        useTrackOrder,
+        usePriceHistory
     };
 };

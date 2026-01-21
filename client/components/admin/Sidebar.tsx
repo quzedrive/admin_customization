@@ -20,7 +20,8 @@ import {
     TicketX,
     BookOpenText,
     ShoppingBag,
-    Landmark
+    Landmark,
+    BookOpen
 } from 'lucide-react';
 import { cn } from '@/components/utils/cn';
 import { useAdminLogoutMutation } from '@/lib/hooks/mutations/useAdminLogoutMutation';
@@ -85,6 +86,15 @@ const menuItems = [
     {
         title: 'System',
         items: [
+            {
+                name: 'Page Content',
+                icon: BookOpenText,
+                href: '#',
+                subItems: [
+                    { name: 'All Pages', icon: List, href: '/admin/pages/list-page' },
+                    { name: 'Add Page', icon: PlusCircle, href: '/admin/pages/add-page' },
+                ]
+            },
             {
                 name: 'System Templates',
                 icon: Mails,

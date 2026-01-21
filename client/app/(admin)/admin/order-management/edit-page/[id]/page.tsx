@@ -411,7 +411,19 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
                                 <span className="text-gray-500 text-sm">Package</span>
-                                <span className="font-medium text-gray-900">{order.selectedPackage || 'Custom'}</span>
+                                <span className="font-medium text-gray-900">
+                                    {finalPrice > 0 ? (
+                                        <>
+                                            {order.selectedPackage?.includes('-')
+                                                ? order.selectedPackage.split('-')[0].trim()
+                                                : (order.selectedPackage || 'Custom')}
+                                            {' - '}
+                                            ₹{finalPrice.toLocaleString()}
+                                        </>
+                                    ) : (
+                                        order.selectedPackage || 'Custom'
+                                    )}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
                                 <span className="text-gray-500 text-sm">Host Type</span>
@@ -456,6 +468,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                 onClose={() => setApproveModalOpen(false)}
                 onConfirm={handleApproveConfirm}
                 initialPrice={finalPrice}
+                orderId={order?._id || ''}
             />
 
             <CancelOrderModal

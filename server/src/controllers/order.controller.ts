@@ -1,4 +1,4 @@
-import axios from 'axios';
+import PriceHistory from '../models/form-submissions/price-history.model';
 import { getRazorpayConfig } from '../config/razorpay';
 import { Request, Response } from 'express';
 import Order from '../models/form-submissions/order.model';
@@ -8,6 +8,7 @@ import SystemTemplate from '../models/system-template.model';
 import EmailConfig from '../models/email-config.model';
 import sendEmail from '../utils/sendEmail';
 import { status } from '../constants/status';
+import axios from 'axios';
 
 import { generateBookingId } from '../utils/generators';
 
@@ -429,11 +430,33 @@ export const updateOrder = async (req: Request, res: Response) => {
         }
 
         const oldStatus = order.status;
+        const oldPrice = order.finalPrice;
 
         Object.assign(order, updates);
         const updatedOrder = await order.save();
 
         const newStatus = updatedOrder.status;
+
+        // Track Price History if price changed or status changed to Approved
+        if (updates.finalPrice !== undefined && updates.finalPrice !== oldPrice) {
+            await PriceHistory.create({
+                order: order._id,
+                price: updates.finalPrice,
+                action: (newStatus === RideStatus.APPROVE) ? 'approved' : 'updated',
+                status: newStatus,
+                note: `Price updated from ${oldPrice || 'N/A'} to ${updates.finalPrice}`
+            });
+        }
+        // Also track if status changed to Approved (even if price didn't change, effectively "confirming" the price)
+        else if (newStatus === RideStatus.APPROVE && oldStatus !== RideStatus.APPROVE) {
+            await PriceHistory.create({
+                order: order._id,
+                price: updatedOrder.finalPrice || 0,
+                action: 'approved',
+                status: newStatus,
+                note: `Order approved with price ${updatedOrder.finalPrice}`
+            });
+        }
 
         // Check for status change and send email
         if (oldStatus !== newStatus) {
@@ -591,5 +614,19 @@ export const verifyPayment = async (req: Request, res: Response) => {
     } catch (error: any) {
         console.error('Verify Payment Error:', error?.response?.data || error.message);
         res.status(500).json({ message: 'Verification failed' });
+    }
+};
+
+// @desc    Get Price History for an Order
+// @route   GET /api/orders/:id/price-history
+// @access  Private/Admin
+export const getPriceHistory = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const history = await PriceHistory.find({ order: id }).sort({ createdAt: -1 });
+        res.json(history);
+    } catch (error: any) {
+        console.error('Get Price History Error:', error);
+        res.status(500).json({ message: 'Server Error' });
     }
 };

@@ -28,6 +28,9 @@ export default function Footer({ logoLight, isLoading, description, location, co
     { name: "About Us", href: "/about-us" },
     { name: "Our Fleet", href: "/our-fleet" },
     { name: "Track", href: "/track" },
+    { name:'Privacy Policy', href:'/privacy-policy' },
+    { name:'Terms of Service', href:'/terms-of-service' },
+    { name:'Payment Policy', href:'/payment-policy' },
   ]
 
   return (

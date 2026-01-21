@@ -40,5 +40,11 @@ export const orderServices = {
     getTrackedOrder: async (id: string) => {
         const response = await client.get(`${BASE_URL}/track/${id}`);
         return response.data;
+    },
+
+    // Admin: Get Price History
+    getPriceHistory: async (id: string) => {
+        const response = await client.get(`${BASE_URL}/${id}/price-history`);
+        return response.data;
     }
 };

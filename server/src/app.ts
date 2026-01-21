@@ -21,8 +21,7 @@ import notificationRoutes from './routes/notification.routes';
 import orderRoutes from './routes/order.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import webhookRoutes from './routes/webhook.routes';
-
-
+import pageRoutes from './routes/page.routes';
 
 const app: Application = express();
 
@@ -73,6 +72,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/pages', pageRoutes);
 
 // Error Handling Middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
