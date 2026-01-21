@@ -11,7 +11,7 @@ export const featuredStatus = {
 
 export const paymentStatus = {
     unpaid: 0,
-    pending: 1,
-    paid: 2,
+    paid: 1,
+    pending: 2,
     failed: 3,
 };

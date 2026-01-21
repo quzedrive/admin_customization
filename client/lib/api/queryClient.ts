@@ -22,6 +22,7 @@ export const queryKeys = {
     emailConfig: 'email-config',
     imageUploadConfig: 'image-upload-config',
     appearanceSettings: 'appearance-settings',
+    paymentSettings: 'payment-settings',
     systemTemplates: 'system-templates',
     cars: {
         adminList: 'cars-admin-list',

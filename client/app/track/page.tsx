@@ -87,7 +87,7 @@ export default function TrackPage() {
                   </div>
 
                   {/* Payment Pending Section */}
-                  {order.paymentStatus === 1 && (
+                  {(order.paymentStatus === 2 || order.paymentStatus === 0) && (
                     <div className="bg-yellow-500/10 backdrop-blur-md border border-yellow-500/30 rounded-3xl p-6 md:p-8 mb-12 w-full max-w-2xl mx-auto text-center">
                       <div className="flex flex-col items-center gap-4">
                         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500/20 text-yellow-500">
@@ -100,21 +100,43 @@ export default function TrackPage() {
                           </p>
                         </div>
 
-                        <div className="mt-4 bg-white p-4 rounded-xl shadow-lg">
-                          {/* @ts-ignore */}
-                          <QRCodeSVG
-                            value={`upi://pay?pa=${process.env.NEXT_PUBLIC_MERCHANT_VPA || 'admin@upi'}&pn=${encodeURIComponent(process.env.NEXT_PUBLIC_MERCHANT_NAME || 'Quzee Drive')}&am=${order.finalPrice}&tn=${encodeURIComponent(`Order ${order.bookingId}`)}&tr=${order.bookingId}`}
-                            size={200}
-                            level="M"
-                          />
-                        </div>
-                        <p className="text-white font-bold text-lg mt-2">
-                          Amount to Pay: ₹{order.finalPrice?.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-2 max-w-sm">
-                          Scan this QR with any UPI App (GPay, PhonePe, Paytm). <br />
-                          After payment, please send the screenshot/UTR to our support for verification.
-                        </p>
+                        {/* Payment Options Logic */}
+                        {/* Check for Razorpay Link first (Primary preference if generated) */}
+                        {order.payment?.link ? (
+                          <div className="mt-4 bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
+                            <h4 className="text-blue-900 font-bold text-lg mb-2">Secure Payment</h4>
+                            <p className="text-gray-600 text-sm mb-4">Click below to pay via Razorpay</p>
+                            <a
+                              href={order.payment.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block w-full py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors"
+                            >
+                              Pay ₹{order.finalPrice?.toLocaleString()} Now
+                            </a>
+                            <p className="text-[10px] text-gray-400 mt-2">Link expires in 15 minutes</p>
+                          </div>
+                        ) : (
+                          /* Fallback to Manual QR if no link or if Manual mode is implied */
+                          /* Using VPA from backend if available, else fallback to env */
+                          <>
+                            <div className="mt-4 bg-white p-4 rounded-xl shadow-lg">
+                              {/* @ts-ignore */}
+                              <QRCodeSVG
+                                value={`upi://pay?pa=${order.merchantVpa || process.env.NEXT_PUBLIC_MERCHANT_VPA || 'admin@upi'}&pn=${encodeURIComponent(process.env.NEXT_PUBLIC_MERCHANT_NAME || 'Quzee Drive')}&am=${order.finalPrice}&tn=${encodeURIComponent(`Order ${order.bookingId}`)}&tr=${order.bookingId}`}
+                                size={200}
+                                level="M"
+                              />
+                            </div>
+                            <p className="text-white font-bold text-lg mt-2">
+                              Amount to Pay: ₹{order.finalPrice?.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-2 max-w-sm">
+                              Scan this QR with any UPI App (GPay, PhonePe, Paytm). <br />
+                              After payment, please send the screenshot/UTR to our support for verification.
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}

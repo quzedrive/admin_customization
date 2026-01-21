@@ -17,6 +17,12 @@ export interface IOrder extends Document {
     // I will assume these replace pickup/drop/date/passengers.
     status: number;
     paymentStatus: number;
+    payment: {
+        transactionId?: string;
+        link?: string;
+        linkId?: string;
+        screenshot?: string;
+    };
     cancelReason?: string;
     cancelReasonId?: string;
     bookingId?: string;
@@ -38,9 +44,13 @@ const OrderSchema = new Schema(
         selectedPackage: { type: String },
         finalPrice: { type: Number },
         status: { type: Number, default: RideStatus.NEW, enum: Object.values(RideStatus) },
-        paymentStatus: { type: Number, default: 0 }, // 0: Unpaid, 1: Pending, 2: Paid, 3: Failed
-        transactionId: { type: String },
-        paymentScreenshot: { type: String },
+        paymentStatus: { type: Number, default: 0 }, // 0: Unpaid, 1: Paid, 2: Pending, 3: Failed
+        payment: {
+            transactionId: { type: String },
+            link: { type: String },
+            linkId: { type: String },
+            screenshot: { type: String },
+        },
         cancelReason: { type: String },
         cancelReasonId: { type: Schema.Types.ObjectId, ref: 'CancellationReason' },
         bookingId: { type: String, unique: true, index: true, sparse: true },

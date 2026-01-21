@@ -19,7 +19,8 @@ import {
     CarFront,
     TicketX,
     BookOpenText,
-    ShoppingBag
+    ShoppingBag,
+    Landmark
 } from 'lucide-react';
 import { cn } from '@/components/utils/cn';
 import { useAdminLogoutMutation } from '@/lib/hooks/mutations/useAdminLogoutMutation';
@@ -108,6 +109,7 @@ const menuItems = [
                 href: '#',
                 subItems: [
                     { name: 'Site Settings', icon: Globe, href: '/admin/settings/site-settings' },
+                    { name: 'Payment Settings', icon: Landmark, href: '/admin/settings/payment-settings' },
                 ]
             },
         ]

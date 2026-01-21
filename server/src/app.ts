@@ -13,12 +13,14 @@ import siteSettingsRoutes from './routes/site-settings.routes';
 import emailConfigRoutes from './routes/email-config.routes';
 import imageUploadConfigRoutes from './routes/image-upload-config.routes';
 import appearanceConfigRoutes from './routes/appearance-settings.routes';
+import paymentSettingsRoutes from './routes/payment-settings.routes';
 import carRoutes from './routes/car.routes';
 import systemTemplateRoutes from './routes/system-template.routes';
 import cancellationReasonRoutes from './routes/cancellation-reason.routes';
 import notificationRoutes from './routes/notification.routes';
 import orderRoutes from './routes/order.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import webhookRoutes from './routes/webhook.routes';
 
 
 
@@ -63,12 +65,14 @@ app.use('/api/settings/site-settings', siteSettingsRoutes);
 app.use('/api/settings/email', emailConfigRoutes);
 app.use('/api/settings/image-upload', imageUploadConfigRoutes);
 app.use('/api/settings/appearance', appearanceConfigRoutes);
+app.use('/api/settings/payment', paymentSettingsRoutes);
 app.use('/api/cars', carRoutes);
 app.use('/api/system-templates', systemTemplateRoutes);
 app.use('/api/cancellation-reasons', cancellationReasonRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // Error Handling Middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

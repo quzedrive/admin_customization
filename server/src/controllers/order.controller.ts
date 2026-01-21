@@ -42,7 +42,7 @@ export const createOrder = async (req: Request, res: Response) => {
             selectedPackage,
             carSlug,
             bookingId,
-            // status and paymentStatus use defaults
+            // status and payment defaults used
         });
 
         // Create & Emit Notification
@@ -227,6 +227,7 @@ export const getAdminOrders = async (req: Request, res: Response) => {
 
 // Helper to send order status emails
 import { generatePDF } from '../utils/pdfGenerator';
+import { generatePaymentDetails } from '../utils/payment';
 
 const sendOrderStatusEmail = async (order: any, slug: string) => {
     try {
@@ -293,58 +294,69 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                 }
             }
 
-            // 1. Generate QR Code for Payment (if Order Confirmed)
+            // 1. Generate Payment Details (QR or Link) if Order Confirmed
             if (slug === 'order_confirmed') {
-                const vpa = process.env.MERCHANT_VPA;
-                const merchantName = process.env.MERCHANT_NAME || 'Quzee Drive';
-                const amount = order.finalPrice || 0;
-                const transactionNote = `Order ${order.bookingId || order._id}`;
-                const trRef = order.bookingId || order._id.toString();
+                let paymentDetails;
 
-                if (vpa && amount > 0) {
-                    // UPI Intent URL
-                    // upi://pay?pa=<vpa>&pn=<name>&am=<amount>&tn=<note>&tr=<ref>
-                    const upiUrl = `upi://pay?pa=${vpa}&pn=${encodeURIComponent(merchantName)}&am=${amount}&tn=${encodeURIComponent(transactionNote)}&tr=${trRef}`;
+                // Check if valid link already exists for Razorpay
+                if (order.payment?.link && order.payment?.linkId) {
+                    // Reuse existing link
+                    console.log('Reusing existing payment link for order:', order._id);
+                    paymentDetails = {
+                        type: 'link',
+                        paymentLink: order.payment.link,
+                        paymentLinkId: order.payment.linkId,
+                        amount: order.finalPrice || 0
+                    };
+                } else {
+                    // Generate new details
+                    paymentDetails = await generatePaymentDetails(order);
 
-                    try {
-                        const qrBuffer = await QRCode.toBuffer(upiUrl);
-                        attachments.push({
-                            filename: `payment_qr.png`,
-                            content: qrBuffer,
-                            contentType: 'image/png',
-                            cid: 'payment_qr' // Content-ID for inline images
-                        });
-                        console.log('Payment QR generated successfully');
-
-                        // Inject QR Code into Email Content if placeholder exists, or append it
-                        if (emailContent.includes('</p>')) {
-                            // Simple injection: Find the last closing p tag or a specific placeholder
-                            // User asked to put it in the "Booking Details" area or end.
-                            // Let's append it before the signature or end of body.
-                            const qrHtml = `
-                                <div style="margin: 20px 0; text-align: center;">
-                                    <p><strong>Scan to Pay ₹${amount}</strong></p>
-                                    <img src="cid:payment_qr" alt="Payment QR Code" style="width: 200px; height: 200px;" />
-                                    <p style="font-size: 12px; color: #666;">UPI: ${vpa}</p>
-                                </div>
-                             `;
-
-                            // If template has specific marker, replace it. Else append to end of body or replace last </p>
-                            // Assuming user template ends with </p>
-                            const lastPIndex = emailContent.lastIndexOf('</p>');
-                            if (lastPIndex !== -1) {
-                                // insert before the closing of the last paragraph? No, maybe after.
-                                // Let's try to append it after the "If you need to make any changes..." paragraph if identifying it is hard.
-                                // Safest: Append to the end of content.
-                                emailContent += qrHtml;
-                            } else {
-                                emailContent += qrHtml;
-                            }
+                    // Save if it's a link
+                    if (paymentDetails.type === 'link' && paymentDetails.paymentLink) {
+                        // We need to update the order object, but we are in a helper function.
+                        // We should update the database key.
+                        try {
+                            await Order.findByIdAndUpdate(order._id, {
+                                'payment.link': paymentDetails.paymentLink,
+                                'payment.linkId': paymentDetails.paymentLinkId
+                            });
+                            console.log('Payment link saved to order:', order._id);
+                        } catch (saveError) {
+                            console.error('Failed to save payment link to order:', saveError);
                         }
-
-                    } catch (qrError) {
-                        console.error('Failed to generate Payment QR:', qrError);
                     }
+                }
+
+                if (paymentDetails.type === 'qr' && paymentDetails.qrBuffer && paymentDetails.vpa) {
+                    attachments.push({
+                        filename: `payment_qr.png`,
+                        content: paymentDetails.qrBuffer,
+                        contentType: 'image/png',
+                        cid: 'payment_qr'
+                    });
+
+                    const qrHtml = `
+                        <div style="margin: 20px 0; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                            <h3 style="margin-top: 0; color: #333;">Complete Your Payment</h3>
+                            <p><strong>Scan to Pay ₹${paymentDetails.amount}</strong></p>
+                            <img src="cid:payment_qr" alt="Payment QR Code" style="width: 200px; height: 200px; margin: 10px auto;" />
+                            <p style="font-size: 14px; color: #666; margin-bottom: 5px;">UPI ID: <strong>${paymentDetails.vpa}</strong></p>
+                            <p style="font-size: 12px; color: #999;">Scan using any UPI App (GPay, PhonePe, Paytm)</p>
+                        </div>
+                    `;
+                    emailContent += qrHtml;
+                }
+                else if (paymentDetails.type === 'link' && paymentDetails.paymentLink) {
+                    const linkHtml = `
+                        <div style="margin: 20px 0; text-align: center; padding: 20px; background-color: #f0f7ff; border-radius: 8px; border: 1px solid #cce5ff;">
+                            <h3 style="margin-top: 0; color: #004085;">Complete Your Payment</h3>
+                            <p style="color: #004085; margin-bottom: 20px;">Please click the button below to pay ₹${paymentDetails.amount} securely via Razorpay.</p>
+                            <a href="${paymentDetails.paymentLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Pay Now</a>
+                            <p style="font-size: 12px; color: #666; margin-top: 15px;">Link expires in 15 minutes.</p>
+                        </div>
+                    `;
+                    emailContent += linkHtml;
                 }
             }
 
@@ -478,6 +490,11 @@ export const cancelOrder = async (req: Request, res: Response) => {
     }
 };
 
+// ... imports
+import PaymentSettings from '../models/settings/payment-settings.model';
+
+// ... existing code ...
+
 // @desc    Get public order status (Public)
 // @route   GET /api/orders/track/:id
 // @access  Public
@@ -495,13 +512,23 @@ export const getPublicOrderStatus = async (req: Request, res: Response) => {
             query.bookingId = id;
         }
 
-        const order = await Order.findOne(query).select('status bookingId carName tripStart tripEnd location createdAt paymentStatus finalPrice');
+        const order = await Order.findOne(query).select('status bookingId carName tripStart tripEnd location createdAt paymentStatus payment finalPrice');
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        res.json(order);
+        // Fetch Payment Settings for context (e.g. VPA for manual)
+        const paymentSettings = await PaymentSettings.getSingleton();
+
+        // Safe response construction
+        const responseData = {
+            ...order.toObject(),
+            activePaymentMethod: paymentSettings.activeMethod, // 1: Manual, 2: Razorpay
+            merchantVpa: paymentSettings.manualPaymentDetails.upiId
+        };
+
+        res.json(responseData);
     } catch (error: any) {
         console.error('Get Public Order Status Error:', error);
         res.status(500).json({ message: 'Server Error' });
