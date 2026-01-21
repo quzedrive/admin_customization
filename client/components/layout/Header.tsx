@@ -29,7 +29,7 @@ export const navList = [
   }
 ]
 
-export default function Header() {
+export default function Header({ logoLight, isLoading }: { logoLight?: string, isLoading?: boolean }) {
   const transparentHeaderRoutes = ['/', '/our-fleet', '/about-us', '/track'];
 
   const pathname = usePathname();
@@ -63,20 +63,28 @@ export default function Header() {
 
   if (!mounted) return null; // Prevent hydration mismatch
 
+  const isTransparent = transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10;
+
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center transition-transform duration-300 ease-in-out px-[5.4%] pt-3 md:pt-5 pb-3 md:pb-5 ${visible ? 'translate-y-0' : '-translate-y-full'} ${prevScrollPos > 10 ? 'bg-white backdrop-blur-md ' : 'bg-transparent'}`}
+        className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center transition-transform duration-300 ease-in-out px-[5.4%] pt-3 md:pt-5 pb-3 md:pb-5 ${visible ? 'translate-y-0' : '-translate-y-full'} ${prevScrollPos > 10 ? 'bg-white backdrop-blur-md shadow-xs' : 'bg-transparent'}`}
       >
 
-        <Link href='/' className='p-0'>
-          <Image
-            src="/logo (2).webp"
-            alt="QuzeeDrive"
-            width={100}
-            height={100}
-            className='w-16 h-16 3xl:w-full 3xl:h-auto'
-          />
+        <Link href='/' className='p-0 relative'>
+          {isLoading ? (
+            <div className={`w-16 h-16 3xl:w-[100px] 3xl:h-[100px] animate-pulse rounded-lg ${isTransparent ? 'bg-white/30' : 'bg-gray-200'}`} />
+          ) : (
+            logoLight ? (
+              <Image
+                src={logoLight}
+                alt="QuzeeDrive"
+                width={100}
+                height={100}
+                className='w-16 h-16 3xl:w-full 3xl:h-auto'
+              />
+            ) : null
+          )}
         </Link>
 
         {/* Show nav on all pages */}
@@ -108,7 +116,7 @@ export default function Header() {
           <>
             {pathname !== '/login' && pathname !== '/thank-you' && (
               <button
-                className='hidden md:flex cursor-pointer bg-btn text-white px-4 py-2 rounded-full items-center justify-center'
+                className='hidden md:flex cursor-pointer primary-btn text-white px-4 py-2 rounded-full items-center justify-center'
                 onClick={() => setShowPopup(!showPopup)}
               >
                 <span className='text-white'>BECOME A HOST</span>

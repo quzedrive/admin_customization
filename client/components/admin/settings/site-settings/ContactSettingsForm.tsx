@@ -12,7 +12,10 @@ export default function ContactSettingsForm({ data }: ContactSettingsFormProps) 
 
     const [formData, setFormData] = useState({
         email: '',
+        supportEmail: '',
         phone: '',
+        hostContact: '',
+        customerContact: '',
         address: '',
         mapUrl: ''
     });
@@ -21,7 +24,10 @@ export default function ContactSettingsForm({ data }: ContactSettingsFormProps) 
         if (data) {
             setFormData({
                 email: data.email || '',
+                supportEmail: data.supportEmail || '',
                 phone: data.phone || '',
+                hostContact: data.hostContact || '',
+                customerContact: data.customerContact || '',
                 address: data.address || '',
                 mapUrl: data.mapUrl || ''
             });
@@ -51,9 +57,28 @@ export default function ContactSettingsForm({ data }: ContactSettingsFormProps) 
                     color='blue'
                 />
                 <FloatingInput
+                    label="Support Email"
+                    type="email"
+                    value={formData.supportEmail}
+                    onChange={(e) => handleChange('supportEmail', e.target.value)}
+                    color='blue'
+                />
+                <FloatingInput
                     label="Phone Number"
                     value={formData.phone}
                     onChange={(e) => handleChange('phone', e.target.value)}
+                    color='blue'
+                />
+                <FloatingInput
+                    label="Host Contact"
+                    value={formData.hostContact}
+                    onChange={(e) => handleChange('hostContact', e.target.value)}
+                    color='blue'
+                />
+                <FloatingInput
+                    label="Customer Contact"
+                    value={formData.customerContact}
+                    onChange={(e) => handleChange('customerContact', e.target.value)}
                     color='blue'
                 />
                 <div className="col-span-full">

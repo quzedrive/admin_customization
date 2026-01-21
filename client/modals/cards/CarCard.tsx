@@ -82,7 +82,7 @@ export default function CarCard({ car }: CarCardProps) {
                 </div>
 
                 <div className="mt-auto">
-                    <div className="flex items-center justify-center gap-2 w-full bg-black text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-all group-hover:translate-y-0">
+                    <div className="flex items-center justify-center gap-2 w-full secondary-btn text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-all group-hover:translate-y-0">
                         View Details
                         <ArrowRight size={16} />
                     </div>

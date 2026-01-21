@@ -12,7 +12,10 @@ export interface ISiteSettings extends Document {
     };
     contact: {
         email: string;
+        supportEmail: string;
         phone: string;
+        hostContact: string;
+        customerContact: string;
         address: string;
         mapUrl: string;
     };
@@ -49,7 +52,10 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
         },
         contact: {
             email: { type: String, default: '' },
+            supportEmail: { type: String, default: '' },
             phone: { type: String, default: '' },
+            hostContact: { type: String, default: '' },
+            customerContact: { type: String, default: '' },
             address: { type: String, default: '' },
             mapUrl: { type: String, default: '' },
         },

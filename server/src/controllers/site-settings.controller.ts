@@ -55,12 +55,15 @@ export const updateGeneral = async (req: Request, res: Response) => {
 export const updateContact = async (req: Request, res: Response) => {
     try {
         const settings = await getSettingsDocument();
-        const { email, phone, address, mapUrl } = req.body;
+        const { email, supportEmail, phone, hostContact, customerContact, address, mapUrl } = req.body;
 
         settings.contact = {
             ...settings.contact,
             email: email ?? settings.contact.email,
+            supportEmail: supportEmail ?? settings.contact.supportEmail,
             phone: phone ?? settings.contact.phone,
+            hostContact: hostContact ?? settings.contact.hostContact,
+            customerContact: customerContact ?? settings.contact.customerContact,
             address: address ?? settings.contact.address,
             mapUrl: mapUrl ?? settings.contact.mapUrl,
         };

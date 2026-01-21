@@ -21,7 +21,7 @@ function Specifications({ specifications, isLoading = false }: SpecificationsPro
             <div className='max-w-7xl mx-auto w-full flex flex-col justify-start items-center gap-12 pt-16 pb-24 px-4'>
 
                 <div className='flex flex-col justify-start items-center gap-4 w-full'>
-                    <span className='text-md font-medium '>WHAT THIS CAR OFFERS</span>
+                    <span className='text-md font-medium primary-text'>WHAT THIS CAR OFFERS</span>
                     <h3 className='text-xl md:text-3xl lg:text-5xl font-medium '>Specifications & Key Features</h3>
                     <p className='text-sm md:text-base font-medium text-center max-w-3xl'>Explore the car’s essential specifications and comfort features — from transmission and fuel type to safety and convenience — designed for a smooth self-drive experience</p>
                 </div>

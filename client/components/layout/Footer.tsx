@@ -1,6 +1,35 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
-export default function Footer() {
+interface Location {
+  address: string;
+  link: string;
+}
+
+interface Contact {
+  contactEmail: string;
+  supportEmail: string;
+  hostContact: string;
+  customerContact: string;
+}
+
+interface FooterProps {
+  logoLight?: string;
+  isLoading?: boolean;
+  description?: string;
+  location?: Location;
+  contact?: Contact;
+}
+
+export default function Footer({ logoLight, isLoading, description, location, contact }: FooterProps) {
+
+  const quickLinks = [
+    { name: "Home", href: "/" },
+    { name: "About Us", href: "/about-us" },
+    { name: "Our Fleet", href: "/our-fleet" },
+    { name: "Track", href: "/track" },
+  ]
+
   return (
     <footer className="bg-black text-white px-4 md:px-20 py-16 relative">
       {/* Scroll to Top */}
@@ -17,45 +46,66 @@ export default function Footer() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {/* Logo + About */}
         <div className='max-w-120 col-span-1 sm:col-span-2 md:col-span-2 pb-4 md:px-16'>
-          <Image
-            src="/logo (2).png"
-            alt="Quzeedrive Logo"
-            width={120}
-            height={40}
-            className="mb-4"
-          />
-          <p className="text-sm text-gray-400 leading-relaxed text-wrap">
-            Whether you’re booking hatchbacks for city drives, sedans for comfort, or SUVs for road trips, our fleet offers the best self drive car hire in Chennai. Enjoy hassle-free driving with full control — no driver, no delays.
-          </p>
+          <Link href="/">
+            {isLoading ? (
+              <div className='w-16 h-16 3xl:w-[100px] 3xl:h-[100px] bg-white/20 animate-pulse rounded-lg' />
+            ) : (
+              logoLight ? (
+                <Image
+                  src={logoLight}
+                  alt="QuzeeDrive"
+                  width={120}
+                  height={40}
+                  className="mb-4"
+                />
+              ) : null
+            )}
+          </Link>
+          {isLoading ? (
+            <div className='w-full mt-10 min-h-20 bg-white/20 animate-pulse rounded-lg' />
+          ) : (
+            <p className="text-sm text-gray-400 leading-relaxed text-wrap">
+              {description}
+            </p>
+          )}
         </div>
 
         {/* Quick Links */}
-        <div className='col-span-1 sm:col-span-1 md:col-span-1 pt-0 md:pt-4'>
-          <h4 className="font-semibold mb-4">Quick Links</h4>
-          <ul className="space-y-2 text-sm text-gray-300">
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Book a Car</a></li>
-            <li><a href="#host">Become a Host</a></li>
-            <li><a href="#tariffs">Pricing</a></li>
-            <li><a href="#faq">FAQs</a></li>
-            <li><a href="#">Contact Us</a></li>
+        <div className='col-span-1 sm:col-span-1 md:col-span-1 pt-0 md:pt-4 flex flex-col gap-2'>
+          <h4 className="font-semibold">Quick Links</h4>
+          <ul className="space-y-2 text-sm text-gray-300 mt-4">
+            {quickLinks.map((link, index) => (
+              <li key={index} >
+                <Link className='hover:text-primary transition-colors' href={link.href}>{link.name}</Link>
+              </li>
+            ))}
           </ul>
         </div>
  
         {/* Company Info  */}
-        <div className='col-span-1 sm:col-span-1 md:col-span-1 pt-0 md:pt-4'>
-          <h4 className="font-semibold mb-4">Company</h4>
-          <ul className="space-y-2 text-sm text-gray-300">
-            <li><a href='tel:+9363763309'>📞 +91 93637 63309 - Host</a></li>
-            <li><a href='tel:+9344784676'>📞 +91 93447 84676 - Customer</a></li>
-            <li className='space-y-1'>
-              <div><a href='mailto:customersupport@quzeedrive.com' className='break-all'>📧 customersupport@quzeedrive.com</a></div>
-            </li>
-            <li>
-              <div><a href="mailto:support@quzeedrive.in" className='break-all'>📧 support@quzeedrive.in</a></div>
-            </li>
-            <li>📍 Quzeedrive Pvt. Ltd., Chennai, India</li>
-          </ul>
+        <div className='col-span-1 sm:col-span-1 md:col-span-1 pt-0 md:pt-4 flex flex-col gap-2'>
+          <h4 className="font-semibold">Company</h4>
+          {isLoading ? (
+            <ul className='space-y-2 text-sm text-gray-300'>
+              <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+              <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+              <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+              <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+              <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+            </ul>
+          ) : (
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li><Link className='hover:text-primary transition-colors' href={`tel:+91${contact?.hostContact}`}>📞 +91 {contact?.hostContact} - Host</Link></li>
+              <li><Link className='hover:text-primary transition-colors' href={`tel:+91${contact?.customerContact}`}>📞 +91 {contact?.customerContact} - Customer</Link></li>
+              <li className='space-y-1'>
+                <div><Link href={`mailto:${contact?.contactEmail}`} className='break-all hover:text-primary transition-colors'>📧 {contact?.contactEmail}</Link></div>
+              </li>
+              <li>
+                <div><Link href={`mailto:${contact?.supportEmail}`} className='break-all hover:text-primary transition-colors'>📧 {contact?.supportEmail}</Link></div>
+              </li>
+              <li><Link className='hover:text-primary transition-colors' href={location?.link} target='_blank' rel='noopener noreferrer'>📍 {location?.address}</Link></li>
+            </ul>
+          )}
         </div>
       </div>
     </footer>

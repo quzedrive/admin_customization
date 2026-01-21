@@ -74,22 +74,22 @@ export default function Nav({
           ))}
         </div>
 
-          <button
-            onClick={() => {
-              close(); // close the menu
-              openHostPopup(); // open popup from Header
-            }}
-            className="bg-btn text-2xl text-white px-4 py-2 gap-4 rounded-full flex items-center justify-center"
-          >
-            BECOME A HOST
-            <Image
-              src={"/icons/arrow-right.svg"}
-              alt="Arrow Right Icon"
-              width={24}
-              height={24}
-              className="w-12 h-auto ml-2 inline-block"
-            />
-          </button>
+        <button
+          onClick={() => {
+            close(); // close the menu
+            openHostPopup(); // open popup from Header
+          }}
+          className="primary-btn text-2xl text-white px-4 py-2 gap-4 rounded-full flex items-center justify-center"
+        >
+          BECOME A HOST
+          <Image
+            src={"/icons/arrow-right.svg"}
+            alt="Arrow Right Icon"
+            width={24}
+            height={24}
+            className="w-12 h-auto ml-2 inline-block"
+          />
+        </button>
       </div>
     </div>
   );

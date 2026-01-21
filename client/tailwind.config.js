@@ -7,6 +7,11 @@ module.exports = {
     ],
     theme: {
         extend: {
+            colors: {
+                primary: "var(--color-primary)",
+                secondary: "var(--color-secondary)",
+                icon: "var(--color-icon)",
+            },
             screens: {
                 'xs': "23rem", // 368
                 'sm': '40rem',   // 640px

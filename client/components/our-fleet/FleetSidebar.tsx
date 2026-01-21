@@ -110,14 +110,9 @@ export default function FleetSidebar({ filters, setFilters, brands, types, class
 
     return (
         <div className={`bg-white rounded-xl border border-gray-100 shadow-sm p-6 ${className}`}>
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Filters</h2>
-                {/* Mobile Close */}
-                {closeMobile && (
-                    <button onClick={closeMobile} className="p-2 hover:bg-gray-100 rounded-full lg:hidden">
-                        <X size={20} />
-                    </button>
-                )}
+            <div className="flex items-center justify-between mb-6 relative">
+                <div className=''>
+                    <h2 className="text-lg font-bold text-gray-900">Filters</h2>
                 {/* Clear All (Desktop) */}
                 {totalFilters > 0 && (
                     <button
@@ -127,6 +122,14 @@ export default function FleetSidebar({ filters, setFilters, brands, types, class
                         Clear All
                     </button>
                 )}
+                </div>
+                {/* Mobile Close */}
+                {closeMobile && (
+                    <button onClick={closeMobile} className="p-2 absolute top-0 right-0 hover:bg-gray-100 rounded-full lg:hidden">
+                        <X size={20} />
+                    </button>
+                )}
+                
             </div>
 
             {/* Active Filters Summary */}

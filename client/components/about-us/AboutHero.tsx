@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Plus_Jakarta_Sans } from 'next/font/google';
+import Link from 'next/link';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
     subsets: ['latin'],
@@ -31,7 +32,7 @@ export default function AboutHero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="inline-block text-blue-500 font-bold tracking-[0.2em] mb-4 uppercase text-sm md:text-md"
+                    className="inline-block primary-text font-bold tracking-[0.2em] mb-4 uppercase text-sm md:text-md"
                 >
                     About QuzeeDrive
                 </motion.span>
@@ -42,17 +43,25 @@ export default function AboutHero() {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className={`text-4xl md:text-6xl lg:text-6xl font-bold text-white mb-6 leading-tight ${plusJakartaSans.className}`}
                 >
-                    Driving The Future <br /> Of <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Mobility</span>
+                    Every Mile Made <span className="primary-text">Comfortable</span>
                 </motion.h1>
 
                 <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.4 }}
-                    className="text-gray-300 text-lg md:text-xl max-w-4xl mx-auto leading-relaxed"
+                    className="text-gray-300 text-lg md:text-xl max-w-4xl mx-auto leading-relaxed mb-12"
                 >
-                    We're not just a car rental company. We're your partner in every journey, providing premium vehicles and exceptional service to make your travel unforgettable.
+                    A car rental service built on trust, care, and customer satisfaction
                 </motion.p>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.6 }}
+                >
+                    <Link href="/contact" className="primary-outline-btn px-8 py-3 rounded-full font-semibold ">Travel With Us</Link>
+                </motion.div>
             </div>
 
             {/* Scroll Indicator */}

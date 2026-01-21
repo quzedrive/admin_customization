@@ -283,7 +283,7 @@ export default function HeroSearchForm() {
                 }
               }}
               aria-disabled={isLoading}
-              className={`flex items-center justify-center cursor-pointer w-12 h-12 rounded-full bg-[#BFA06A] text-white hover:bg-[#a88b58] transition-all shadow-md hover:shadow-lg ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`flex items-center justify-center cursor-pointer w-12 h-12 rounded-full primary-btn text-white hover:bg-[#a88b58] transition-all shadow-md hover:shadow-lg ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {!isLoading ? (
                 <Search className='text-white' />

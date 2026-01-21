@@ -53,7 +53,7 @@ export default function TrackHero({ onTrack, isLoading }: TrackHeroProps) {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="absolute right-1.5 top-1.5 bottom-1.5 cursor-pointer bg-black hover:bg-gray-900 text-white px-6 rounded-md font-bold text-sm tracking-wider uppercase transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed border border-gray-800"
+                        className="absolute right-1.5 top-1.5 bottom-1.5 cursor-pointer secondary-btn px-6 rounded-md font-bold text-sm tracking-wider uppercase transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed border border-gray-800"
                     >
                         {isLoading ? (
                             <Loader2 size={16} className="animate-spin" />

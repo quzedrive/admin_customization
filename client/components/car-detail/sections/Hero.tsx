@@ -334,24 +334,24 @@ export default function Hero({ car, settings }: HeroProps) {
 
                 {/* Right Column: Details & Booking */}
                 <div className="flex flex-col">
-                    <div className="mb-6">
+                    <div className="mb-3">
                         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                             {car.name}
                         </h1>
 
                         <div className="flex flex-wrap gap-2 mb-4">
                             {car.transmission && (
-                                <div className="px-3 py-1 rounded-full bg-gray-100/80 text-gray-600 hover:bg-gray-100 font-normal text-xs transition-colors">
+                                <div className="px-3 py-1 rounded-full icon-bg-light font-normal text-xs transition-colors">
                                     {car.transmission}
                                 </div>
                             )}
                             {car.fuelType && (
-                                <div className="px-3 py-1 rounded-full bg-gray-100/80 text-gray-600 hover:bg-gray-100 font-normal text-xs transition-colors">
+                                <div className="px-3 py-1 rounded-full icon-bg-light font-normal text-xs transition-colors">
                                     {car.fuelType}
                                 </div>
                             )}
                             {car.seatingCapacity && (
-                                <div className="px-3 py-1 rounded-full bg-gray-100/80 text-gray-600 hover:bg-gray-100 font-normal text-xs transition-colors">
+                                <div className="px-3 py-1 rounded-full icon-bg-light font-normal text-xs transition-colors">
                                     {car.seatingCapacity} Seat
                                 </div>
                             )}
@@ -384,7 +384,7 @@ export default function Hero({ car, settings }: HeroProps) {
                             ) : 'Select a package'}
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                             {(() => {
                                 // 1. Helper to calculate hours for a package
                                 const getHours = (p: any) => parseDurationToHours(p.package?.time || '');
@@ -568,7 +568,7 @@ export default function Hero({ car, settings }: HeroProps) {
                             Let's hide the static one if calculationDetails.isOnRequest is true.
                             */}
                             {(!calculationDetails || !calculationDetails.isOnRequest) && (
-                                <div className="relative flex flex-row items-center justify-between p-4 rounded-xl border border-gray-100 bg-white min-h-[100px] md:col-span-2 lg:col-span-2">
+                                <div className="relative flex flex-col md:flex-row items-start gap-3 md:gap-0 md:items-center justify-between p-4 rounded-xl border border-gray-100 bg-white min-h-[100px] md:col-span-2 lg:col-span-2">
                                     <div className="flex flex-col">
                                         <span className="text-xl font-bold text-gray-900 block mb-1">7 Days</span>
                                         <span className="text-sm font-medium text-gray-600">For Long Booking</span>
@@ -592,7 +592,7 @@ export default function Hero({ car, settings }: HeroProps) {
 
                         <button
                             onClick={() => setShowPopup(true)}
-                            className="w-full cursor-pointer bg-black hover:bg-gray-900 !text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all antialiased"
+                            className="w-full cursor-pointer secondary-btn font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all antialiased"
                             style={{ color: '#ffffff' }}
                         >
                             CHECK AVAILABILITY

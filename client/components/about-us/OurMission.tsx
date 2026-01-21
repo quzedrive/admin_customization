@@ -45,7 +45,7 @@ export default function OurMission() {
                             transition={{ delay: 0.5, duration: 0.5 }}
                             className="absolute -bottom-8 -right-8 md:bottom-10 md:-right-10 bg-white p-6 rounded-2xl shadow-xl max-w-[200px] hidden md:block"
                         >
-                            <p className="text-4xl font-black text-blue-600 mb-1">10+</p>
+                            <p className="text-4xl font-black primary-text mb-1">10+</p>
                             <p className="text-sm font-medium text-gray-600">Years of Excellence in Mobility</p>
                         </motion.div>
                     </motion.div>
@@ -57,7 +57,7 @@ export default function OurMission() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.8 }}
                     >
-                        <span className="text-blue-600 font-bold tracking-wider uppercase text-sm mb-2 block">Our Mission</span>
+                        <span className="primary-text font-bold tracking-wider uppercase text-sm mb-2 block">Our Mission</span>
                         <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
                             Redefining How You <br /> Experience Travel.
                         </h2>

@@ -47,9 +47,9 @@ export default function WhyChooseUs() {
                     viewport={{ once: true }}
                     className="max-w-3xl mx-auto mb-16"
                 >
-                    <span className="text-blue-600 font-bold tracking-wider uppercase text-sm mb-2 block">Why Choose QuzeeDrive</span>
+                    <span className="primary-text font-bold tracking-wider uppercase text-sm mb-2 block">Why Choose QuzeeDrive</span>
                     <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6">
-                        Excellence in <span className="text-blue-600">Every Mile</span>
+                        Excellence in <span className="primary-text">Every Mile</span>
                     </h2>
                     <p className="text-gray-500 text-lg">
                         We go the extra mile to ensure your journey is comfortable, safe, and memorable. Here is why thousands of customers trust us.
@@ -66,10 +66,10 @@ export default function WhyChooseUs() {
                             transition={{ duration: 0.5, delay: index * 0.1 }}
                             className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group text-left"
                         >
-                            <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                            <div className="w-14 h-14 icon-bg-light rounded-2xl flex items-center justify-center  mb-6 group-hover:-rotate-20 transition-all duration-300">
                                 <item.icon size={28} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                            <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
                                 {item.title}
                             </h3>
                             <p className="text-gray-500 leading-relaxed">

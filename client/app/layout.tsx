@@ -36,6 +36,16 @@ async function fetchSettings() {
   }
 }
 
+async function fetchAppearanceSettings() {
+  try {
+    const { data } = await client.get('/settings/appearance');
+    return data;
+  } catch (error) {
+    // console.error("Failed to load appearance settings");
+    return null;
+  }
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const host = h.get("host") ?? "";
@@ -87,15 +97,30 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const appearanceSettings = await fetchAppearanceSettings();
+
+  const primaryColor = appearanceSettings?.primaryColor || '#2563eb';
+  const secondaryColor = appearanceSettings?.secondaryColor || '#4f46e5';
+  const iconColor = appearanceSettings?.iconColor || '#3b82f6';
+
+  const themeStyles = `
+    :root {
+      --color-primary: ${primaryColor};
+      --color-secondary: ${secondaryColor};
+      --color-icon: ${iconColor};
+    }
+  `;
+
   return (
     <html lang="en" className="scroll-smooth">
       <head>
         <meta name="google-site-verification" content="enaqBdW0v5V_eTawkpiALwGQ_n6dAy7qDwA_P8QE8q0" />
+        <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
       </head>
       <body
         className={`scroll-smooth ${inter.variable} font-inter ${montserrat.variable} antialiased`}

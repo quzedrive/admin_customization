@@ -70,7 +70,7 @@ export default function Collection() {
                 )}
 
                 <div className='w-full flex justify-center items-center'>
-                    <Link href='/our-fleet' className='bg-[#BFA06A] !text-white px-6 py-3 rounded-full hover:bg-[#a88b58] hover:scale-105 transition-all duration-300 cursor-pointer'>
+                    <Link href='/our-fleet' className='primary-outline-btn px-6 py-3 rounded-full cursor-pointer'>
                         View More
                     </Link>
                 </div>

@@ -224,7 +224,7 @@ export default function TopBar({ carName }: { carName?: string }) {
                     {/* Modify Search Button */}
                     <Link
                         href={`/${formData.carSlug || '#'}`}
-                        className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#1A1A1A] hover:bg-black !text-white px-6 py-3.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-colors md:ml-4 antialiased whitespace-nowrap"
+                        className="w-full md:w-auto flex items-center justify-center gap-2 secondary-btn px-6 py-3.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-colors md:ml-4 antialiased whitespace-nowrap"
                         style={{ color: '#ffffff' }}
                         onClick={() => setIsMobileExpanded(false)}
                     >

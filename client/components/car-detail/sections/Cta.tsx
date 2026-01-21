@@ -28,7 +28,7 @@ function Cta({ contactNumber }: { contactNumber: string }) {
                         </p>
                         <Link 
                         href={`tel:${contactNumber}`} 
-                        className='px-5 py-3 bg-black text-white rounded-full flex items-center gap-2 hover:gap-3 cursor-pointer hover:scale-105 transition-all duration-300'
+                        className='px-5 py-3 secondary-btn rounded-full flex items-center gap-2 hover:gap-3 cursor-pointer'
                         >
                             On Request <ArrowRight />
                         </Link>
