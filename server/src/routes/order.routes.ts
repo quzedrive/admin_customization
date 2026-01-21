@@ -1,5 +1,5 @@
 import express from 'express';
-import { createOrder, getAdminOrders, updateOrder, cancelOrder, getPublicOrderStatus } from '../controllers/order.controller';
+import { createOrder, getAdminOrders, updateOrder, cancelOrder, getPublicOrderStatus, verifyPayment } from '../controllers/order.controller';
 import { protect } from '../middlewares/auth.middleware';
 
 const router = express.Router();
@@ -18,5 +18,8 @@ router.delete('/admin/:id', protect, cancelOrder);
 
 // Public: Track order status
 router.get('/track/:id', getPublicOrderStatus);
+
+// Public: Verify Payment (called after redirect)
+router.post('/verify-payment', verifyPayment);
 
 export default router;

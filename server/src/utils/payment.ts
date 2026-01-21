@@ -31,6 +31,14 @@ export const generatePaymentDetails = async (order: any): Promise<PaymentDetails
             try {
                 const auth = Buffer.from(`${config.keyId}:${config.keySecret}`).toString('base64');
 
+                // Normalize phone number for Razorpay (E.164 format preferred, or at least with country code)
+                let contact = order.phone.replace(/[^0-9]/g, '');
+                if (contact.length === 10) {
+                    contact = `+91${contact}`;
+                } else if (contact.length > 10 && !contact.startsWith('+')) {
+                    contact = `+${contact}`;
+                }
+
                 const response = await axios.post(
                     'https://api.razorpay.com/v1/payment_links',
                     {
@@ -40,7 +48,7 @@ export const generatePaymentDetails = async (order: any): Promise<PaymentDetails
                         description: `Payment for Order ${order.bookingId || order._id}`,
                         customer: {
                             name: order.name,
-                            contact: order.phone,
+                            contact: contact,
                             email: order.email
                         },
                         notify: {

@@ -22,7 +22,13 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
         // Let's use PROCESS.ENV.RAZORPAY_WEBHOOK_SECRET if available, otherwise fallback or skip for now?
         // User didn't specify where secret comes from. I will assume env for safety.
 
-        const webhookSecret = razorpayConfig.webhookSecret;
+        // ===================================
+        // SECURITY CHECK - UNCOMMENT FOR PROD
+        // ===================================
+        // For production, you MUST ensure RAZORPAY_WEBHOOK_SECRET is set in your .env
+        // and in the Razorpay Dashboard. This verification prevents fake requests.
+
+        const webhookSecret = razorpayConfig.webhookSecret; // Retrieved from .env or config
 
         if (webhookSecret) {
             const expectedSignature = crypto
@@ -32,13 +38,13 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
 
             if (expectedSignature !== signature) {
                 console.error('Invalid Razorpay Webhook Signature');
-                // Return 200 to suppress retry logic from Razorpay if it's just a signature mismatch (or 400 if we want them to retry?)
-                // Usually 400 for bad request.
+                // Return 200 to silence Razorpay retry, or 400 to signal error.
                 return res.status(400).json({ message: 'Invalid signature' });
             }
         } else {
             console.warn('RAZORPAY_WEBHOOK_SECRET not set, skipping signature verification (NOT SECURE)');
         }
+        // ===================================
 
         const event = req.body.event;
         const payload = req.body.payload;

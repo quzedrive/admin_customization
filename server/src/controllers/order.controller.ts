@@ -1,3 +1,5 @@
+import axios from 'axios';
+import { getRazorpayConfig } from '../config/razorpay';
 import { Request, Response } from 'express';
 import Order from '../models/form-submissions/order.model';
 import Car from '../models/cars/car.model';
@@ -512,7 +514,7 @@ export const getPublicOrderStatus = async (req: Request, res: Response) => {
             query.bookingId = id;
         }
 
-        const order = await Order.findOne(query).select('status bookingId carName tripStart tripEnd location createdAt paymentStatus payment finalPrice');
+        const order = await Order.findOne(query).select('status bookingId name carName tripStart tripEnd location createdAt paymentStatus payment finalPrice');
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -528,9 +530,66 @@ export const getPublicOrderStatus = async (req: Request, res: Response) => {
             merchantVpa: paymentSettings.manualPaymentDetails.upiId
         };
 
+
+
         res.json(responseData);
     } catch (error: any) {
         console.error('Get Public Order Status Error:', error);
         res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// @desc    Verify Payment (Public/Redirect)
+// @route   POST /api/orders/verify-payment
+// @access  Public
+export const verifyPayment = async (req: Request, res: Response) => {
+    try {
+        const { paymentId, orderId } = req.body;
+
+        if (!paymentId || !orderId) {
+            return res.status(400).json({ message: 'Missing paymentId or orderId' });
+        }
+
+        // 1. Get Config
+        const config = await getRazorpayConfig();
+        if (!config.keyId || !config.keySecret) {
+            return res.status(500).json({ message: 'Razorpay configuration missing' });
+        }
+
+        // 2. Fetch Payment Details from Razorpay
+        const auth = Buffer.from(`${config.keyId}:${config.keySecret}`).toString('base64');
+        const response = await axios.get(`https://api.razorpay.com/v1/payments/${paymentId}`, {
+            headers: {
+                'Authorization': `Basic ${auth}`
+            }
+        });
+
+        const paymentData = response.data;
+
+        // 3. Verify Status
+        if (paymentData.status === 'captured') {
+            const order = await Order.findById(orderId);
+            if (order) {
+                if (order.paymentStatus !== 1) {
+                    order.paymentStatus = 1; // Paid
+                    if (order.payment) {
+                        order.payment.transactionId = paymentId;
+                    } else {
+                        order.payment = { transactionId: paymentId };
+                    }
+                    await order.save();
+                    console.log(`Order ${order._id} verified and updated to PAID via verifyPayment`);
+                }
+                return res.json({ success: true, message: 'Payment verified', status: 'captured' });
+            } else {
+                return res.status(404).json({ message: 'Order not found' });
+            }
+        } else {
+            return res.status(400).json({ success: false, message: 'Payment not captured', status: paymentData.status });
+        }
+
+    } catch (error: any) {
+        console.error('Verify Payment Error:', error?.response?.data || error.message);
+        res.status(500).json({ message: 'Verification failed' });
     }
 };
