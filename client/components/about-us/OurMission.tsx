@@ -28,7 +28,7 @@ export default function OurMission() {
                     >
                         <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
                             <Image
-                                src="/banner.webp"
+                                src="/about/about-img-1.webp"
                                 alt="Our Mission"
                                 fill
                                 className="object-cover"

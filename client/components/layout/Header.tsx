@@ -91,17 +91,31 @@ export default function Header({ logoLight, isLoading }: { logoLight?: string, i
         <nav className={`hidden md:flex items-center font-roboto ${transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 ? 'text-white' : 'text-black'}`}>
           <ul className="flex justify-center items-center gap-16 ">
             {/* Map through navList to create navigation items */}
-            {navList.map((item, index) => (
-              <li key={index} className="relative group pt-2">
-                <Link
-                  href={item.href}
-                  className="relative group 4xl:text-xl"
-                >
-                  {item.name}
-                  <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 ? 'bg-white' : 'bg-black'}`}></span>
-                </Link>
-              </li>
-            ))}
+            {navList.map((item, index) => {
+              const isActive = pathname === item.href;
+              
+              return (
+                <li key={index} className="relative group pt-2">
+                  <Link
+                    href={item.href}
+                    className={`relative group 4xl:text-xl transition-colors ${
+                      isActive 
+                        ? (transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 
+                            ? 'text-white font-semibold' 
+                            : 'text-black font-semibold')
+                        : ''
+                    }`}
+                  >
+                    {item.name}
+                    <span className={`absolute left-0 -bottom-1 h-0.5 rounded-full transition-all duration-300 ${
+                      isActive 
+                        ? `w-full ${transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 ? 'bg-white' : 'bg-black'}`
+                        : `w-0 group-hover:w-full ${transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 ? 'bg-white' : 'bg-black'}`
+                    }`}></span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 

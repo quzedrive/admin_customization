@@ -82,7 +82,7 @@ export const createOrder = async (req: Request, res: Response) => {
             const emailConfig = await EmailConfig.getSingleton();
 
             // Replace variables
-            emailContent = emailContent
+            const replacer = (text: string) => text
                 .replace(/{{name}}/g, name)
                 .replace(/{{email}}/g, email)
                 .replace(/{{phone}}/g, phone)
@@ -94,9 +94,12 @@ export const createOrder = async (req: Request, res: Response) => {
                 .replace(/{{year}}/g, new Date().getFullYear().toString())
                 .replace(/{{companyName}}/g, emailConfig.fromName || 'Quzee Drive')
                 .replace(/{{supportEmail}}/g, emailConfig.fromEmail || 'support@quzeedrive.com')
-                .replace(/{{link}}/g, `${process.env.FRONTEND_URL || 'http://localhost:3000'}/order-status/${order._id}`); // Adjust link as needed
+                .replace(/{{link}}/g, `${process.env.FRONTEND_URL || 'http://localhost:3000'}/track?id=${bookingId}`)
+                .replace(/{{adminLink}}/g, `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/order-management/edit-page/${order._id}`);
 
-            // Send Email
+            emailContent = replacer(emailContent);
+
+            // Send Email to User
             try {
                 console.log('Sending email to:', order.email, 'Subject:', subject);
                 await sendEmail({
@@ -108,11 +111,76 @@ export const createOrder = async (req: Request, res: Response) => {
                 console.log('Email sent successfully');
             } catch (emailError) {
                 console.error('Failed to send order confirmation email:', emailError);
-                // Continue execution, don't fail the order creation because email failed
             }
+
+            // --- ADMIN NOTIFICATION ---
+            try {
+                console.log('Fetching system template: admin_new_order');
+                const adminTemplate = await SystemTemplate.findOne({ slug: 'admin_new_order' });
+
+                if (adminTemplate && adminTemplate.status === status.active) {
+                    let adminContent = adminTemplate.emailContent;
+                    const adminSubject = adminTemplate.emailSubject.replace(/{{orderId}}/g, bookingId);
+
+                    adminContent = replacer(adminContent);
+
+                    // Get Admin Email
+                    const adminEmail = siteSettings?.contact?.email || 'nilemaxi@gmail.com'; // Fallback
+
+                    console.log('Sending New Order Notification to Admin:', adminEmail);
+                    await sendEmail({
+                        email: adminEmail,
+                        subject: adminSubject,
+                        message: `New Order Received: ${bookingId}`,
+                        html: adminContent
+                    });
+                    console.log('Admin notification sent successfully');
+                } else {
+                    console.log('Admin template (admin_new_order) not found or inactive. Skipping admin email.');
+                }
+            } catch (adminErr) {
+                console.error('Failed to send admin notification:', adminErr);
+            }
+
+            // --- HOST NOTIFICATION ---
+            try {
+                if (carSlug || carName) {
+                    const carQuery = carSlug ? { slug: carSlug } : { name: carName };
+                    const car = await Car.findOne(carQuery).select('host');
+
+                    if (car && car.host && car.host.type === 2 && car.host.details?.email) {
+                        const hostEmail = car.host.details.email;
+                        console.log('Fetching system template: host_new_order');
+
+                        const hostTemplate = await SystemTemplate.findOne({ slug: 'host_new_order' });
+
+                        if (hostTemplate && hostTemplate.status === status.active) {
+                            let hostContent = hostTemplate.emailContent;
+                            const hostSubject = hostTemplate.emailSubject.replace(/{{orderId}}/g, bookingId);
+
+                            hostContent = replacer(hostContent);
+
+                            console.log('Sending New Order Notification to Host:', hostEmail);
+                            await sendEmail({
+                                email: hostEmail,
+                                subject: hostSubject,
+                                message: `New Order Received for your car: ${bookingId}`,
+                                html: hostContent
+                            });
+                            console.log('Host notification sent successfully');
+                        } else {
+                            console.log('Host template (host_new_order) not found or inactive. Skipping host email.');
+                        }
+                    }
+                }
+            } catch (hostErr) {
+                console.error('Failed to send host notification:', hostErr);
+            }
+
         } else {
             console.log('Template not found or inactive');
         }
+
 
         res.status(201).json(order);
     } catch (error: any) {
@@ -241,15 +309,16 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
             let emailContent = template.emailContent;
             const subject = template.emailSubject.replace(/{{orderId}}/g, (order.bookingId || order._id.toString().slice(-6)).toUpperCase());
 
+            // --- REPLACER FUNCTION ---
             const startDate = new Date(order.tripStart).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
             const emailConfig = await EmailConfig.getSingleton();
             const year = new Date().getFullYear().toString();
             const companyName = emailConfig.fromName || 'Quzee Drive';
             const supportEmail = emailConfig.fromEmail || 'support@quzeedrive.com';
-            const orderLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/order-status/${order._id}`;
+            const orderLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/track?id=${order.bookingId || order._id}`;
+            const adminLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/order-management/edit-page/${order._id}`;
             const submissionTime = new Date(order.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
-            // Common Replacements
             const replacer = (text: string) => text
                 .replace(/{{name}}/g, order.name)
                 .replace(/{{email}}/g, order.email)
@@ -263,48 +332,40 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                 .replace(/{{companyName}}/g, companyName)
                 .replace(/{{supportEmail}}/g, supportEmail)
                 .replace(/{{link}}/g, orderLink)
+                .replace(/{{adminLink}}/g, adminLink)
                 .replace(/{{cancelReason}}/g, order.cancelReason || '')
                 .replace(/{{finalPrice}}/g, order.finalPrice ? order.finalPrice.toString() : (order.selectedPackage ? order.selectedPackage.replace(/[^0-9]/g, '') : ''))
                 .replace(/{{submissionTime}}/g, submissionTime);
 
-            emailContent = replacer(emailContent);
+            let mainContent = replacer(emailContent);
 
-            // PDF Generation Logic for Confirmation
+
+            // --- PDF Generation Logic ---
             let attachments: any[] = [];
             if (slug === 'order_confirmed') {
-                console.log('Attempting to generate PDF for order_confirmed');
                 try {
                     const agreementTemplate = await SystemTemplate.findOne({ slug: 'rental_agreement' });
-
-                    if (!agreementTemplate) {
-                        console.log('Warning: rental_agreement template not found');
-                    } else if (agreementTemplate.status !== status.active) {
-                        console.log('Warning: rental_agreement template is inactive');
-                    }
-
                     if (agreementTemplate && agreementTemplate.status === status.active) {
-                        const agreementHtml = replacer(agreementTemplate.emailContent); // Using emailContent field for document body
+                        const agreementHtml = replacer(agreementTemplate.emailContent);
                         const pdfBuffer = await generatePDF(agreementHtml);
                         attachments.push({
                             filename: `Rental_Agreement_${order.bookingId || order._id}.pdf`,
                             content: pdfBuffer,
                             contentType: 'application/pdf'
                         });
-                        console.log('PDF Agreement generated successfully');
                     }
                 } catch (pdfError) {
                     console.error('Failed to generate PDF Agreement:', pdfError);
                 }
             }
 
-            // 1. Generate Payment Details (QR or Link) if Order Confirmed
+            // --- Payment Details Generation (QR or Link) ---
+            let extraContent = '';
             if (slug === 'order_confirmed') {
                 let paymentDetails;
 
                 // Check if valid link already exists for Razorpay
                 if (order.payment?.link && order.payment?.linkId) {
-                    // Reuse existing link
-                    console.log('Reusing existing payment link for order:', order._id);
                     paymentDetails = {
                         type: 'link',
                         paymentLink: order.payment.link,
@@ -312,22 +373,14 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                         amount: order.finalPrice || 0
                     };
                 } else {
-                    // Generate new details
                     paymentDetails = await generatePaymentDetails(order);
-
-                    // Save if it's a link
                     if (paymentDetails.type === 'link' && paymentDetails.paymentLink) {
-                        // We need to update the order object, but we are in a helper function.
-                        // We should update the database key.
                         try {
                             await Order.findByIdAndUpdate(order._id, {
                                 'payment.link': paymentDetails.paymentLink,
                                 'payment.linkId': paymentDetails.paymentLinkId
                             });
-                            console.log('Payment link saved to order:', order._id);
-                        } catch (saveError) {
-                            console.error('Failed to save payment link to order:', saveError);
-                        }
+                        } catch (saveError) { console.error(saveError); }
                     }
                 }
 
@@ -338,8 +391,7 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                         contentType: 'image/png',
                         cid: 'payment_qr'
                     });
-
-                    const qrHtml = `
+                    extraContent = `
                         <div style="margin: 20px 0; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
                             <h3 style="margin-top: 0; color: #333;">Complete Your Payment</h3>
                             <p><strong>Scan to Pay ₹${paymentDetails.amount}</strong></p>
@@ -348,10 +400,9 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                             <p style="font-size: 12px; color: #999;">Scan using any UPI App (GPay, PhonePe, Paytm)</p>
                         </div>
                     `;
-                    emailContent += qrHtml;
                 }
                 else if (paymentDetails.type === 'link' && paymentDetails.paymentLink) {
-                    const linkHtml = `
+                    extraContent = `
                         <div style="margin: 20px 0; text-align: center; padding: 20px; background-color: #f0f7ff; border-radius: 8px; border: 1px solid #cce5ff;">
                             <h3 style="margin-top: 0; color: #004085;">Complete Your Payment</h3>
                             <p style="color: #004085; margin-bottom: 20px;">Please click the button below to pay ₹${paymentDetails.amount} securely via Razorpay.</p>
@@ -359,32 +410,63 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                             <p style="font-size: 12px; color: #666; margin-top: 15px;">Link expires in 15 minutes.</p>
                         </div>
                     `;
-                    emailContent += linkHtml;
                 }
             }
 
-            // 2. Send to Customer
+            // Inject extra content into main template if placeholder exists, else append
+            if (mainContent.includes('{{paymentDetails}}')) {
+                mainContent = mainContent.replace('{{paymentDetails}}', extraContent);
+            } else {
+                mainContent += extraContent;
+            }
+
+
+            // 1. Send to Customer
             console.log('Sending email to Customer:', order.email);
             await sendEmail({
                 email: order.email,
                 subject: subject,
                 message: `${slug.replace('_', ' ').toUpperCase()}: ${order.bookingId || order._id}`,
-                html: emailContent,
+                html: mainContent,
                 attachments
             });
 
-            // 2. Send to Admin (Copy) - For ALL status changes
-            const adminEmail = 'nilemaxi14@gmail.com';
-            console.log('Sending copy to Admin:', adminEmail);
+
+            // 2. Send to Admin (Check for specific template first)
+            const siteSettings = await SiteSettings.findOne();
+            const adminEmail = siteSettings?.contact.email || "nilemaxi@gmail.com";
+
+            let adminHtml = mainContent; // Default to user content
+            let adminSubject = `[ADMIN COPY] ${subject}`;
+
+            try {
+                const adminSlug = `admin_${slug}`;
+                const adminTemplate = await SystemTemplate.findOne({ slug: adminSlug });
+                if (adminTemplate && adminTemplate.status === status.active) {
+                    console.log(`Found specific admin template: ${adminSlug}`);
+                    adminHtml = replacer(adminTemplate.emailContent);
+                    adminSubject = adminTemplate.emailSubject.replace(/{{orderId}}/g, (order.bookingId || order._id.toString().slice(-6)).toUpperCase());
+                    // Inject extra content if needed (payment details usually not needed for admin, unless specified)
+                    if (adminHtml.includes('{{paymentDetails}}')) {
+                        // Admin probably doesn't need to pay, but we replace if placeholder exists to avoid showing raw tag
+                        adminHtml = adminHtml.replace('{{paymentDetails}}', '');
+                    }
+                }
+            } catch (e) {
+                console.log('Error fetching specific admin template, falling back to default copy');
+            }
+
+            console.log('Sending email to Admin:', adminEmail);
             await sendEmail({
                 email: adminEmail,
-                subject: `[ADMIN COPY] ${subject}`,
-                message: `Copy of ${slug} for Order #${order.bookingId}`,
-                html: emailContent,
+                subject: adminSubject,
+                message: `Update for Order #${order.bookingId}`,
+                html: adminHtml,
                 attachments
             });
 
-            // 3. Send to Host (if Attachment type) - For ALL status changes
+
+            // 3. Send to Host
             if (order.carSlug || order.carName) {
                 try {
                     const carQuery = order.carSlug ? { slug: order.carSlug } : { name: order.carName };
@@ -392,12 +474,31 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
 
                     if (car && car.host && car.host.type === 2 && car.host.details?.email) {
                         const hostEmail = car.host.details.email;
+
+                        let hostHtml = mainContent;
+                        let hostSubject = `[HOST NOTIFICATION] ${subject}`;
+
+                        try {
+                            const hostSlug = `host_${slug}`;
+                            const hostTemplate = await SystemTemplate.findOne({ slug: hostSlug });
+                            if (hostTemplate && hostTemplate.status === status.active) {
+                                console.log(`Found specific host template: ${hostSlug}`);
+                                hostHtml = replacer(hostTemplate.emailContent);
+                                hostSubject = hostTemplate.emailSubject.replace(/{{orderId}}/g, (order.bookingId || order._id.toString().slice(-6)).toUpperCase());
+                                if (hostHtml.includes('{{paymentDetails}}')) {
+                                    hostHtml = hostHtml.replace('{{paymentDetails}}', '');
+                                }
+                            }
+                        } catch (e) {
+                            console.log('Error fetching specific host template, falling back to default copy');
+                        }
+
                         console.log('Sending email to Host:', hostEmail);
                         await sendEmail({
                             email: hostEmail,
-                            subject: `[HOST NOTIFICATION] ${subject}`,
+                            subject: hostSubject,
                             message: `Notification for your car: ${order.carName}`,
-                            html: emailContent, // Or a specific host template if needed
+                            html: hostHtml,
                             attachments
                         });
                     }

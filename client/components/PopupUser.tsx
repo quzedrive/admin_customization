@@ -156,7 +156,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
         <div className="w-full flex max-w-lg bg-white rounded-[20px] shadow-2xl mx-auto p-8 relative flex-col items-center justify-center text-center">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            className="cursor-pointer absolute top-4 right-4 text-gray-500 hover:text-gray-700"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -172,7 +172,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
           <p className="text-gray-600 mb-6">Your booking request has been received. We will contact you shortly.</p>
           <button
             onClick={onClose}
-            className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
+            className="cursor-pointer bg-blue-600 !text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
           >
             Close
           </button>

@@ -1,22 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import TrackHero from '@/components/track/TrackHero';
 import TrackingTimeline from '@/components/track/TrackingTimeline';
 import { AnimatePresence, motion } from 'framer-motion';
-// import { useQuery } from '@tanstack/react-query'; // Removed unused import
 import { useOrderQueries } from '@/lib/hooks/queries/useOrderQueries';
-// import { orderServices } from '@/lib/services/orderServices'; // Removed unused import
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import Image from 'next/image';
-import { QRCodeSVG } from 'qrcode.react';
 
 export default function TrackPage() {
+  const searchParams = useSearchParams();
+  const idFromUrl = searchParams.get('id');
+  
   const [trackingId, setTrackingId] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
   const { useTrackOrder } = useOrderQueries();
   const { data: order, isLoading, isError, error, refetch } = useTrackOrder(trackingId, { enabled: false });
+
+  // Auto-track if ID is in URL
+  useEffect(() => {
+    if (idFromUrl && idFromUrl !== trackingId) {
+      handleTrack(idFromUrl);
+    }
+  }, [idFromUrl]);
 
   const handleTrack = (id: string) => {
     setTrackingId(id);
@@ -36,11 +44,9 @@ export default function TrackPage() {
           src="/track-page.webp"
           alt="Track Background"
           fill
-          className="object-cover" // Lower opacity for dark effect
+          className="object-cover"
           priority
         />
-        {/* Gradient Overlay for better text readability */}
-        {/* <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/80 via-[#1a1a1a]/60 to-[#1a1a1a]/90"></div> */}
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[80vh]">
@@ -72,7 +78,10 @@ export default function TrackPage() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                       <div className="text-left w-full">
                         <div className="flex items-center justify-start gap-3 mb-2">
-                          <span className="text-gray-400 text-sm font-medium">Vehicle: <br className='md:hidden' /> <span className="text-white font-bold ml-1">{order.carName || 'Custom Vehicle'}</span></span>
+                          <span className="text-gray-400 text-sm font-medium">
+                            Vehicle: <br className='md:hidden' /> 
+                            <span className="text-white font-bold ml-1">{order.carName || 'Custom Vehicle'}</span>
+                          </span>
                           <span className={`h-6 px-3 inline-flex justify-center items-center rounded-full text-[10px] font-black uppercase tracking-wider
                                     ${order.status === 3 || order.status === 0 ? 'bg-red-500/20 text-red-500' : 'bg-green-600/20 text-green-500'}
                                 `}>
@@ -85,9 +94,6 @@ export default function TrackPage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Payment Pending Section */}
-
 
                   {/* Timeline */}
                   <TrackingTimeline status={order.status} paymentStatus={order.paymentStatus} />

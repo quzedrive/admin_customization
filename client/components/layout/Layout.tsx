@@ -36,6 +36,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         <Footer
           logoLight={settings?.general?.lightLogo}
           isLoading={isLoading}
+          title={settings?.general?.siteTitle}
           description={settings?.general?.description}
           location={location}
           contact={contact}

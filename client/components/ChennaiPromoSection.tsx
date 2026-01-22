@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import PopupUser from './PopupUser'
+import Link from 'next/link';
 
 
 export default function ChennaiPromoSection() {
@@ -29,8 +30,8 @@ export default function ChennaiPromoSection() {
            Experience Chennai your way with flexible self-drive car rentals. From Marina Beach to T. Nagar or Mylapore, travel freely and comfortably—on your own time, without a driver.
           </p>
 
-          <button
-            onClick={() => setShowPopup(!showPopup)}
+          <Link
+            href="/our-fleet"
             className="relative overflow-hidden cursor-pointer inline-block text-lg md:text-2xl font-semibold !text-white bg-black border border-black px-7 py-4 rounded-full
               transition-all duration-300 z-10 group min-w-[220px]"
           >
@@ -49,7 +50,7 @@ export default function ChennaiPromoSection() {
             <span className="relative z-10 flex items-center justify-center w-full transition-all duration-500 group-hover:translate-x-32 group-hover:opacity-0">
               BOOK NOW
             </span>
-          </button>
+          </Link>
         </div>
         {showPopup && <PopupUser onClose={()=>setShowPopup(!showPopup)}/>}
       </div>

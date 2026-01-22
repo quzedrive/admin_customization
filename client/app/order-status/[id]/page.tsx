@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useOrderQueries } from '@/lib/hooks/queries/useOrderQueries';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
@@ -10,14 +10,13 @@ import Link from 'next/link';
 export default function OrderStatusPage() {
     const params = useParams();
     const searchParams = useSearchParams();
+    const router = useRouter();
     const id = params.id as string;
 
     // Check for Razorpay query params to show specific success message
     const paymentId = searchParams.get('razorpay_payment_id');
 
     const { useTrackOrder } = useOrderQueries();
-    // Fetch data, ensuring we get the order.
-    // We don't strictly *need* all timeline data, but tracking order query is already there.
     const { data: order, isLoading, isError, refetch } = useTrackOrder(id);
 
     useEffect(() => {
@@ -94,7 +93,7 @@ export default function OrderStatusPage() {
 
                     <h1 className="text-3xl font-black text-white mb-2">Payment Successful!</h1>
                     <p className="text-gray-300 text-lg mb-6">
-                        Thank you, <span className="text-white font-bold">{order.name.split(' ')[0] || "Customer"}</span>. <br />
+                        Thank you, <span className="text-white font-bold">{order.name?.split(' ')[0] || "Customer"}</span>. <br />
                         Your ride is confirmed.
                     </p>
 
@@ -112,7 +111,7 @@ export default function OrderStatusPage() {
                     </div>
 
                     <Link
-                        href={`/track`}
+                        href={`/track?id=${order.bookingId || order._id}`}
                         className="block w-full py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold text-lg rounded-xl transition-all transform hover:scale-[1.02] shadow-lg"
                     >
                         Track Your Ride

@@ -272,13 +272,13 @@ export default function Hero({ car, settings }: HeroProps) {
                         <div className="flex gap-4">
                             <button
                                 onClick={() => setShowConfirm(false)}
-                                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+                                className="flex-1 cursor-pointer px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmPackageChange}
-                                className="flex-1 px-4 py-3 rounded-xl bg-black text-white font-bold hover:bg-gray-900 transition-colors"
+                                className="flex-1 cursor-pointer px-4 py-3 rounded-xl bg-black !text-white font-bold hover:bg-gray-900 transition-colors"
                             >
                                 Try Package
                             </button>

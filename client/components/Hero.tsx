@@ -14,7 +14,7 @@ export default function Hero() {
     >
       {/* Optimized Background Image */}
       <Image
-        src="/hero.webp"
+        src="/hero-bg.webp"
         alt="Self Drive Cars in Chennai"
         fill
         className="object-cover -z-10"
@@ -23,7 +23,7 @@ export default function Hero() {
       />
 
       {/* Overlay for better text readability if needed, currently reliant on text shadow */}
-      {/* <div className="absolute inset-0 bg-black/20 -z-10"></div> */}
+      <div className="absolute inset-0 bg-black/50 -z-10"></div>
 
       <div className='pt-12 md:pt-28 relative z-10'>
         <h1 className="text-3xl sm:text-3xl md:text-6xl 3xl:text-7xl 4xl:text-[100px] text-white text-center drop-shadow-lg font-adlam-display">

@@ -17,7 +17,7 @@ export default function AboutHero() {
             {/* Background Image */}
             <div className="absolute inset-0">
                 <Image
-                    src="/banner.webp"
+                    src="/about/about-hero-bg.webp"
                     alt="About QuzeeDrive"
                     fill
                     className="object-cover"
@@ -56,11 +56,11 @@ export default function AboutHero() {
                 </motion.p>
 
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 20 }}
                     transition={{ duration: 0.8, delay: 0.6 }}
                 >
-                    <Link href="/our-fleet" className="primary-outline-btn px-8 py-3 rounded-full font-semibold ">Travel With Us</Link>
+                    <Link href="/contact" className="primary-outline-btn px-8 py-3 rounded-full font-semibold ">Travel With Us</Link>
                 </motion.div>
             </div>
 
