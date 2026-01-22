@@ -20,37 +20,44 @@ const steps: TimelineStep[] = [
     },
     {
         id: 2,
+        title: "Payment Pending",
+        description: "Your booking is approved. Please complete the payment.",
+        icon: CircleAlert, // Using CircleAlert or generic icon
+    },
+    {
+        id: 3,
         title: "Booked",
         description: "Your booking has been verified and confirmed",
         icon: Check,
     },
     {
-        id: 3,
+        id: 4,
         title: "Started",
         description: "The ride has started. Have a safe journey!",
         icon: Car,
     },
     {
-        id: 4,
+        id: 5,
         title: "Completed",
         description: "Ride completed successfully. Thank you for choosing us",
-        icon: Flag, // Or MapPin if closer to design
+        icon: Flag,
     }
 ];
 
 interface TrackingTimelineProps {
     status?: number; // Order status from backend
+    paymentStatus?: number; // Payment status from backend
 }
 
-export default function TrackingTimeline({ status }: TrackingTimelineProps) {
+export default function TrackingTimeline({ status, paymentStatus }: TrackingTimelineProps) {
 
     // Map Backend Status to Timeline Steps
     // 0: Deleted
-    // 1: Approved -> Booked (Step 2)
+    // 1: Approved -> Booked (Step 3) or Payment Pending (Step 2)
     // 2: New -> Waiting for Confirmation (Step 1)
     // 3: Cancelled -> (Handled separately)
-    // 4: Started -> Started (Step 3)
-    // 5: Ride Completed -> Completed (Step 4)
+    // 4: Started -> Started (Step 4)
+    // 5: Ride Completed -> Completed (Step 5)
 
     let currentStepId = 0;
     let isCancelled = false;
@@ -63,13 +70,14 @@ export default function TrackingTimeline({ status }: TrackingTimelineProps) {
                 currentStepId = 1;
                 break;
             case 1: // Approved
-                currentStepId = 2;
+                // If payment is completed (1), then Booked (Step 3). Else Payment Pending (Step 2)
+                currentStepId = (paymentStatus === 1) ? 3 : 2;
                 break;
             case 4: // Started
-                currentStepId = 3;
+                currentStepId = 4;
                 break;
             case 5: // Completed
-                currentStepId = 4;
+                currentStepId = 5;
                 break;
             default:
                 currentStepId = 0; // Unknown or initial
@@ -99,12 +107,10 @@ export default function TrackingTimeline({ status }: TrackingTimelineProps) {
 
     return (
         <div className="w-full max-w-6xl mx-auto">
-            {/* Steps Container */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+            <div className="relative">
 
-                {/* Desktop Horizontal Line Container */}
-                <div className="hidden md:block absolute top-[24px] left-[12.5%] right-[12.5%] h-[2px] bg-gray-800 -z-0">
-                    {/* Active Progress Line */}
+                {/* Desktop Horizontal Line (md:block) */}
+                <div className="hidden md:block absolute top-[24px] left-[10%] right-[10%] h-[2px] bg-gray-800 -z-0">
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercentage}%` }}
@@ -113,9 +119,8 @@ export default function TrackingTimeline({ status }: TrackingTimelineProps) {
                     />
                 </div>
 
-                {/* Mobile Vertical Line Container */}
-                <div className="md:hidden absolute top-[24px] bottom-[calc(100%-last-step)] left-1/2 w-[2px] bg-gray-800 -z-0 -translate-x-1/2 h-[calc(100%-48px)]">
-                    {/* Active Progress Line (Vertical) */}
+                {/* Mobile Vertical Line (md:hidden) */}
+                <div className="md:hidden absolute top-[24px] bottom-[24px] left-[24px] w-[2px] bg-gray-800 -z-0">
                     <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${progressPercentage}%` }}
@@ -124,56 +129,59 @@ export default function TrackingTimeline({ status }: TrackingTimelineProps) {
                     />
                 </div>
 
-                {steps.map((step, index) => {
-                    const isCompleted = step.id < currentStepId;
-                    const isCurrent = step.id === currentStepId;
-                    const isActiveOrCompleted = step.id <= currentStepId;
+                {/* Steps Container: Vertical on Mobile, Horizontal on Desktop */}
+                <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-8 md:gap-0">
+                    {steps.map((step, index) => {
+                        const isCompleted = step.id < currentStepId;
+                        const isCurrent = step.id === currentStepId;
+                        const isActiveOrCompleted = step.id <= currentStepId;
 
-                    return (
-                        <motion.div
-                            key={step.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: index * 0.15 }}
-                            className="flex flex-col items-center text-center relative z-10"
-                        >
-                            {/* Icon Circle */}
-                            <div className="relative">
-                                {/* Blinking Glow for Current Step */}
-                                {isCurrent && (
-                                    <span className="absolute inset-0 rounded-full bg-white/30 animate-ping"></span>
-                                )}
-
-                                {isCurrent && (
-                                    <span className="absolute -inset-1 rounded-full bg-white/20 animate-pulse"></span>
-                                )}
-
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500 relative z-10
-                                    ${isActiveOrCompleted
-                                        ? 'bg-white border-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)]'
-                                        : 'bg-[#0a0a0a] border-gray-700 text-gray-500'
-                                    }
-                                `}>
-                                    {isActiveOrCompleted ? (
-                                        isCompleted ? <Check size={20} strokeWidth={3} /> : <step.icon size={20} strokeWidth={2} />
-                                    ) : (
-                                        <step.icon size={20} strokeWidth={2} />
+                        return (
+                            <motion.div
+                                key={step.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: index * 0.15 }}
+                                className="flex md:flex-col flex-row items-center md:items-center text-left md:text-center relative z-10 w-full md:w-auto"
+                            >
+                                {/* Icon Container */}
+                                <div className="relative flex-shrink-0 mr-4 md:mr-0">
+                                    {/* Blinking Glow for Current Step */}
+                                    {isCurrent && (
+                                        <span className="absolute inset-0 rounded-full bg-white/30 animate-ping"></span>
                                     )}
-                                </div>
-                            </div>
 
-                            {/* Text Content */}
-                            <div className="mt-4 md:mt-6 bg-black md:bg-transparent p-2 md:p-0 rounded-lg relative z-20">
-                                <h3 className={`text-base font-bold mb-2 transition-colors duration-300 ${isActiveOrCompleted ? 'text-white' : 'text-gray-500'}`}>
-                                    {step.title}
-                                </h3>
-                                <p className={`text-xs max-w-[200px] leading-relaxed transition-colors duration-300 ${isActiveOrCompleted ? 'text-gray-300' : 'text-gray-600'}`}>
-                                    {step.description}
-                                </p>
-                            </div>
-                        </motion.div>
-                    );
-                })}
+                                    {isCurrent && (
+                                        <span className="absolute -inset-1 rounded-full bg-white/20 animate-pulse"></span>
+                                    )}
+
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500 relative z-10
+                                    ${isActiveOrCompleted
+                                            ? 'bg-white border-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)]'
+                                            : 'bg-[#0a0a0a] border-gray-700 text-gray-500'
+                                        }
+                                `}>
+                                        {isActiveOrCompleted ? (
+                                            isCompleted ? <Check size={20} strokeWidth={3} /> : <step.icon size={20} strokeWidth={2} />
+                                        ) : (
+                                            <step.icon size={20} strokeWidth={2} />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Text Content */}
+                                <div className="mt-0 md:mt-6 bg-transparent p-0 rounded-lg relative z-20 flex-1">
+                                    <h3 className={`text-base font-bold mb-1 md:mb-2 transition-colors duration-300 ${isActiveOrCompleted ? 'text-white' : 'text-gray-500'}`}>
+                                        {step.title}
+                                    </h3>
+                                    <p className={`text-xs md:max-w-[200px] leading-relaxed transition-colors duration-300 ${isActiveOrCompleted ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        {step.description}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
