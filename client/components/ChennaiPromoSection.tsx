@@ -32,7 +32,7 @@ export default function ChennaiPromoSection() {
 
           <Link
             href="/our-fleet"
-            className="relative overflow-hidden cursor-pointer inline-block text-lg md:text-2xl font-semibold !text-white bg-black border border-black px-7 py-4 rounded-full
+            className="relative overflow-hidden cursor-pointer inline-block text-lg md:text-2xl font-semibold !text-white bg-black border border-black px-5 py-3 rounded-full
               transition-all duration-300 z-10 group min-w-[220px]"
           >
             {/* Car SVG animation - bottom left, moves to center on hover */}
