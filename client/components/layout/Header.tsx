@@ -93,13 +93,13 @@ export default function Header({ logoLight, isLoading }: { logoLight?: string, i
             {/* Map through navList to create navigation items */}
             {navList.map((item, index) => (
               <li key={index} className="relative group pt-2">
-                <a
+                <Link
                   href={item.href}
                   className="relative group 4xl:text-xl"
                 >
                   {item.name}
                   <span className={`absolute left-0 -bottom-1 w-0 h-0.5 rounded-full group-hover:w-full transition-all duration-300 ${transparentHeaderRoutes.includes(pathname) && prevScrollPos < 10 ? 'bg-white' : 'bg-black'}`}></span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

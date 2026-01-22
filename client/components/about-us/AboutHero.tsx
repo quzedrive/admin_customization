@@ -60,7 +60,7 @@ export default function AboutHero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.6 }}
                 >
-                    <Link href="/contact" className="primary-outline-btn px-8 py-3 rounded-full font-semibold ">Travel With Us</Link>
+                    <Link href="/our-fleet" className="primary-outline-btn px-8 py-3 rounded-full font-semibold ">Travel With Us</Link>
                 </motion.div>
             </div>
 
