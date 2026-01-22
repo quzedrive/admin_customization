@@ -15,6 +15,8 @@ function Specifications({ specifications, isLoading = false }: SpecificationsPro
 
     console.log(specifications);
 
+    if(specifications?.length === 0) return null;
+
 
     return (
         <div className='bg-black w-full text-white'>

@@ -46,5 +46,11 @@ export const orderServices = {
     getPriceHistory: async (id: string) => {
         const response = await client.get(`${BASE_URL}/${id}/price-history`);
         return response.data;
+    },
+
+    // Public: Verify Payment
+    verifyPayment: async (data: { paymentId: string; orderId: string }) => {
+        const response = await client.post(`${BASE_URL}/verify-payment`, data);
+        return response.data;
     }
 };
