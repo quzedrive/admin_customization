@@ -151,7 +151,7 @@ export default function TopBar({ carName }: { carName?: string }) {
                     </div>
 
                     {/* Car Type Dropdown */}
-                    <div className="w-full md:w-auto flex flex-col bg-gray-50 px-4 py-2 rounded-lg border border-gray-100 cursor-pointer relative group" ref={dropdownRef}>
+                    <div className="w-full md:w-auto flex flex-col bg-gray-50 px-4 py-2 rounded-lg border border-gray-100 cursor-pointer relative group " ref={dropdownRef}>
                         <div
                             className="flex flex-col gap-1 w-full"
                             onClick={() => {
@@ -164,7 +164,7 @@ export default function TopBar({ carName }: { carName?: string }) {
                                 setIsDropdownOpen(!isDropdownOpen);
                             }}
                         >
-                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">CAR TYPE</span>
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">SELECT CAR</span>
                             <div className="flex items-center justify-between gap-4 text-sm font-bold text-[#3B82F6] w-full">
                                 <span className="whitespace-nowrap flex-1">{formData.carName || carName || "Select Car"}</span>
                                 <ChevronDown size={16} className={`text-gray-400 shrink-0 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -174,7 +174,7 @@ export default function TopBar({ carName }: { carName?: string }) {
                         {/* Dropdown Menu */}
                         {isDropdownOpen && (
                             <div
-                                className={`absolute left-0 z-50 min-w-full w-full md:w-max bg-white rounded-xl shadow-xl border border-gray-100 p-1 ${dropdownPosition === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}`}
+                                className={`absolute left-0 z-50 min-w-full w-full md:w-max bg-white rounded-xl shadow-xl border border-gray-100 p-1 pb-5 ${dropdownPosition === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}`}
                             >
                                 <div
                                     className="overflow-y-auto no-scrollbar"

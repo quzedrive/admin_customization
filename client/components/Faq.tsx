@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useWhatsApp } from '@/app/context/WhatsappContext';
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, MessageCircle } from "lucide-react";
 
 const faqs = {
   left: [
@@ -28,7 +30,7 @@ const faqs = {
     {
       question: "What happens if the car breaks down?",
       answer: "All our cars are fully serviced and insured. In case of breakdown, we offer 24/7 roadside assistance or immediate replacement.",
-    }, 
+    },
     {
       question: "Are your cars insured?",
       answer: "Yes, every vehicle comes with comprehensive insurance and road tax paid.",
@@ -42,7 +44,7 @@ const faqs = {
     {
       question: "Do I need to pay any deposit?",
       answer: "Yes, a fully refundable security deposit is required. The amount varies depending on the vehicle category.",
-    }, 
+    },
     {
       question: "Can I modify or cancel my booking?",
       answer: "Yes, you can modify or cancel your booking with advance notice. Terms apply based on how close the request is to your trip start time.",
@@ -59,82 +61,118 @@ interface faqProp {
   answer: string | React.ReactNode;
   isOpen: boolean;
   onClick: () => void;
+  isContact?: boolean;
 }
-{/*template*/ }
-function FAQAccordion({ question, answer, isOpen, onClick }: faqProp) {
 
+function FAQAccordion({ question, answer, isOpen, onClick, isContact }: faqProp) {
   return (
-    <div className="flex flex-col justify-between border-b border-gray-400 ">
-      <div className='flex justify-between items-center'>
-        <button
-          onClick={onClick}
-          className={`cursor-pointer w-full text-left py-4 text-base 3xl:text-xl font-medium
-                      ${isOpen ? "text-blue-700" : "text-gray-800"}
-                    `}
-        > {question}
-        </button>
-        <button onClick={onClick}>{isOpen ? "-" : "+"}</button>
+    <div
+      onClick={onClick}
+      className={`
+        group border rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer
+        ${isOpen ? "border-primary bg-blue-50/30 shadow-md" : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-md"}
+      `}
+    >
+      <div className="flex justify-between items-center px-6 pt-6 pb-4">
+        <h4 className={`text-base 3xl:text-xl font-medium transition-colors duration-300 leading-snug ${isOpen ? "text-primary" : "text-gray-800 group-hover:text-primary"}`}>
+          {question}
+        </h4>
+        <div className={`
+          flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 flex-shrink-0 ml-4
+          ${isOpen ? "bg-primary text-white" : "bg-gray-100 text-gray-500 group-hover:bg-primary/10 group-hover:text-primary"}
+        `}>
+          {isContact ? (
+            <MessageCircle size={18} />
+          ) : (
+            <motion.div
+              animate={{ rotate: isOpen ? -180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ChevronDown size={18} />
+            </motion.div>
+          )}
+        </div>
       </div>
-      <div
-        className={`overflow-hidden transition-all duration-500 ease-in-out 
-                ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}
-               text-gray-700`}
-      >
-        <div className="py-4">{answer}</div>
-      </div>
-
+      <AnimatePresence initial={false}>
+        {isOpen && !isContact && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div className="px-5 pb-5 text-gray-600 leading-relaxed border-t border-gray-100/50 pt-4">
+              {answer}
+            </div>
+          </motion.div>
+        )}
+        {/* Special handling for contact card to show content if needed, or just act as button */}
+        {isContact && isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div className="px-5 pb-5 text-gray-600 leading-relaxed border-t border-gray-100/50 pt-4">
+              {answer}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 export default function FAQSection() {
+  const { toggle, isOpen } = useWhatsApp();
+  const [openState, setOpenState] = useState<{ column: 'left' | 'right'; index: number } | null>({ column: 'left', index: 0 });
 
-  const { toggle , isOpen} = useWhatsApp()
-  const [openIndex, setOpenIndex] = useState({ left: null, right: null });
-  const handleToggle = (column: string, index: number): void => {
-    setOpenIndex((prev) => ({
-      ...prev,
-      [column]: prev[column] === index ? null : index,
-    }));
+  const handleToggle = (column: 'left' | 'right', index: number): void => {
+    setOpenState((prev) => (prev?.column === column && prev?.index === index ? null : { column, index }));
   };
 
   return (
-    <section id='faq' className="w-full p-6 py-16">
+    <section id='faq' className="w-full p-6 py-16 ">
       <div className="w-full lg:max-w-5/6 4xl:max-w-4/5 mx-auto">
-        <div className="text-center mb-10">
-          <h5 className="text-red-600 text-base 3xl:text-lg 4xl:text-xl">???</h5>
-          <h3 className="text-[1.75rem] xl:text-4xl 3xl:text-5xl 4xl:text-6xl font-semibold">Frequently Asked Questions (FAQs)</h3>
-          <h6 className="text-sm 2xl:text-base 3xl:text-lg 4xl:text-xl text-gray-700 mt-2">
+        <div className="text-center mb-12 space-y-2">
+          <h5 className="text-primary text-base 3xl:text-lg 4xl:text-xl font-medium tracking-wide uppercase">???</h5>
+          <h3 className="text-3xl xl:text-4xl 3xl:text-5xl font-bold text-gray-900">Frequently Asked Questions</h3>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto pt-2">
             Got questions? We’ve got answers. Here’s everything you need to know about our self-drive car rental service in Chennai.
-          </h6>
+          </p>
         </div>
-        <div className="flex flex-col md:flex-row gap-8">
-          {/*left*/}
+
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          {/* Left Column */}
           <div className="w-full md:w-1/2 space-y-4">
             {faqs.left.map((item, i) => (
               <FAQAccordion
                 key={i}
                 {...item}
-                isOpen={openIndex.left === i}
+                isOpen={openState?.column === 'left' && openState?.index === i}
                 onClick={() => handleToggle("left", i)}
               />
             ))}
           </div>
-          {/*right*/}
+
+          {/* Right Column */}
           <div className="w-full md:w-1/2 space-y-4">
             {faqs.right.map((item, i) => (
               <FAQAccordion
                 key={i}
                 {...item}
-                isOpen={openIndex.right === i}
+                isOpen={openState?.column === 'right' && openState?.index === i}
                 onClick={() => handleToggle("right", i)}
               />
             ))}
+
             <FAQAccordion
-              question= "Still have questions? Contact us on WhatsApp or call us directly for instant support."
-              answer="Chat on WhatsApp"
+              question="Still have questions? Contact us on WhatsApp or call us directly for instant support."
+              answer="Click to chat with us on WhatsApp for immediate assistance."
               onClick={toggle}
-              isOpen={isOpen}
+              isOpen={isOpen} // This seems to track the whatsapp modal state
+              isContact={true}
             />
           </div>
         </div>

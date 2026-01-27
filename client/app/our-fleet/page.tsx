@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FleetSidebar from '@/components/our-fleet/FleetSidebar';
 import { useCarQueries } from '@/lib/hooks/queries/useCarQueries';
 import CarCard from '@/modals/cards/CarCard';
 import CarCardSkeleton from '@/components/skeletons/CarCardSkeleton';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/redux/store/store';
+import { setFilters, resetFilters } from '@/redux/slices/filterSlice';
 import { Filter, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -15,16 +18,30 @@ export default function OurFleetPage() {
   const { data, isLoading } = useGetPublicCars();
   const cars = Array.isArray(data) ? data : (data as any)?.cars || [];
 
+  const dispatch = useDispatch();
+  const filters = useSelector((state: RootState) => state.filter);
+
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  // Filters State
-  const [filters, setFilters] = useState({
-    brands: [],
-    types: [],
-    transmission: [],
-    fuelType: [],
-    capacity: []
-  });
+  // Scroll to top on mount
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  // Helper to bridge FleetSidebar's expected useState setter interface with Redux
+  // FleetSidebar likely calls setFilters(prev => ... ) or setFilters(newValue)
+  // We need to handle both if possible, or refactor FleetSidebar. 
+  // For now, let's update FleetSidebar signature in next step if needed. 
+  // But here's a compatible wrapper if FleetSidebar passes a new object:
+  const updateFiltersWrapper = (newFilters: any) => {
+    // If it's a function (functional update), resolve it
+    if (typeof newFilters === 'function') {
+      const result = newFilters(filters);
+      dispatch(setFilters(result));
+    } else {
+      dispatch(setFilters(newFilters));
+    }
+  };
 
   // Extract unique values for dynamic filters
   const uniqueBrands = Array.from(new Set(cars.map((c: any) => c.brand))).filter(Boolean) as string[];
@@ -37,10 +54,7 @@ export default function OurFleetPage() {
     const matchTrans = filters.transmission.length === 0 || (filters.transmission as string[]).includes(car.transmission);
     const matchFuel = filters.fuelType.length === 0 || (filters.fuelType as string[]).includes(car.fuelType);
 
-    // Capacity Logic: Exact or Range?
-    // User asked for "capacity".
-    // Assuming user selects "5 Seats", we check if car.seatingCapacity == 5
-    // Or if "8+" check >= 8
+    // Capacity Logic
     const matchCapacity = filters.capacity.length === 0 || (filters.capacity as string[]).some((cap: string) => {
       if (cap === '8+') return car.seatingCapacity >= 8;
       return car.seatingCapacity === parseInt(cap);
@@ -81,7 +95,7 @@ export default function OurFleetPage() {
             <div className="sticky top-24">
               <FleetSidebar
                 filters={filters}
-                setFilters={setFilters}
+                setFilters={updateFiltersWrapper}
                 brands={uniqueBrands}
                 types={uniqueTypes}
               />
@@ -108,7 +122,7 @@ export default function OurFleetPage() {
                 >
                   <FleetSidebar
                     filters={filters}
-                    setFilters={setFilters}
+                    setFilters={updateFiltersWrapper}
                     brands={uniqueBrands}
                     types={uniqueTypes}
                     closeMobile={() => setMobileFilterOpen(false)}
@@ -143,7 +157,7 @@ export default function OurFleetPage() {
                   We couldn't find any cars matching your filters. Try adjusting your search criteria.
                 </p>
                 <button
-                  onClick={() => setFilters({ brands: [], types: [], transmission: [], fuelType: [], capacity: [] })}
+                  onClick={() => dispatch(resetFilters())}
                   className="mt-6 text-blue-600 font-bold hover:underline"
                 >
                   Clear all filters

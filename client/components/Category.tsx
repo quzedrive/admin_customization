@@ -1,7 +1,10 @@
-'use client'
+'use client';
+
 import Image from 'next/image';
-import { useState } from 'react'
-import PopupUser from './PopupUser'
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { setFilters, resetFilters } from '../redux/slices/filterSlice';
+// import PopupUser from './PopupUser' // Removed as requested
 
 const carCategories = [
   {
@@ -32,14 +35,23 @@ const carCategories = [
 ]
 
 export default function Category() {
+  const router = useRouter();
+  const dispatch = useDispatch();
 
-  const [showPopup, setShowPopup] = useState(false)
+  const handleCategoryClick = (categoryTitle: string) => {
+    // Convert plural to singular if needed (simple heuristic as before)
+    const type = categoryTitle.endsWith('s') ? categoryTitle.slice(0, -1) : categoryTitle;
+
+    dispatch(resetFilters()); // Clear other filters first
+    dispatch(setFilters({ types: [type] }));
+    router.push('/our-fleet');
+  };
 
   return (
     <section id='about' className="bg-white text-neutral-800 px-6 md:py-8 md:px-26">
       {/* Heading Section */}
       <div className="text-center md:max-w-5/6 md:mx-auto my-4 md:my-8 font-manrope">
-        <p className="text-xl tracking-wide font-medium uppercase">About Us</p>
+        <p className="text-lg tracking-wide font-medium uppercase text-primary">About Us</p>
         <h1 className="text-3xl md:text-5xl font-bold mt-2 mb-4 text-neutral-primary">Your Trusted Self Drive Car Rental in Chennai</h1>
         <p className="text-lg text-gray-neutral/500">
           At Quzeedrive, we make travel flexible and stress-free with reliable self-drive cars in Chennai. Whether it’s a short city ride or a weekend getaway across Tamil Nadu, our well-maintained fleet is ready for your journey. Enjoy the freedom to drive without a driver, with simple pick-up and drop-off options citywide — all designed for your comfort, privacy, and convenience.
@@ -74,7 +86,10 @@ export default function Category() {
                 <h2 className="text-xl 2xl:text-2xl 4xl:text-3xl font-semibold mb-2">{category.title}</h2>
                 <p className="text-sm 2xl:text-base 4xl:text-lg text-gray-300">{category.description}</p>
               </div>
-              <button onClick={() => setShowPopup(!showPopup)} className='cursor-pointer'>
+              <button
+                onClick={() => handleCategoryClick(category.title)}
+                className='cursor-pointer inline-block'
+              >
                 <Image
                   src='/icons/arrow-diaganal.svg'
                   alt='->'
@@ -92,7 +107,6 @@ export default function Category() {
         </p>
         <h1 className="text-xl font-bold mt-2 text-neutral-primary">Drive how you want, where you want — with no ownership and no hidden fees.</h1>
       </div>
-      {showPopup && <PopupUser onClose={() => setShowPopup(!showPopup)} />}
     </section>
   );
 }

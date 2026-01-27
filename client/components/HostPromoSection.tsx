@@ -40,10 +40,10 @@ export default function HostPromoSection() {
             <button
               onClick={() => setShowPopup(!showPopup)}
               className="relative !overflow-hidden inline-flex items-center justify-center px-6 py-3 bg-transparent text-white border border-white font-semibold rounded-full  cursor-pointer
-    transition-colors duration-300 group hover:border-black"
+    transition-colors duration-300 group hover:text-secondary"
             >
               {/* Black fill animation */}
-              <span className="absolute inset-0 left-0 top-0 w-full h-full bg-black z-0 transition-transform duration-300 origin-left scale-x-0 group-hover:scale-x-100"></span>
+              <span className="absolute inset-0 left-0 top-0 w-full h-full bg-secondary z-0 transition-transform duration-300 origin-left scale-x-0 group-hover:scale-x-100"></span>
               <span className="relative z-10 flex items-center">
                 JOIN NOW
                 <span className="ml-2">→</span>

@@ -44,7 +44,7 @@ export default function CarCard({ car }: CarCardProps) {
 
                 {/* Brand Badge */}
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-900 shadow-sm uppercase tracking-wider">
-                    {car.brand}
+                    {car.type}
                 </div>
             </div>
 
@@ -52,7 +52,7 @@ export default function CarCard({ car }: CarCardProps) {
             <div className="p-5 flex flex-col flex-1">
                 <div className="flex justify-between items-start mb-0">
                     <div>
-                        <p className="text-xs text-green-600 font-bold tracking-wide uppercase mb-0">{car.type}</p>
+                        <p className="text-xs text-green-600 font-bold tracking-wide uppercase mb-0">{car.brand}</p>
                         <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">{car.name}</h3>
                     </div>
                     <div className="text-right">

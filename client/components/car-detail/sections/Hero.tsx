@@ -336,7 +336,7 @@ export default function Hero({ car, settings }: HeroProps) {
                 <div className="flex flex-col">
                     <div className="mb-3">
                         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                            {car.name}
+                           {car.brand} {car.name}
                         </h1>
 
                         <div className="flex flex-wrap gap-2 mb-4">
