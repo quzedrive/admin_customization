@@ -24,10 +24,23 @@ import {
     BookOpen
 } from 'lucide-react';
 import { cn } from '@/components/utils/cn';
-import { useAdminLogoutMutation } from '@/lib/hooks/mutations/useAdminLogoutMutation';
 import { useAdminLoginQueries } from '@/lib/hooks/queries/useAdminLoginQueries';
+import { useSiteSettingsQueries } from '@/lib/hooks/queries/useSiteSettingsQueries';
 
-const menuItems = [
+// Define Interfaces
+interface MenuItem {
+    name: string;
+    icon: React.ElementType;
+    href: string;
+    subItems?: MenuItem[];
+}
+
+interface MenuSection {
+    title: string;
+    items: MenuItem[];
+}
+
+const menuItems: MenuSection[] = [
     {
         title: 'Overview',
         items: [
@@ -104,15 +117,6 @@ const menuItems = [
                     { name: 'Add Template', icon: PlusCircle, href: '/admin/system-templates/add-page' },
                 ]
             },
-            // {
-            //     name: 'CMS',
-            //     icon: BookOpenText,
-            //     href: '#',
-            //     subItems: [
-            //         { name: 'All Pages', icon: List, href: '/admin/cms/list-page' },
-            //         { name: 'Add Page', icon: PlusCircle, href: '/admin/cms/add-page' },
-            //     ]
-            // },
             {
                 name: 'Settings',
                 icon: Settings,
@@ -133,13 +137,119 @@ interface SidebarProps {
     onExpand: () => void;
 }
 
-import { useSiteSettingsQueries } from '@/lib/hooks/queries/useSiteSettingsQueries';
+// MenuItem Component for cleaner rendering
+// MenuItem Component for cleaner rendering
+const SidebarItem = React.memo(({
+    item,
+    isCollapsed,
+    pathname,
+    openDropdown,
+    toggleDropdown,
+    onClose
+}: {
+    item: MenuItem;
+    isCollapsed: boolean;
+    pathname: string;
+    openDropdown: string | null;
+    toggleDropdown: (name: string) => void;
+    onClose: () => void;
+}) => {
+    const isActive = pathname === item.href;
+    const isDropdownOpen = openDropdown === item.name;
+    const hasSubItems = item.subItems && item.subItems.length > 0;
+    const Icon = item.icon;
+    const itemRef = React.useRef<HTMLDivElement>(null);
 
-// ... (existing imports)
+    // Auto-scroll into view when opened
+    React.useEffect(() => {
+        if (isDropdownOpen && itemRef.current) {
+            // Wait for animation frame or small timeout to allow height expansion to start/finish
+            setTimeout(() => {
+                itemRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center', // Centers the item for better visibility
+                });
+            }, 100);
+        }
+    }, [isDropdownOpen]);
+
+    if (hasSubItems) {
+        return (
+            <div ref={itemRef}>
+                <button
+                    onClick={() => toggleDropdown(item.name)}
+                    className={cn(
+                        "w-full cursor-pointer flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200",
+                        isDropdownOpen
+                            ? "bg-blue-50 text-blue-600"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                        isCollapsed && "justify-center px-0"
+                    )}
+                    title={isCollapsed ? item.name : undefined}
+                >
+                    <div className="flex items-center gap-3">
+                        <Icon size={20} />
+                        {!isCollapsed && <span>{item.name}</span>}
+                    </div>
+                    {!isCollapsed && (isDropdownOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
+                </button>
+
+                {/* Dropdown Content */}
+                <AnimatePresence>
+                    {isDropdownOpen && !isCollapsed && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="pl-10 pr-2 py-1 space-y-1">
+                                {item.subItems?.map((subItem) => (
+                                    <Link
+                                        key={subItem.name}
+                                        href={subItem.href}
+                                        onClick={onClose}
+                                        className={cn(
+                                            "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                                            pathname === subItem.href
+                                                ? "text-blue-600 bg-blue-50"
+                                                : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                                        )}
+                                    >
+                                        {subItem.icon && <subItem.icon size={16} />}
+                                        <span>{subItem.name}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    }
+
+    return (
+        <Link
+            href={item.href}
+            onClick={onClose}
+            className={cn(
+                "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200",
+                isActive
+                    ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                isCollapsed && "justify-center px-0"
+            )}
+            title={isCollapsed ? item.name : undefined}
+        >
+            <Icon size={20} />
+            {!isCollapsed && <span>{item.name}</span>}
+        </Link>
+    );
+});
 
 export default function Sidebar({ isOpen, isCollapsed, onClose, onExpand }: SidebarProps) {
     const pathname = usePathname();
-    const logoutMutation = useAdminLogoutMutation();
     const { data } = useAdminLoginQueries();
     const { useSiteSettings } = useSiteSettingsQueries();
     const { data: siteSettings } = useSiteSettings();
@@ -211,84 +321,17 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onExpand }: Side
                                 </h3>
                             )}
                             <div className="space-y-1">
-                                {section.items.map((item) => {
-                                    const isActive = pathname === item.href;
-                                    const isDropdownOpen = openDropdown === item.name;
-                                    const hasSubItems = item.subItems && item.subItems.length > 0;
-
-                                    return (
-                                        <div key={item.name}>
-                                            {hasSubItems ? (
-                                                <button
-                                                    onClick={() => toggleDropdown(item.name)}
-                                                    className={cn(
-                                                        "w-full cursor-pointer flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200",
-                                                        isDropdownOpen
-                                                            ? "bg-blue-50 text-blue-600"
-                                                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
-                                                        isCollapsed && "justify-center px-0"
-                                                    )}
-                                                    title={isCollapsed ? item.name : undefined}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <item.icon size={20} />
-                                                        {!isCollapsed && <span>{item.name}</span>}
-                                                    </div>
-                                                    {!isCollapsed && (isDropdownOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
-                                                </button>
-                                            ) : (
-                                                <Link
-                                                    href={item.href}
-                                                    onClick={onClose}
-                                                    className={cn(
-                                                        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200",
-                                                        isActive
-                                                            ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600"
-                                                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
-                                                        isCollapsed && "justify-center px-0"
-                                                    )}
-                                                    title={isCollapsed ? item.name : undefined}
-                                                >
-                                                    <item.icon size={20} />
-                                                    {!isCollapsed && <span>{item.name}</span>}
-                                                </Link>
-                                            )}
-
-                                            {/* Dropdown Content */}
-                                            <AnimatePresence>
-                                                {hasSubItems && isDropdownOpen && !isCollapsed && (
-                                                    <motion.div
-                                                        initial={{ height: 0, opacity: 0 }}
-                                                        animate={{ height: 'auto', opacity: 1 }}
-                                                        exit={{ height: 0, opacity: 0 }}
-                                                        transition={{ duration: 0.2 }}
-                                                        className="overflow-hidden"
-                                                    >
-                                                        <div className="pl-10 pr-2 py-1 space-y-1">
-                                                            {item.subItems?.map((subItem) => (
-                                                                <Link
-                                                                    key={subItem.name}
-                                                                    href={subItem.href}
-                                                                    onClick={onClose}
-                                                                    className={cn(
-                                                                        "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                                                                        pathname === subItem.href
-                                                                            ? "text-blue-600 bg-blue-50"
-                                                                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                                                                    )}
-                                                                >
-                                                                    {/* Render SubItem Icon if it exists */}
-                                                                    {subItem.icon && <subItem.icon size={16} />}
-                                                                    <span>{subItem.name}</span>
-                                                                </Link>
-                                                            ))}
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
-                                    );
-                                })}
+                                {section.items.map((item) => (
+                                    <SidebarItem
+                                        key={item.name}
+                                        item={item}
+                                        isCollapsed={isCollapsed}
+                                        pathname={pathname}
+                                        openDropdown={openDropdown}
+                                        toggleDropdown={toggleDropdown}
+                                        onClose={onClose}
+                                    />
+                                ))}
                             </div>
                         </div>
                     ))}
