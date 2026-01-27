@@ -23,6 +23,7 @@ import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import ModernDropdown from '@/components/inputs/ModernDropDown';
 import StatusToggle from '@/components/inputs/ui/StatusToggle';
+import { PAGINATION_SIZES } from '@/components/admin/order-management/constants';
 import DeleteModal from '@/modals/admin/brand-management/DeleteModal';
 
 export default function SystemTemplateListPage() {
@@ -32,18 +33,28 @@ export default function SystemTemplateListPage() {
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [togglingId, setTogglingId] = useState<string | null>(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
     const { useGetAllTemplates } = useSystemTemplateQueries();
-    const { data: templates, isLoading, isError, error } = useGetAllTemplates();
+    const { data: templateData, isLoading, isError, error } = useGetAllTemplates({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchTerm,
+        status: statusFilter === '' ? undefined : statusFilter
+    });
+
     const { deleteTemplateMutation, updateTemplateMutation } = useSystemTemplateMutations();
 
-    // Filtering logic (client-side for now as API doesn't seem to support pagination/filter yet)
-    const filteredTemplates = templates?.filter((template: any) => {
-        const matchesSearch =
-            template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            template.slug.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter ? template.status === Number(statusFilter) : true;
-        return matchesSearch && matchesStatus;
-    });
+    const templates = templateData?.templates || [];
+    const pagination = templateData?.pagination;
+    const totalPages = pagination?.totalPages || 1;
+    const totalItems = pagination?.total || 0;
+
+    // Reset page when filters change
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter, itemsPerPage]);
 
     const handleDeleteClick = (id: string) => {
         setDeleteId(id);
@@ -121,8 +132,20 @@ export default function SystemTemplateListPage() {
                         />
                     </div>
 
-                    {/* View Mode */}
-                     <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                </div>
+
+                {/* Pagination Size & View Mode */}
+                <div className="flex items-center gap-4">
+                    <div className="w-40 hidden sm:block">
+                        <ModernDropdown
+                            options={PAGINATION_SIZES}
+                            value={itemsPerPage.toString()}
+                            onChange={(val) => setItemsPerPage(Number(val))}
+                            placeholder="Per page"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
                         <button
                             onClick={() => setViewMode('table')}
                             className={`cursor-pointer p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -183,7 +206,7 @@ export default function SystemTemplateListPage() {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ) : filteredTemplates?.length === 0 ? (
+                                    ) : templates.length === 0 ? (
                                         <tr>
                                             <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                                                 <div className="flex flex-col items-center gap-2">
@@ -194,7 +217,7 @@ export default function SystemTemplateListPage() {
                                             </td>
                                         </tr>
                                     ) : (
-                                        filteredTemplates?.map((template: any) => (
+                                        templates.map((template: any) => (
                                             <tr key={template._id} className="hover:bg-gray-50/50 transition-colors group">
                                                 <td className="px-6 py-4">
                                                     <div>
@@ -274,13 +297,13 @@ export default function SystemTemplateListPage() {
                                     <p className="font-medium">Failed to load templates</p>
                                     <p className="text-sm">{(error as any)?.message || 'Unknown error occurred'}</p>
                                 </div>
-                            ) : filteredTemplates?.length === 0 ? (
+                            ) : templates.length === 0 ? (
                                 <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
                                     <p className="text-lg font-medium text-gray-900 mb-1">No templates found</p>
                                     <p>Try adjusting your search or filters</p>
                                 </div>
                             ) : (
-                                filteredTemplates?.map((template: any) => (
+                                templates.map((template: any) => (
                                     <div key={template._id} className="bg-white border border-gray-100 rounded-[2rem] p-5 shadow-sm hover:shadow-lg transition-all duration-300 group relative flex flex-col items-center">
                                         {/* Status Badge - Absolute Top Right */}
                                         <div className="absolute top-2 right-4 z-10">
@@ -353,6 +376,36 @@ export default function SystemTemplateListPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Pagination Controls */}
+            {
+                totalItems > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-100">
+                        <div className="text-sm text-gray-500">
+                            Showing {templates.length} of {totalItems} templates
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <span className="text-sm text-gray-600 font-medium px-2">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Delete Confirmation Modal */}
             <DeleteModal

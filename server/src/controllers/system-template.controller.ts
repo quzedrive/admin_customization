@@ -7,8 +7,44 @@ import { status } from '../constants/status';
 // @access  Private
 export const getAllTemplates = async (req: Request, res: Response) => {
     try {
-        const templates = await SystemTemplate.find({ status: { $ne: status.deleted } }).sort({ createdAt: -1 });
-        res.status(200).json(templates);
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const search = (req.query.search as string) || '';
+        const statusParam = req.query.status as string;
+
+        const query: any = { status: { $ne: status.deleted } };
+
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { slug: { $regex: search, $options: 'i' } },
+                { emailSubject: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        if (statusParam && statusParam !== 'all') {
+            query.status = parseInt(statusParam);
+        }
+
+        const skip = (page - 1) * limit;
+
+        const [templates, total] = await Promise.all([
+            SystemTemplate.find(query)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            SystemTemplate.countDocuments(query)
+        ]);
+
+        res.status(200).json({
+            templates,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }

@@ -1,11 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/api/queryClient';
-import { systemTemplateServices } from '@/lib/services/systemTemplateServices';
+import { systemTemplateServices, TemplateParams } from '@/lib/services/systemTemplateServices';
 
 export const useSystemTemplateQueries = () => {
-    const useGetAllTemplates = () => useQuery({
-        queryKey: [queryKeys.systemTemplates],
-        queryFn: systemTemplateServices.getAllTemplates,
+    const useGetAllTemplates = (params?: TemplateParams) => useQuery({
+        queryKey: [queryKeys.systemTemplates, params],
+        queryFn: () => systemTemplateServices.getAllTemplates(params),
+        placeholderData: keepPreviousData,
     });
 
     const useGetTemplateById = (id: string) => useQuery({

@@ -1,8 +1,15 @@
 import client from '@/lib/api/client';
 
+export interface TemplateParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string | number;
+}
+
 export const systemTemplateServices = {
-    getAllTemplates: async () => {
-        const response = await client.get('/system-templates');
+    getAllTemplates: async (params?: TemplateParams) => {
+        const response = await client.get('/system-templates', { params });
         return response.data;
     },
     getTemplateById: async (id: string) => {

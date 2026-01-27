@@ -694,7 +694,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
         if (paymentData.status === 'captured') {
             const order = await Order.findById(orderId);
             if (order) {
-                if (order.paymentStatus !== 1) {
+                const wasUnpaid = order.paymentStatus !== 1;
+
+                if (wasUnpaid) {
                     order.paymentStatus = 1; // Paid
                     if (order.payment) {
                         order.payment.transactionId = paymentId;
@@ -703,6 +705,14 @@ export const verifyPayment = async (req: Request, res: Response) => {
                     }
                     await order.save();
                     console.log(`Order ${order._id} verified and updated to PAID via verifyPayment`);
+
+                    // Send order_booked emails
+                    try {
+                        await sendOrderBookedEmails(order);
+                    } catch (emailError) {
+                        console.error('Failed to send order_booked emails:', emailError);
+                        // Don't fail the payment verification if email fails
+                    }
                 }
                 return res.json({ success: true, message: 'Payment verified', status: 'captured' });
             } else {
@@ -717,6 +727,127 @@ export const verifyPayment = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Verification failed' });
     }
 };
+
+// Helper function to send order_booked emails
+const sendOrderBookedEmails = async (order: any) => {
+    try {
+        const slug = 'order_booked';
+        console.log(`Fetching system template: ${slug}`);
+        const template = await SystemTemplate.findOne({ slug });
+
+        if (!template || template.status !== status.active) {
+            console.log(`Template ${slug} not found or inactive`);
+            return;
+        }
+
+        // --- REPLACER FUNCTION ---
+        const startDate = new Date(order.tripStart).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+        const emailConfig = await EmailConfig.getSingleton();
+        const year = new Date().getFullYear().toString();
+        const companyName = emailConfig.fromName || 'Quzee Drive';
+        const supportEmail = emailConfig.fromEmail || 'support@quzeedrive.com';
+        const orderLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/track?id=${order.bookingId || order._id}`;
+        const adminLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/order-management/edit-page/${order._id}`;
+
+        const replacer = (text: string) => text
+            .replace(/{{name}}/g, order.name)
+            .replace(/{{email}}/g, order.email)
+            .replace(/{{phone}}/g, order.phone)
+            .replace(/{{orderId}}/g, (order.bookingId || order._id.toString().slice(-6)).toUpperCase())
+            .replace(/{{carName}}/g, order.carName || 'N/A')
+            .replace(/{{selectedPackage}}/g, order.selectedPackage || 'N/A')
+            .replace(/{{tripStart}}/g, startDate)
+            .replace(/{{location}}/g, order.location || 'N/A')
+            .replace(/{{year}}/g, year)
+            .replace(/{{companyName}}/g, companyName)
+            .replace(/{{supportEmail}}/g, supportEmail)
+            .replace(/{{link}}/g, orderLink)
+            .replace(/{{adminLink}}/g, adminLink)
+            .replace(/{{finalPrice}}/g, order.finalPrice ? order.finalPrice.toString() : (order.selectedPackage ? order.selectedPackage.replace(/[^0-9]/g, '') : ''));
+
+        const subject = template.emailSubject.replace(/{{orderId}}/g, (order.bookingId || order._id.toString().slice(-6)).toUpperCase());
+        const userContent = replacer(template.emailContent);
+
+        // 1. Send to Customer
+        console.log('Sending order_booked email to Customer:', order.email);
+        await sendEmail({
+            email: order.email,
+            subject: subject,
+            message: `Payment Successful: ${order.bookingId || order._id}`,
+            html: userContent
+        });
+
+        // 2. Send to Admin (Check for specific template first)
+        const siteSettings = await SiteSettings.findOne();
+        const adminEmail = siteSettings?.contact.email || "nilemaxi@gmail.com";
+
+        let adminHtml = userContent;
+        let adminSubject = `[ADMIN COPY] ${subject}`;
+
+        try {
+            const adminSlug = 'admin_order_booked';
+            const adminTemplate = await SystemTemplate.findOne({ slug: adminSlug });
+            if (adminTemplate && adminTemplate.status === status.active) {
+                console.log(`Found specific admin template: ${adminSlug}`);
+                adminHtml = replacer(adminTemplate.emailContent);
+                adminSubject = adminTemplate.emailSubject.replace(/{{orderId}}/g, (order.bookingId || order._id.toString().slice(-6)).toUpperCase());
+            }
+        } catch (e) {
+            console.log('Error fetching specific admin template, falling back to default copy');
+        }
+
+        console.log('Sending order_booked email to Admin:', adminEmail);
+        await sendEmail({
+            email: adminEmail,
+            subject: adminSubject,
+            message: `Payment received for Order #${order.bookingId}`,
+            html: adminHtml
+        });
+
+        // 3. Send to Host (if applicable)
+        if (order.carSlug || order.carName) {
+            try {
+                const carQuery = order.carSlug ? { slug: order.carSlug } : { name: order.carName };
+                const car = await Car.findOne(carQuery).select('host');
+
+                if (car && car.host && car.host.type === 2 && car.host.details?.email) {
+                    const hostEmail = car.host.details.email;
+
+                    let hostHtml = userContent;
+                    let hostSubject = `[HOST NOTIFICATION] ${subject}`;
+
+                    try {
+                        const hostSlug = 'host_order_booked';
+                        const hostTemplate = await SystemTemplate.findOne({ slug: hostSlug });
+                        if (hostTemplate && hostTemplate.status === status.active) {
+                            console.log(`Found specific host template: ${hostSlug}`);
+                            hostHtml = replacer(hostTemplate.emailContent);
+                            hostSubject = hostTemplate.emailSubject.replace(/{{orderId}}/g, (order.bookingId || order._id.toString().slice(-6)).toUpperCase());
+                        }
+                    } catch (e) {
+                        console.log('Error fetching specific host template, falling back to default copy');
+                    }
+
+                    console.log('Sending order_booked email to Host:', hostEmail);
+                    await sendEmail({
+                        email: hostEmail,
+                        subject: hostSubject,
+                        message: `Payment confirmed for your car: ${order.carName}`,
+                        html: hostHtml
+                    });
+                }
+            } catch (hostError) {
+                console.error('Failed to fetch host details or send email:', hostError);
+            }
+        }
+
+        console.log('Order booked email sequence completed');
+    } catch (error) {
+        console.error('Failed to send order_booked emails:', error);
+        throw error;
+    }
+};
+
 
 // @desc    Get Price History for an Order
 // @route   GET /api/orders/:id/price-history
