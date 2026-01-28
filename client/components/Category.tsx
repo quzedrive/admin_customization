@@ -62,41 +62,61 @@ export default function Category() {
         {carCategories.map((category, index) => (
           <div
             key={index}
-            className={`h-90 group relative rounded-2xl text-white overflow-hidden shadow-lg hover:shadow-xl transition-shadow
-    ${index === 0 ? 'row-span-2 h-90 lg:h-190' : ''}`}
+            className={`group relative overflow-hidden rounded-3xl shadow-lg transition-all duration-500 hover:shadow-2xl hover:-translate-y-1
+    ${index === 0 ? 'row-span-2 min-h-[400px] lg:min-h-full' : 'min-h-[300px]'}`}
           >
-            {/* Background image with scale on hover */}
+            {/* Background image with subtle zoom on hover */}
             <div
-              className="absolute inset-0 w-full h-full transition-transform duration-500 lg:group-hover:scale-105"
+              className="absolute inset-0 w-full h-full transition-transform duration-700 ease-out group-hover:scale-110"
               style={{
                 backgroundImage: `url(${category.image})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                zIndex: 0,
               }}
             />
-            <div className="relative h-full flex flex-col justify-between p-4 xl:p-8 3xl:p-10 bg-transparent z-10">
-              <div>
-                <Image
-                  src='/analytics.svg'
-                  alt='||'
-                  width={35}
-                  height={35}
-                />
-                <h2 className="text-xl 2xl:text-2xl 4xl:text-3xl font-semibold mb-2">{category.title}</h2>
-                <p className="text-sm 2xl:text-base 4xl:text-lg text-gray-300">{category.description}</p>
+
+            {/* Gradient Overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
+
+            {/* Content Container */}
+            <div className="relative h-full flex flex-col justify-between p-6 md:p-8 z-10">
+
+              {/* Top Section: Icon & Title */}
+              <div className="transform transition-transform duration-500 lg:group-hover:translate-y-0 lg:translate-y-2">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/10">
+                  <Image
+                    src='/analytics.svg'
+                    alt='Icon'
+                    width={20}
+                    height={20}
+                    className="brightness-0 invert opacity-90"
+                  />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight font-manrope">
+                  {category.title}
+                </h2>
+                <p className="text-gray-200 text-sm md:text-base leading-relaxed opacity-100 lg:opacity-0 transform lg:translate-y-4 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 transition-all duration-500 delay-100">
+                  {category.description}
+                </p>
               </div>
-              <button
-                onClick={() => handleCategoryClick(category.title)}
-                className='cursor-pointer inline-block'
-              >
-                <Image
-                  src='/icons/arrow-diaganal.svg'
-                  alt='->'
-                  width={35}
-                  height={35}
-                />
-              </button>
+
+              {/* Bottom Section: Action Button */}
+              <div className="self-end mt-4">
+                <button
+                  onClick={() => handleCategoryClick(category.title)}
+                  className='group/btn cursor-pointer relative flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white transition-all duration-300 hover:bg-white hover:text-black hover:w-32 hover:justify-between hover:px-4 overflow-hidden'
+                >
+                  <span className="hidden group-hover/btn:block text-sm font-semibold whitespace-nowrap mr-2">Explore</span>
+                  <div className="relative w-5 h-5 flex-shrink-0">
+                    <Image
+                      src='/icons/arrow-diaganal.svg'
+                      alt='->'
+                      fill
+                      className="object-contain brightness-0 invert group-hover/btn:brightness-0 group-hover/btn:invert-0 transition-all duration-300"
+                    />
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         ))}

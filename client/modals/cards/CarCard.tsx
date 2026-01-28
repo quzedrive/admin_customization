@@ -27,7 +27,7 @@ export default function CarCard({ car }: CarCardProps) {
     return (
         <Link href={`/${car.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 flex flex-col h-full">
             {/* Image Container */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-50">
+            <div className="relative aspect-[5/3] w-full overflow-hidden bg-gray-50">
                 {car.images && car.images.length > 0 ? (
                     <Image
                         src={car.images[0].url || car.images[0]}
