@@ -323,7 +323,7 @@ export default function Hero({ car, settings }: HeroProps) {
                                 src={selectedImage}
                                 alt={car.name}
                                 fill
-                                className="object-contain p-4"
+                                className="object-cover p-4"
                                 priority
                             />
                         ) : (
