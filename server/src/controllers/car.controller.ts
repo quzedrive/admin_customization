@@ -40,9 +40,66 @@ export const getPublicCars = async (req: Request, res: Response) => {
         const limit = parseInt(req.query.limit as string) || 10;
         const skip = (page - 1) * limit;
 
-        const total = await Car.countDocuments({ status: status.active });
+        // Build Query
+        const query: any = { status: status.active };
 
-        const cars = await Car.find({ status: status.active })
+        // Filters
+        if (req.query.brands) {
+            const brands = (req.query.brands as string).split(',').filter(Boolean);
+            if (brands.length > 0) query.brand = { $in: brands };
+        }
+
+        if (req.query.types) {
+            const types = (req.query.types as string).split(',').filter(Boolean);
+            if (types.length > 0) query.type = { $in: types };
+        }
+
+        if (req.query.transmission) {
+            const transmission = (req.query.transmission as string).split(',').filter(Boolean);
+            if (transmission.length > 0) query.transmission = { $in: transmission };
+        }
+
+        if (req.query.fuelType) {
+            const fuelType = (req.query.fuelType as string).split(',').filter(Boolean);
+            if (fuelType.length > 0) query.fuelType = { $in: fuelType };
+        }
+
+        if (req.query.capacity) {
+            const capacities = (req.query.capacity as string).split(',').filter(Boolean);
+            if (capacities.length > 0) {
+                // Handle "8+" parsing if needed. Frontend usually sends "5", "7", "8+".
+                // Simple exact match for numbers, $gte for 8+.
+                const exactCapacities: number[] = [];
+                let hasPlus = false;
+
+                capacities.forEach(c => {
+                    if (c === '8+') hasPlus = true;
+                    else exactCapacities.push(parseInt(c));
+                });
+
+                if (hasPlus) {
+                    if (exactCapacities.length > 0) {
+                        query.$or = [
+                            { seatingCapacity: { $in: exactCapacities } },
+                            { seatingCapacity: { $gte: 8 } }
+                        ];
+                    } else {
+                        query.seatingCapacity = { $gte: 8 };
+                    }
+                } else {
+                    query.seatingCapacity = { $in: exactCapacities };
+                }
+            }
+        }
+
+        const total = await Car.countDocuments(query);
+
+        // Fetch available filter options (aggregations) based on all active cars
+        // unrelated to the current search query, so the sidebar remains populated.
+        const brands = await Car.distinct('brand', { status: status.active });
+        const types = await Car.distinct('type', { status: status.active });
+
+        const cars = await Car.find(query)
             .populate('images')
             .populate('specifications')
             .populate({
@@ -56,6 +113,10 @@ export const getPublicCars = async (req: Request, res: Response) => {
 
         res.status(200).json({
             cars,
+            filters: {
+                brands: brands.filter(Boolean).sort(),
+                types: types.filter(Boolean).sort()
+            },
             pagination: {
                 total,
                 page,

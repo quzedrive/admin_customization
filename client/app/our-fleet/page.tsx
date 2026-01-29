@@ -14,12 +14,27 @@ import { Filter, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export default function OurFleetPage() {
-  const { useGetPublicCars } = useCarQueries();
-  const { data, isLoading } = useGetPublicCars();
-  const cars = Array.isArray(data) ? data : (data as any)?.cars || [];
-
+  const { useGetPublicCarsInfinite } = useCarQueries();
   const dispatch = useDispatch();
   const filters = useSelector((state: RootState) => state.filter);
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useGetPublicCarsInfinite(10, filters);
+
+  // Flatten the pages into a single cars array
+  const cars = data?.pages.flatMap((page: any) => page.cars) || [];
+
+  // Server-side filters for sidebar (take from first page or accumulate?)
+  // Usually first page has the aggregations or we query specific endpoint.
+  // Assuming our controller returns 'filters' on every page (it does), we can filter from first page.
+  const serverFilters = (data?.pages[0] as any)?.filters;
+  const uniqueBrands = serverFilters?.brands || [];
+  const uniqueTypes = serverFilters?.types || [];
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -28,13 +43,38 @@ export default function OurFleetPage() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
+  // Infinite Scroll Trigger
+  // Simple listener for bottom of page or a "Load More" button.
+  // For "on scroll", we can use an Intersection Observer or a simple onScroll handler.
+  // Ideally use 'react-intersection-observer' but avoiding new deps if possible.
+  // Let's us a simple div ref at the bottom.
+  const loadMoreRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Helper to bridge FleetSidebar...
+
   // Helper to bridge FleetSidebar's expected useState setter interface with Redux
-  // FleetSidebar likely calls setFilters(prev => ... ) or setFilters(newValue)
-  // We need to handle both if possible, or refactor FleetSidebar. 
-  // For now, let's update FleetSidebar signature in next step if needed. 
-  // But here's a compatible wrapper if FleetSidebar passes a new object:
   const updateFiltersWrapper = (newFilters: any) => {
-    // If it's a function (functional update), resolve it
     if (typeof newFilters === 'function') {
       const result = newFilters(filters);
       dispatch(setFilters(result));
@@ -43,25 +83,17 @@ export default function OurFleetPage() {
     }
   };
 
-  // Extract unique values for dynamic filters
-  const uniqueBrands = Array.from(new Set(cars.map((c: any) => c.brand))).filter(Boolean) as string[];
-  const uniqueTypes = Array.from(new Set(cars.map((c: any) => c.type))).filter(Boolean) as string[];
+  // We need unique filters derived from data or static constants. 
+  // Ideally, these come from specific API endpoints or aggregated data.
+  // For now, we derive from the returned cars, but this might be limited if the returned set is small.
+  // Ideally, we should fetch "all available options" separately.
+  // Assuming 'cars' contains the filtered set, we can stick to using the current filtered set for available options OR 
+  // ideally use a separate "aggregations" endpoint. 
+  // For simplicity and user request, we use what we have or static lists if data is empty.
 
-  // Filter Logic
-  const filteredCars = cars.filter((car: any) => {
-    const matchBrand = filters.brands.length === 0 || (filters.brands as string[]).includes(car.brand);
-    const matchType = filters.types.length === 0 || (filters.types as string[]).includes(car.type);
-    const matchTrans = filters.transmission.length === 0 || (filters.transmission as string[]).includes(car.transmission);
-    const matchFuel = filters.fuelType.length === 0 || (filters.fuelType as string[]).includes(car.fuelType);
+  // No more client-side filtering! 
+  // const filteredCars = ... REMOVED
 
-    // Capacity Logic
-    const matchCapacity = filters.capacity.length === 0 || (filters.capacity as string[]).some((cap: string) => {
-      if (cap === '8+') return car.seatingCapacity >= 8;
-      return car.seatingCapacity === parseInt(cap);
-    });
-
-    return matchBrand && matchType && matchTrans && matchFuel && matchCapacity;
-  });
 
   return (
     <main className="bg-gray-50 min-h-screen">
@@ -141,9 +173,9 @@ export default function OurFleetPage() {
                   <CarCardSkeleton key={i} />
                 ))}
               </div>
-            ) : filteredCars.length > 0 ? (
+            ) : cars.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredCars.map((car: any) => (
+                {cars.map((car: any) => (
                   <CarCard key={car._id} car={car} />
                 ))}
               </div>
@@ -158,12 +190,22 @@ export default function OurFleetPage() {
                 </p>
                 <button
                   onClick={() => dispatch(resetFilters())}
-                  className="mt-6 text-blue-600 font-bold hover:underline"
+                  className="cursor-pointer mt-6 text-blue-600 font-bold hover:underline"
                 >
                   Clear all filters
                 </button>
               </div>
             )}
+
+            {/* Scroll Trigger & Loading State */}
+            <div ref={loadMoreRef} className="h-20 flex items-center justify-center mt-8">
+              {isFetchingNextPage && (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm text-gray-500">Loading more cars...</span>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>

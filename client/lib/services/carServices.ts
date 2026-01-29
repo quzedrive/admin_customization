@@ -10,8 +10,21 @@ export const carServices = {
     },
 
     // Public: Get all public cars
-    getPublicCars: async (page = 1, limit = 10) => {
-        const response = await client.get(`${BASE_URL}/public?page=${page}&limit=${limit}`);
+    getPublicCars: async (page = 1, limit = 10, filters?: any) => {
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString()
+        });
+
+        if (filters) {
+            if (filters.brands?.length) queryParams.append('brands', filters.brands.join(','));
+            if (filters.types?.length) queryParams.append('types', filters.types.join(','));
+            if (filters.transmission?.length) queryParams.append('transmission', filters.transmission.join(','));
+            if (filters.fuelType?.length) queryParams.append('fuelType', filters.fuelType.join(','));
+            if (filters.capacity?.length) queryParams.append('capacity', filters.capacity.join(','));
+        }
+
+        const response = await client.get(`${BASE_URL}/public?${queryParams.toString()}`);
         return response.data;
     },
 

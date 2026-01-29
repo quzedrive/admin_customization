@@ -4,35 +4,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { setFilters, resetFilters } from '../redux/slices/filterSlice';
+import { carCategories } from '../constants/cars';
 // import PopupUser from './PopupUser' // Removed as requested
-
-const carCategories = [
-  {
-    title: 'Hatchbacks',
-    description: ' Compact, fuel-efficient cars perfect for navigating Chennai’s busy streets. Ideal for short rides and daily commuting.',
-    image: '/cars/alto.webp',
-  },
-  {
-    title: 'Sedans',
-    description: ' Smooth, spacious, and comfortable — great for family trips, business travel, and weekend getaways.',
-    image: '/cars/skoda.webp',
-  },
-  {
-    title: 'SUVs',
-    description: ' Perfect for long drives, off-road adventures, and those who crave control with comfort.',
-    image: '/cars/kia.webp',
-  },
-  {
-    title: 'Luxury Cars',
-    description: 'Experience premium comfort and top-tier features — drive in ultimate style.',
-    image: '/cars/audi.webp',
-  },
-  {
-    title: 'MUVs',
-    description: 'Ideal for big families, group outings, and road trips with ample luggage room and seating capacity.',
-    image: '/cars/ev.webp',
-  },
-]
 
 export default function Category() {
   const router = useRouter();
@@ -59,7 +32,7 @@ export default function Category() {
       </div>
       {/* Car Grid Section */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {carCategories.map((category, index) => (
+        {carCategories?.map((category, index) => (
           <div
             key={index}
             className={`group relative overflow-hidden rounded-3xl shadow-lg transition-all duration-500 hover:shadow-2xl hover:-translate-y-1
@@ -104,15 +77,15 @@ export default function Category() {
               <div className="self-end mt-4">
                 <button
                   onClick={() => handleCategoryClick(category.title)}
-                  className='group/btn cursor-pointer relative flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white transition-all duration-300 hover:bg-white hover:text-black hover:w-32 hover:justify-between hover:px-4 overflow-hidden'
+                  className='cursor-pointer relative flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white transition-all duration-300 group-hover:bg-white group-hover:text-black group-hover:w-32 group-hover:justify-between group-hover:px-4 overflow-hidden'
                 >
-                  <span className="hidden group-hover/btn:block text-sm font-semibold whitespace-nowrap mr-2">Explore</span>
+                  <span className="hidden group-hover:block text-sm font-semibold whitespace-nowrap mr-2">Explore</span>
                   <div className="relative w-5 h-5 flex-shrink-0">
                     <Image
                       src='/icons/arrow-diaganal.svg'
                       alt='->'
                       fill
-                      className="object-contain brightness-0 invert group-hover/btn:brightness-0 group-hover/btn:invert-0 transition-all duration-300"
+                      className="object-contain brightness-0 invert group-hover:brightness-0 group-hover:invert-0 transition-all duration-300"
                     />
                   </div>
                 </button>

@@ -1,9 +1,15 @@
 // import Image from 'next/image';
 // import Link from 'next/link';
+'use client';
 
+import { useCarQueries } from "@/lib/hooks/queries/useCarQueries";
 import loadConfig from "next/dist/server/config";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { setFilters, resetFilters } from '@/redux/slices/filterSlice';
+import { Mail, MapPin, Phone } from "lucide-react";
 
 // interface Location {
 //   address: string;
@@ -147,6 +153,21 @@ interface FooterProps {
 export default function Footer({ logoLight, isLoading, title, description, location, contact }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
+  const { useGetPublicCars } = useCarQueries();
+  const { data, isLoading: isCarLoading } = useGetPublicCars();
+  const cars = Array.isArray(data) ? data : (data as any)?.cars || [];
+
+  const uniqueTypes = Array.from(new Set(cars.map((c: any) => c.type))).filter(Boolean) as string[];
+
+  const router = useRouter();
+  const dispatch = useDispatch();
+
+  const handleTypeClick = (type: string) => {
+    dispatch(resetFilters());
+    dispatch(setFilters({ types: [type] }));
+    router.push('/our-fleet');
+  };
+
   const quickLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about-us" },
@@ -208,26 +229,55 @@ export default function Footer({ logoLight, isLoading, title, description, locat
 
               {/* Corporate Mobility Solutions */}
               <div className="flex flex-col items-start  col-span-2 sm:col-span-2 lg:col-span-1 gap-3 w-full">
-                <h4 className="text-sm font-bold text-white uppercase">Quick Links</h4>
-                <ul className="space-y-2 text-sm text-gray-300 ">
-                  {quickLinks.map((link, index) => (
-                    <li key={index}>
-                      <Link className='hover:text-primary transition-colors' href={link.href}>{link.name}</Link>
-                    </li>
-                  ))}
-                </ul>
+                <h4 className="text-sm font-bold text-white uppercase">Corporate Services</h4>
+                {isCarLoading ? (
+                  <ul className='space-y-2 text-sm text-gray-300'>
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                  </ul>
+                ) : (
+                  <ul className="space-y-2 text-sm text-gray-300 ">
+                    {uniqueTypes.map((type, index) => (
+                      <li key={index}>
+                        <button
+                          onClick={() => handleTypeClick(type)}
+                          className='w-full text-left text-gray-300 hover:text-primary transition-colors cursor-pointer'
+                        >
+                          {type}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              {/* Events And Custom Travels */}
+              {/* Contact */}
               <div className="flex flex-col items-start  col-span-2 sm:col-span-2 lg:col-span-1 gap-3 w-full">
-                <h4 className="text-sm font-bold text-white uppercase">Quick Links</h4>
-                <ul className="space-y-2 text-sm text-gray-300 ">
-                  {quickLinks.map((link, index) => (
-                    <li key={index}>
-                      <Link className='hover:text-primary transition-colors' href={link.href}>{link.name}</Link>
+                <h4 className="text-sm font-bold text-white uppercase">Company</h4>
+                {isLoading ? (
+                  <ul className='space-y-2 text-sm text-gray-300'>
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
+                  </ul>
+                ) : (
+                  <ul className="space-y-2 text-sm text-gray-300">
+                    <li><Link className='flex justify-start items-center gap-1 hover:text-primary transition-colors' href={`tel:+91${contact?.hostContact}`}> +91 {contact?.hostContact} - Host</Link></li>
+                    <li><Link className='flex justify-start items-center gap-1 hover:text-primary transition-colors' href={`tel:+91${contact?.customerContact}`}> +91 {contact?.customerContact} - Customer</Link></li>
+                    <li className='space-y-1'>
+                      <div><Link href={`mailto:${contact?.contactEmail}`} className='flex justify-start items-center gap-2 break-all hover:text-primary transition-colors'>{contact?.contactEmail}</Link></div>
                     </li>
-                  ))}
-                </ul>
+                    <li>
+                      <div><Link href={`mailto:${contact?.supportEmail}`} className='flex justify-start items-center gap-2 break-all hover:text-primary transition-colors'>{contact?.supportEmail}</Link></div>
+                    </li>
+                    <li><Link className='flex justify-start items-center gap-2 hover:text-primary transition-colors' href={location?.link} target='_blank' rel='noopener noreferrer'>{location?.address}</Link></li>
+                  </ul>
+                )}
               </div>
 
 
