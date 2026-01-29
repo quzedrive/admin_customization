@@ -225,10 +225,6 @@ export default function Hero({ car, settings }: HeroProps) {
     // Initial setups
     useEffect(() => {
         if (car?.images?.length > 0) {
-            // car.images can be strings (urls) or objects depending on population.
-            // Based on checking other files, images seem to be populated objects with 'url'?
-            // Let's handle both strings and objects to be safe based on controller populate.
-            // Controller says: .populate('images') -> CarImage objects { url: string }
             const firstImg = car.images[0];
             setSelectedImage(typeof firstImg === 'string' ? firstImg : firstImg?.url || '');
         }
@@ -237,18 +233,29 @@ export default function Hero({ car, settings }: HeroProps) {
         setSelectedPackageId('base-plan');
 
         // Pre-fill car data in search form if not already set or different
-        // Only if not already searching (to avoid overwriting user selection if they navigated here with filters)
-        // But for "Car Type" in form, it should probably match this car.
-        // Let's ensure the car details are updated in Redux when viewing this car
         if (car) {
-            dispatch(setSearchFormData({
+            const updates: any = {
                 carId: car._id,
                 carName: car.name,
                 carSlug: car.slug
-            }));
+            };
+
+            // If dates are missing, set default duration based on base plan (default 12h)
+            if (!formData.tripStart || !formData.tripEnd) {
+                const rawBase = settings?.baseTiming || '';
+                const baseH = parseInt(rawBase.replace(/hours?/i, '').trim()) || 12;
+
+                const start = dayjs();
+                const end = start.add(baseH, 'hour');
+
+                updates.tripStart = start.toISOString();
+                updates.tripEnd = end.toISOString();
+            }
+
+            dispatch(setSearchFormData(updates));
         }
 
-    }, [car, dispatch]);
+    }, [car, dispatch, settings]); // added settings, formData check is "read once" logic basically but safer to exclude formData to avoid loop or check values
 
 
     if (!car) return null;
@@ -336,7 +343,7 @@ export default function Hero({ car, settings }: HeroProps) {
                 <div className="flex flex-col">
                     <div className="mb-3">
                         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                           {car.brand} {car.name}
+                            {car.brand} {car.name}
                         </h1>
 
                         <div className="flex flex-wrap gap-2 mb-4">
