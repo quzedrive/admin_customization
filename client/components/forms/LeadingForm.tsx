@@ -31,7 +31,8 @@ export default function HeroSearchForm() {
     data: carsData,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    isLoading: isLoadingCarsDropdown
   } = useGetPublicCarsInfinite();
 
   const cars = carsData?.pages.flatMap((page: any) => page.cars || page) || [];
@@ -239,7 +240,11 @@ export default function HeroSearchForm() {
                     }
                   }}
                 >
-                  {cars.length > 0 ? (
+                  {isLoadingCarsDropdown ? (
+                    <div className="flex items-center justify-center py-2">
+                      <Loader className="animate-spin text-gray-500" size={16} />
+                    </div>
+                  ) : (
                     <>
                       {cars.map((car: any) => (
                         <div
@@ -257,8 +262,6 @@ export default function HeroSearchForm() {
                         </div>
                       )}
                     </>
-                  ) : (
-                    <div className="px-4 py-3 text-sm text-gray-500 text-center">No cars available</div>
                   )}
                 </div>
 
