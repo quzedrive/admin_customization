@@ -13,6 +13,7 @@ interface EmailOptions {
         path?: string;
         contentType?: string;
         base64Content?: string; // Mailjet specific: pass base64 string here if needed
+        cid?: string; // Content-ID for inline images
     }>;
 }
 
@@ -57,12 +58,22 @@ const sendEmail = async (options: EmailOptions) => {
                 Subject: options.subject,
                 TextPart: options.message,
                 HTMLPart: options.html || options.message.replace(/\n/g, '<br>'),
-                // Handle attachments if present
-                Attachments: options.attachments?.map(att => ({
-                    ContentType: att.contentType || 'application/octet-stream',
-                    Filename: att.filename,
-                    Base64Content: att.base64Content || (att.content ? Buffer.from(att.content).toString('base64') : '')
-                }))
+                // Handle attachments
+                Attachments: options.attachments
+                    ?.filter(att => !att.cid)
+                    .map(att => ({
+                        ContentType: att.contentType || 'application/octet-stream',
+                        Filename: att.filename,
+                        Base64Content: att.base64Content || (att.content ? Buffer.from(att.content).toString('base64') : '')
+                    })),
+                InlinedAttachments: options.attachments
+                    ?.filter(att => att.cid)
+                    .map(att => ({
+                        ContentType: att.contentType || 'application/octet-stream',
+                        Filename: att.filename,
+                        ContentID: att.cid,
+                        Base64Content: att.base64Content || (att.content ? Buffer.from(att.content).toString('base64') : '')
+                    }))
             }
         ]
     };

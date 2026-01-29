@@ -5,6 +5,7 @@ import PaymentSettings from '../models/settings/payment-settings.model';
 import { decrypt } from '../utils/encryption';
 import { paymentStatus } from '../constants/status';
 import { razorpayConfig } from '../config/razorpay';
+import { sendOrderBookedEmails } from './order.controller';
 
 // @desc    Handle Razorpay Webhooks
 // @route   POST /api/webhooks/razorpay
@@ -16,18 +17,7 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
         const signature = req.headers['x-razorpay-signature'] as string;
         const body = JSON.stringify(req.body);
 
-        // Ideally, we should fetch the webhook secret from settings or env
-        // For now, let's assume it's in env or we can verify against the keySecret??
-        // Razorpay webhooks have a specific secret you set in the dashboard.
-        // Let's use PROCESS.ENV.RAZORPAY_WEBHOOK_SECRET if available, otherwise fallback or skip for now?
-        // User didn't specify where secret comes from. I will assume env for safety.
-
-        // ===================================
-        // SECURITY CHECK - UNCOMMENT FOR PROD
-        // ===================================
-        // For production, you MUST ensure RAZORPAY_WEBHOOK_SECRET is set in your .env
-        // and in the Razorpay Dashboard. This verification prevents fake requests.
-
+        // Security Check
         const webhookSecret = razorpayConfig.webhookSecret; // Retrieved from .env or config
 
         if (webhookSecret) {
@@ -44,7 +34,6 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
         } else {
             console.warn('RAZORPAY_WEBHOOK_SECRET not set, skipping signature verification (NOT SECURE)');
         }
-        // ===================================
 
         const event = req.body.event;
         const payload = req.body.payload;
@@ -54,21 +43,21 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
         if (event === 'payment_link.paid') {
             const entity = payload.payment_link.entity;
             const refId = entity.reference_id; // This matches our bookingId or _id
-            const paymentId = payload.payment?.entity?.id || entity.id; // Or payment_link.entity.id ? No, payment_link has its own ID. We want the Payment ID usually.
-            // payload.payment.entity gives the payment details if included.
+            const paymentId = payload.payment?.entity?.id || entity.id;
 
             // Find Order
-            // Try bookingId first, then _id
             let order = await Order.findOne({ bookingId: refId });
             if (!order && refId.match(/^[0-9a-fA-F]{24}$/)) {
                 order = await Order.findById(refId);
             }
 
             if (order) {
-                // Update Order Payment Status
                 console.log(`Updating payment status for order ${order._id} to PAID`);
 
-                order.paymentStatus = 1; // 1: Paid (as requested: 0: Unpaid, 1: Paid, 2: Pending)
+                // Check if already paid to avoid duplicate emails
+                const wasUnpaid = order.paymentStatus !== 1;
+
+                order.paymentStatus = 1; // 1: Paid
 
                 if (order.payment) {
                     order.payment.transactionId = paymentId;
@@ -80,6 +69,17 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
 
                 await order.save();
                 console.log('Order status updated successfully via webhook');
+
+                // Send Emails if it was a fresh payment
+                if (wasUnpaid) {
+                    try {
+                        console.log('Triggering email notifications...');
+                        await sendOrderBookedEmails(order);
+                    } catch (emailError) {
+                        console.error('Webhook Email Error:', emailError);
+                        // Do not fail the webhook response
+                    }
+                }
             } else {
                 console.error(`Order not found for reference_id: ${refId}`);
             }

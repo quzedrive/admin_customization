@@ -729,7 +729,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
 };
 
 // Helper function to send order_booked emails
-const sendOrderBookedEmails = async (order: any) => {
+export const sendOrderBookedEmails = async (order: any) => {
     try {
         const slug = 'order_booked';
         console.log(`Fetching system template: ${slug}`);

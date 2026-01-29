@@ -81,7 +81,7 @@ export default function Header({ logoLight, isLoading }: { logoLight?: string, i
                 alt="QuzeeDrive"
                 width={100}
                 height={100}
-                className='w-16 h-16 3xl:w-full 3xl:h-auto'
+                className='w-16 h-16 md:h-20 md:w-20 lg:h-auto lg:w-24'
               />
             ) : null
           )}
