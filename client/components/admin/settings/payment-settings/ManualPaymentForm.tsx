@@ -60,7 +60,7 @@ export default function ManualPaymentForm({ initialData, onSave, isLoading }: Ma
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="px-8 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-70 disabled:active:scale-100 transition-all flex items-center gap-2"
+                    className="cursor-pointer px-8 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-70 disabled:active:scale-100 transition-all flex items-center gap-2"
                 >
                     {isLoading ? 'Saving...' : 'Save Changes'}
                 </button>
