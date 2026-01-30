@@ -19,6 +19,8 @@ import CarSpecifications from './form-sections/CarSpecifications';
 import CarPackages from './form-sections/CarPackages';
 import CarHostDetails from './form-sections/CarHostDetails';
 
+import CarVehicleDetails from './form-sections/CarVehicleDetails';
+
 interface CarFormProps {
     initialData?: any;
     isEditMode?: boolean;
@@ -42,6 +44,11 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         description: '',
         images: [],
         specifications: [],
+        vehicleModel: '',
+        registrationNumber: '',
+        engineNumber: '',
+        chassisNumber: '',
+        registrationType: '',
 
         packages: [],
         host: { type: 1, details: { name: '', email: '', phone: '', aadhar: '' } },
@@ -98,6 +105,11 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 description: initialData.description || '',
                 images: imageUrls,
                 specifications: specs,
+                vehicleModel: initialData.vehicleModel || '',
+                registrationNumber: initialData.registrationNumber || '',
+                engineNumber: initialData.engineNumber || '',
+                chassisNumber: initialData.chassisNumber || '',
+                registrationType: initialData.registrationType || '',
                 packages: [], // Handled separately
                 host: initialData.host || { type: 1, details: { name: '', email: '', phone: '', aadhar: '' } },
                 status: initialData.status ?? 1
@@ -345,6 +357,12 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 handleStatusChange={handleStatusChange}
                 errors={errors}
                 brands={(brandsData as any)?.brands || []}
+            />
+
+            <CarVehicleDetails
+                formData={formData}
+                handleChange={handleChange}
+                errors={errors}
             />
 
             <CarPricing

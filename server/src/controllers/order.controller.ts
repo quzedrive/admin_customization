@@ -300,6 +300,27 @@ export const getAdminOrders = async (req: Request, res: Response) => {
 import { generatePDF } from '../utils/pdfGenerator';
 import { generatePaymentDetails } from '../utils/payment';
 
+// Simple number to words converter (Indian Numbering System favored or standard)
+const numberToWords = (num: number): string => {
+    const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+    const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+    const inWords = (n: number): string => {
+        if ((n = n.toString() as any).length > 9) return 'overflow';
+        let nArray: any = ('000000000' + n).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+        if (!nArray) return '';
+        let str = '';
+        str += (nArray[1] != 0) ? (a[Number(nArray[1])] || b[nArray[1][0]] + ' ' + a[nArray[1][1]]) + 'crore ' : '';
+        str += (nArray[2] != 0) ? (a[Number(nArray[2])] || b[nArray[2][0]] + ' ' + a[nArray[2][1]]) + 'lakh ' : '';
+        str += (nArray[3] != 0) ? (a[Number(nArray[3])] || b[nArray[3][0]] + ' ' + a[nArray[3][1]]) + 'thousand ' : '';
+        str += (nArray[4] != 0) ? (a[Number(nArray[4])] || b[nArray[4][0]] + ' ' + a[nArray[4][1]]) + 'hundred ' : '';
+        str += (nArray[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(nArray[5])] || b[nArray[5][0]] + ' ' + a[nArray[5][1]]) : '';
+        return str.trim();
+    };
+
+    return inWords(num);
+};
+
 const sendOrderStatusEmail = async (order: any, slug: string) => {
     try {
         console.log(`Fetching system template: ${slug}`);
@@ -309,9 +330,18 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
             let emailContent = template.emailContent;
             const subject = template.emailSubject.replace(/{{orderId}}/g, (order.bookingId || order._id.toString().slice(-6)).toUpperCase());
 
-            // --- REPLACER FUNCTION ---
-            const startDate = new Date(order.tripStart).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+            // --- DATA PREPARATION ---
+            const startDateObj = new Date(order.tripStart);
+            const endDateObj = new Date(order.tripEnd);
+            const startDate = startDateObj.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+            // Lease calculations
+            const timeDiff = endDateObj.getTime() - startDateObj.getTime();
+            const leaseDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
             const emailConfig = await EmailConfig.getSingleton();
+            const siteSettings = await SiteSettings.findOne(); // For company address/location
+
             const year = new Date().getFullYear().toString();
             const companyName = emailConfig.fromName || 'Quzee Drive';
             const supportEmail = emailConfig.fromEmail || 'support@quzeedrive.com';
@@ -319,7 +349,30 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
             const adminLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/order-management/edit-page/${order._id}`;
             const submissionTime = new Date(order.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
+            // Fetch Car Details for Agreement
+            let carDetails: any = {};
+            if (order.carSlug || order.carName) {
+                const carQuery = order.carSlug ? { slug: order.carSlug } : { name: order.carName };
+                carDetails = await Car.findOne(carQuery) || {};
+            }
+
+            // Lessor Details (Host or Company)
+            let lessorName = companyName;
+            let lessorPhone = siteSettings?.contact?.phone || '';
+            let lessorAddress = siteSettings?.contact?.address || 'Bangalore, India';
+
+            if (carDetails.host?.type === 2 && carDetails.host?.details) { // 2 = Individual Host
+                lessorName = carDetails.host.details.name || lessorName;
+                lessorPhone = carDetails.host.details.phone || lessorPhone;
+                // Add address if available in host details, otherwise fallback
+            }
+
+            const agreementDate = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+            const leaseAmount = order.finalPrice || 0;
+            const leaseAmountWords = numberToWords(parseInt(leaseAmount.toString()));
+
             const replacer = (text: string) => text
+                // Standard Order Fields
                 .replace(/{{name}}/g, order.name)
                 .replace(/{{email}}/g, order.email)
                 .replace(/{{phone}}/g, order.phone)
@@ -334,8 +387,37 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                 .replace(/{{link}}/g, orderLink)
                 .replace(/{{adminLink}}/g, adminLink)
                 .replace(/{{cancelReason}}/g, order.cancelReason || '')
-                .replace(/{{finalPrice}}/g, order.finalPrice ? order.finalPrice.toString() : (order.selectedPackage ? order.selectedPackage.replace(/[^0-9]/g, '') : ''))
-                .replace(/{{submissionTime}}/g, submissionTime);
+                .replace(/{{finalPrice}}/g, leaseAmount.toString())
+                .replace(/{{submissionTime}}/g, submissionTime)
+
+                // --- Rental Agreement Specific Fields ---
+                .replace(/{{agreementDate}}/g, agreementDate)
+                .replace(/{{agreementLocation}}/g, order.location || 'Bangalore') // Or Lessor City
+
+                // Lessor (Owner)
+                .replace(/{{lessorName}}/g, lessorName)
+                .replace(/{{lessorPhone}}/g, lessorPhone)
+                .replace(/{{lessorAddress}}/g, lessorAddress)
+
+                // Lessee (User)
+                .replace(/{{lesseeName}}/g, order.name)
+                .replace(/{{lesseePhone}}/g, order.phone)
+                .replace(/{{lesseeAddress}}/g, order.location || 'Not Provided') // Using location as proxy or add address field to order
+
+                // Vehicle Details
+                .replace(/{{vehicleModel}}/g, carDetails.vehicleModel || carDetails.name || 'N/A') // Fallback to name if model not set
+                .replace(/{{registrationNumber}}/g, carDetails.registrationNumber || 'N/A')
+                .replace(/{{engineNumber}}/g, carDetails.engineNumber || 'N/A')
+                .replace(/{{chassisNumber}}/g, carDetails.chassisNumber || 'N/A')
+                .replace(/{{registrationType}}/g, carDetails.registrationType || 'Private')
+
+                // Lease Details
+                .replace(/{{leaseDays}}/g, leaseDays.toString())
+                .replace(/{{leaseStartDate}}/g, startDateObj.toLocaleDateString('en-US'))
+                .replace(/{{leaseEndDate}}/g, endDateObj.toLocaleDateString('en-US'))
+                .replace(/{{leaseAmount}}/g, leaseAmount.toString())
+                .replace(/{{leaseAmountWords}}/g, leaseAmountWords)
+                .replace(/{{jurisdictionCourt}}/g, 'Bangalore'); // Default or Site Setting
 
             let mainContent = replacer(emailContent);
 
@@ -433,7 +515,7 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
 
 
             // 2. Send to Admin (Check for specific template first)
-            const siteSettings = await SiteSettings.findOne();
+            // const siteSettings = await SiteSettings.findOne(); // Already fetched above
             const adminEmail = siteSettings?.contact.email || "nilemaxi@gmail.com";
 
             let adminHtml = mainContent; // Default to user content
@@ -469,8 +551,8 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
             // 3. Send to Host
             if (order.carSlug || order.carName) {
                 try {
-                    const carQuery = order.carSlug ? { slug: order.carSlug } : { name: order.carName };
-                    const car = await Car.findOne(carQuery).select('host');
+                    // carDetails already fetched above
+                    const car = carDetails;
 
                     if (car && car.host && car.host.type === 2 && car.host.details?.email) {
                         const hostEmail = car.host.details.email;

@@ -41,4 +41,9 @@ export interface CarFormData {
     packages: CarPackage[];
     host: HostDetails;
     status: number;
+    vehicleModel?: string;
+    registrationNumber?: string;
+    engineNumber?: string;
+    chassisNumber?: string;
+    registrationType?: string;
 }

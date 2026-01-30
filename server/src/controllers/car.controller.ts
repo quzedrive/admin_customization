@@ -195,7 +195,12 @@ export const createCar = async (req: Request, res: Response) => {
             specifications, // Array of { icon, text }
             host, // { type, details }
             status: activeStatus,
-            slug: manualSlug
+            slug: manualSlug,
+            vehicleModel,
+            registrationNumber,
+            engineNumber,
+            chassisNumber,
+            registrationType
         } = req.body;
 
         const slug = manualSlug || generateSlug(name);
@@ -244,6 +249,11 @@ export const createCar = async (req: Request, res: Response) => {
             packages: [],
             description,
             specifications: specIds,
+            vehicleModel,
+            registrationNumber,
+            engineNumber,
+            chassisNumber,
+            registrationType,
             host, // Pass host object directly, validation handled by Schema
             status: activeStatus !== undefined ? activeStatus : status.active,
             slug: slug
@@ -308,7 +318,12 @@ export const updateCar = async (req: Request, res: Response) => {
             specifications,
             host,
             status: carStatus,
-            slug: manualSlug
+            slug: manualSlug,
+            vehicleModel,
+            registrationNumber,
+            engineNumber,
+            chassisNumber,
+            registrationType
         } = req.body;
 
         let newSlug = car.slug;
@@ -341,6 +356,11 @@ export const updateCar = async (req: Request, res: Response) => {
         car.hourlyCharge = hourlyCharge ?? car.hourlyCharge;
         car.additionalHourlyCharge = additionalHourlyCharge ?? car.additionalHourlyCharge;
         car.description = description || car.description;
+        car.vehicleModel = vehicleModel || car.vehicleModel;
+        car.registrationNumber = registrationNumber || car.registrationNumber;
+        car.engineNumber = engineNumber || car.engineNumber;
+        car.chassisNumber = chassisNumber || car.chassisNumber;
+        car.registrationType = registrationType || car.registrationType;
         if (host) car.host = host; // Update host if provided
         if (carStatus !== undefined) car.status = carStatus;
 

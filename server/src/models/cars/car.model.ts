@@ -34,6 +34,11 @@ export interface ICar extends Document {
     };
     status: number;
     featured: number;
+    vehicleModel?: string;
+    registrationNumber?: string;
+    engineNumber?: string;
+    chassisNumber?: string;
+    registrationType?: string;
 }
 
 const CarSchema = new Schema(
@@ -52,6 +57,11 @@ const CarSchema = new Schema(
         packages: [{ type: Schema.Types.ObjectId, ref: 'CarPackage' }],
         description: { type: String, default: '' },
         specifications: [{ type: Schema.Types.ObjectId, ref: 'CarSpecification' }],
+        vehicleModel: { type: String },
+        registrationNumber: { type: String },
+        engineNumber: { type: String },
+        chassisNumber: { type: String },
+        registrationType: { type: String },
         host: {
             type: { type: Number, required: true, enum: [1, 2], default: 1 }, // 1: Self Hosted, 2: Attachment
             details: {
