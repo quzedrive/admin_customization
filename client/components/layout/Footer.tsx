@@ -186,7 +186,7 @@ export default function Footer({ logoLight, isLoading, title, description, locat
 
 
           <div className="bg-black text-white py-10 px-2">
-            <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 text-gray-600 px-2">
+            <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-gray-600 px-2">
               {/* Logo + Description */}
               <div className="flex flex-col items-start col-span-2 lg:col-span-2 w-full">
                 <div className="text-gray-900 flex items-center">
@@ -216,7 +216,7 @@ export default function Footer({ logoLight, isLoading, title, description, locat
               </div>
 
               {/* Company Links */}
-              <div className="flex flex-col items-start  col-span-2 sm:col-span-2 lg:col-span-1 gap-3 w-full">
+              <div className="flex flex-col items-start  col-span-2 md:col-span-1 lg:col-span-1 gap-3 w-full">
                 <h4 className="text-sm font-bold text-white uppercase">Quick Links</h4>
                 <ul className="space-y-2 text-sm text-gray-300 ">
                   {quickLinks.map((link, index) => (
@@ -227,35 +227,8 @@ export default function Footer({ logoLight, isLoading, title, description, locat
                 </ul>
               </div>
 
-              {/* Corporate Mobility Solutions */}
-              <div className="flex flex-col items-start  col-span-2 sm:col-span-2 lg:col-span-1 gap-3 w-full">
-                <h4 className="text-sm font-bold text-white uppercase">Corporate Services</h4>
-                {isCarLoading ? (
-                  <ul className='space-y-2 text-sm text-gray-300'>
-                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
-                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
-                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
-                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
-                    <li className='w-full h-6 bg-white/20 animate-pulse rounded-lg' />
-                  </ul>
-                ) : (
-                  <ul className="space-y-2 text-sm text-gray-300 ">
-                    {uniqueTypes.map((type, index) => (
-                      <li key={index}>
-                        <button
-                          onClick={() => handleTypeClick(type)}
-                          className='w-full text-left text-gray-300 hover:text-primary transition-colors cursor-pointer'
-                        >
-                          {type}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
               {/* Contact */}
-              <div className="flex flex-col items-start  col-span-2 sm:col-span-2 lg:col-span-1 gap-3 w-full">
+              <div className="flex flex-col items-start  col-span-2 md:col-span-1 lg:col-span-1 gap-3 w-full">
                 <h4 className="text-sm font-bold text-white uppercase">Company</h4>
                 {isLoading ? (
                   <ul className='space-y-2 text-sm text-gray-300'>

@@ -87,6 +87,21 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                     variant="borderless"
                     allowClear={false}
                     disabledDate={(current) => current && current < dayjs().startOf('day')}
+                    disabledTime={(current) => {
+                        if (current && current.isSame(dayjs(), 'day')) {
+                            const now = dayjs();
+                            return {
+                                disabledHours: () => Array.from({ length: now.hour() }, (_, i) => i),
+                                disabledMinutes: (selectedHour) => {
+                                    if (selectedHour === now.hour()) {
+                                        return Array.from({ length: now.minute() }, (_, i) => i);
+                                    }
+                                    return [];
+                                },
+                            };
+                        }
+                        return {};
+                    }}
                     inputReadOnly
                     suffixIcon={<ChevronDown size={16} className={isForm ? "text-gray-400" : "text-blue-500"} />}
                     style={{
