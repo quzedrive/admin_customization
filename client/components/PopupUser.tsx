@@ -73,26 +73,22 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
     if (validate()) {
       createOrderMutation.mutate(formData, {
         onSuccess: () => {
-          setFormData({
+          setFormData((prev) => ({
+            ...prev,
             location: '',
-            tripStart: '',
-            tripEnd: '',
             email: '',
             name: '',
             phone: '',
             message: '',
-            carName: '',
-            selectedPackage: ''
-          });
+          }));
           if (setLeadData) {
             setLeadData({
               location: '',
-              tripStart: '',
-              tripEnd: '',
               name: '',
               phone: '',
-              carName: '',
-              selectedPackage: ''
+              email: '', // Clear email as well
+              message: '', // Clear message as well
+              // Don't clear dates or car
             });
           }
           setSecurityAnswer('');
@@ -184,7 +180,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
   return (
     <div
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex p-1 flex-col gap-3 items-center justify-center"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex px-2 md:p-1 flex-col gap-3 items-center justify-center"
     >
       <div className="w-full flex flex-col md:flex-row max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-white rounded-[20px] overflow-hidden shadow-2xl mx-auto ">
         {/* Left Side */}
@@ -214,7 +210,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
 
         {/* Right Side */}
 
-        <div className="w-full h-full md:w-1/2 relative flex flex-col h-[90vh] md:h-auto">
+        <div className="w-full h-[90%] md:w-1/2 relative flex flex-col h-[90vh] md:h-auto">
 
           {/* Mobile Header - Fixed Top */}
           <div className="md:hidden flex-none px-4 py-4 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-20">
@@ -342,6 +338,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
                       <input
                         id='tripStartMobPopup'
                         type="datetime-local"
+                        disabled
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         value={formData.tripStart
                           ? (() => {
@@ -382,6 +379,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
                         }}
                         format="MMMM D, YYYY h:mm A"
                         value={formData.tripStart ? dayjs(formData.tripStart) : null}
+                        disabled
                         onChange={(value) => {
                           if (value) setFormData({ ...formData, tripStart: value.toDate() });
                         }}
@@ -449,6 +447,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
                       <input
                         id='tripEndMobPopup'
                         type="datetime-local"
+                        disabled
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         value={formData.tripEnd
                           ? (() => {
@@ -485,6 +484,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
                         }}
                         format="MMMM D, YYYY h:mm A"
                         value={formData.tripEnd ? dayjs(formData.tripEnd) : null}
+                        disabled
                         onChange={(value) => {
                           if (value) setFormData({ ...formData, tripEnd: value.toDate() });
                         }}
