@@ -4,7 +4,8 @@ export const generatePDF = async (htmlContent: string): Promise<Buffer> => {
     let browser;
     try {
         browser = await chromium.launch({
-            headless: true
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
         });
 
         const page = await browser.newPage();
