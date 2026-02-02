@@ -48,7 +48,7 @@ export default function TrackHero({ onTrack, isLoading }: TrackHeroProps) {
                         placeholder="Enter Booking Id"
                         value={bookingId}
                         onChange={(e) => setBookingId(e.target.value)}
-                        className="w-full h-14 pl-6 pr-20 md:pr-32 rounded-lg bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-gray-500 transition-all font-medium text-base"
+                        className="w-full !text-white h-14 pl-6 pr-20 md:pr-32 rounded-lg bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-gray-500 transition-all font-medium text-base"
                     />
                     <button
                         type="submit"

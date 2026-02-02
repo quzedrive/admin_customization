@@ -409,7 +409,7 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                 .replace(/{{registrationNumber}}/g, carDetails.registrationNumber || 'N/A')
                 .replace(/{{engineNumber}}/g, carDetails.engineNumber || 'N/A')
                 .replace(/{{chassisNumber}}/g, carDetails.chassisNumber || 'N/A')
-                .replace(/{{registrationType}}/g, carDetails.registrationType || 'Private')
+                .replace(/{{registrationType}}/g, carDetails.registrationType || 'Private (White Board)')
 
                 // Lease Details
                 .replace(/{{leaseDays}}/g, leaseDays.toString())
