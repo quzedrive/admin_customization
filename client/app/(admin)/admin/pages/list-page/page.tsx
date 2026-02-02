@@ -298,14 +298,14 @@ export default function PagesListPage() {
                                 <button
                                     onClick={() => setPage(p => Math.max(1, p - 1))}
                                     disabled={page === 1}
-                                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100"
+                                    className={`px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100 ${page === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                 >
                                     Previous
                                 </button>
                                 <button
                                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                     disabled={page === totalPages}
-                                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100"
+                                    className={`px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100 ${page === totalPages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                 >
                                     Next
                                 </button>
@@ -414,7 +414,7 @@ export default function PagesListPage() {
                                 <button
                                     onClick={() => setPage(p => Math.max(1, p - 1))}
                                     disabled={page === 1}
-                                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100"
+                                    className={`px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100 ${page === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                 >
                                     Previous
                                 </button>
@@ -424,7 +424,7 @@ export default function PagesListPage() {
                                 <button
                                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                     disabled={page === totalPages}
-                                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100"
+                                    className={`px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100 ${page === totalPages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                 >
                                     Next
                                 </button>

@@ -50,7 +50,7 @@ export default function ViewPage() {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => router.back()}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-900"
+                        className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-900"
                         title="Go Back"
                     >
                         <ArrowLeft size={20} />
