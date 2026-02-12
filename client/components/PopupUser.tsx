@@ -41,7 +41,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
   const [errors, setErrors] = useState<Partial<UserFormError>>({});
   const [mathProblem, setMathProblem] = useState<{ a: number, b: number, answer: number } | null>(null);
   const [securityAnswer, setSecurityAnswer] = useState<string>('');
-  const [showMsg, setShowMsg] = useState(false);
+
   const TripStartRef = useRef<any>(null);
   const TripEndRef = useRef<any>(null);
 
@@ -92,7 +92,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
             });
           }
           setSecurityAnswer('');
-          setShowMsg(true); // Show success message
+          router.push('/thank-you');
         },
         onError: (error) => {
           console.error('Submission failed:', error);
@@ -143,39 +143,7 @@ export default function PopupUser({ onClose, leadData, setLeadData }: ContactMod
     }
   };
 
-  if (showMsg) {
-    return (
-      <div
-        onClick={handleOverlayClick}
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex p-1 flex-col gap-3 items-center justify-center"
-      >
-        <div className="w-full flex max-w-lg bg-white rounded-[20px] shadow-2xl mx-auto p-8 relative flex-col items-center justify-center text-center">
-          <button
-            onClick={onClose}
-            className="cursor-pointer absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
-          <p className="text-gray-600 mb-6">Your booking request has been received. We will contact you shortly.</p>
-          <button
-            onClick={onClose}
-            className="cursor-pointer bg-blue-600 !text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div

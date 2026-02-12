@@ -2,25 +2,11 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
 
 export default function ThanksPage() {
   const router = useRouter()
-  const [countdown, setCountdown] = useState(10)
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          router.push('/')
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [router])
 
   const handleGoHome = () => {
     router.push('/')
@@ -67,16 +53,16 @@ export default function ThanksPage() {
             </p>
             <div className="mt-2 space-y-1">
               <div>
-                <a 
-                  href='mailto:customersupport@quzeedrive.com' 
+                <a
+                  href='mailto:customersupport@quzeedrive.com'
                   className='text-blue-600 hover:underline font-medium break-all text-sm sm:text-base'
                 >
                   customersupport@quzeedrive.com
                 </a>
               </div>
               <div>
-                <a 
-                  href="mailto:support@quzeedrive.in" 
+                <a
+                  href="mailto:support@quzeedrive.in"
                   className='text-blue-600 hover:underline font-medium break-all text-sm sm:text-base'
                 >
                   support@quzeedrive.in
@@ -95,11 +81,7 @@ export default function ThanksPage() {
         </button>
 
         {/* Countdown */}
-        <div className="mt-6 sm:mt-8">
-          <p className="text-xs sm:text-sm text-gray-500">
-            Redirecting to home page in <span className="font-bold text-blue-600">{countdown}</span> seconds...
-          </p>
-        </div>
+
       </div>
     </div>
   )
