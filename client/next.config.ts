@@ -19,6 +19,16 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
 
+   /* Remove console logs in production */
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? {
+            exclude: ["error", "warn"], // Keep error and warn, remove log, info, debug
+          }
+        : false,
+  },
+
   // Compression
   compress: true,
 
