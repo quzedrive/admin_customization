@@ -103,6 +103,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const appearanceSettings = await fetchAppearanceSettings();
+  const settings = await fetchSettings();
 
   const primaryColor = appearanceSettings?.primaryColor || '#2563eb';
   const secondaryColor = appearanceSettings?.secondaryColor || '#4f46e5';
@@ -142,7 +143,7 @@ export default async function RootLayout({
             <AppearanceProvider>
               <AuthLayout>
                 <WhatsAppProvider>
-                  <Layout>
+                  <Layout settings={settings}>
                     {children}
                   </Layout>
                 </WhatsAppProvider>
