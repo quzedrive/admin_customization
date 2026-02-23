@@ -9,7 +9,7 @@ import { useCarQueries } from '@/lib/hooks/queries/useCarQueries';
 
 export default function EditCarPage() {
     const params = useParams();
-    const id = params.id as string;
+    const id = params?.id as string;
 
     // Fetch car data
     const { useGetCarById } = useCarQueries();

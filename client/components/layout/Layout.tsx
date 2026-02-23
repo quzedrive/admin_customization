@@ -5,14 +5,11 @@ import Header from './Header'
 import Footer from './Footer'
 import WhatsAppFloating from '../Whatsapp'
 import { usePathname } from 'next/navigation'
-import { useSiteSettingsQueries } from '@/lib/hooks/queries/useSiteSettingsQueries'
-
-function Layout({ children }: { children: React.ReactNode }) {
+function Layout({ children, settings }: { children: React.ReactNode, settings?: any }) {
 
   const pathname = usePathname();
 
-  const { useSiteSettings } = useSiteSettingsQueries();
-  const { data: settings, isLoading } = useSiteSettings();
+  const isLoading = !settings;
 
   const location = {
     address: settings?.contact?.address,

@@ -124,14 +124,16 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
             if (initialData?.packages) {
                 initialData.packages.forEach((p: any) => {
                     // p.package is populated object, p.price, p.isActive, p.isAvailable
-                    existingMap.set(p.package._id, {
-                        price: p.price,
-                        discountPrice: p.discountPrice,
-                        halfDayPrice: p.halfDayPrice,
-                        isActive: p.isActive,
-                        isAvailable: p.isAvailable,
-                        _id: p._id
-                    });
+                    if (p.package?._id) {
+                        existingMap.set(p.package._id, {
+                            price: p.price,
+                            discountPrice: p.discountPrice,
+                            halfDayPrice: p.halfDayPrice,
+                            isActive: p.isActive,
+                            isAvailable: p.isAvailable,
+                            _id: p._id
+                        });
+                    }
                 });
             }
 
@@ -332,7 +334,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         }
 
         if (isEditMode && initialData) {
-            updateCarMutation.mutate({ id: initialData._id, data: { ...formData, status: formData.status } });
+            updateCarMutation.mutate({ id: initialData?._id, data: { ...formData, status: formData.status } });
         } else {
             createCarMutation.mutate({ ...formData, activeStatus: formData.status });
         }
@@ -340,7 +342,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
 
     const handleDelete = () => {
         if (initialData?._id) {
-            deleteCarMutation.mutate(initialData._id, {
+            deleteCarMutation.mutate(initialData?._id, {
                 onSuccess: () => {
                     setDeleteModalOpen(false);
                     router.push('/admin/cars-management/list-page');
