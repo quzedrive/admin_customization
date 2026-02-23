@@ -1,10 +1,54 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { Store, ClientRateLimitInfo, Options } from 'express-rate-limit';
 import { ApiError } from '../utils/ApiError';
 import { httpStatus } from '../constants/http-status';
+import { RateLimit } from '../models/rate-limit.model';
+
+/**
+ * Custom MongoDB-backed store for express-rate-limit
+ */
+class MongoStore implements Store {
+    config: Options | undefined;
+
+    async init(options: Options) {
+        this.config = options;
+    }
+
+    async increment(key: string): Promise<ClientRateLimitInfo> {
+        const now = new Date();
+        const windowMs = this.config?.windowMs || 15 * 60 * 1000;
+        const resetTime = new Date(now.getTime() + windowMs);
+
+        // Atomic find and update or create
+        const record = await RateLimit.findOneAndUpdate(
+            { key },
+            {
+                $inc: { hits: 1 },
+                $setOnInsert: { resetTime }
+            },
+            {
+                upsert: true,
+                new: true,
+                setDefaultsOnInsert: true
+            }
+        );
+
+        return {
+            totalHits: record!.hits,
+            resetTime: record!.resetTime
+        };
+    }
+
+    async decrement(key: string): Promise<void> {
+        await RateLimit.updateOne({ key }, { $inc: { hits: -1 } });
+    }
+
+    async resetKey(key: string): Promise<void> {
+        await RateLimit.deleteOne({ key });
+    }
+}
 
 /**
  * Rate limiter for sensitive authentication routes
- * Limits requests from a single IP to prevent brute-force attacks
  */
 export const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -14,9 +58,9 @@ export const authLimiter = rateLimit({
         message: 'Too many attempts from this IP, please try again after 15 minutes',
         statusCode: httpStatus.TOO_MANY_REQUESTS
     },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    // Custom handler to use our ApiError structure
+    standardHeaders: true,
+    legacyHeaders: false,
+    store: new MongoStore(),
     handler: (req, res, next, options) => {
         next(new ApiError(options.statusCode, options.message.message));
     }
@@ -24,7 +68,6 @@ export const authLimiter = rateLimit({
 
 /**
  * Rate limiter for order tracking searches
- * Limits wrong searches to prevent scraping or brute-force
  */
 export const trackOrderLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -36,6 +79,7 @@ export const trackOrderLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    store: new MongoStore(),
     handler: (req, res, next, options) => {
         next(new ApiError(options.statusCode, options.message.message));
     }
