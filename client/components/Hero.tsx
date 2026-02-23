@@ -10,7 +10,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className='relative w-full flex flex-col items-center justify-center lg:h-screen min-h-screen p-4 pt-20 lg:p-16 overflow-hidden'
+      className='relative w-full flex flex-col items-center justify-center lg:h-screen min-h-screen p-4 pt-20 lg:p-16'
     >
       {/* Optimized Background Image */}
       <Image

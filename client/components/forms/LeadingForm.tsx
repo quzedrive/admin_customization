@@ -205,7 +205,7 @@ export default function HeroSearchForm() {
                 if (!isDropdownOpen && dropdownRef.current) {
                   const rect = dropdownRef.current.getBoundingClientRect();
                   const spaceBelow = window.innerHeight - rect.bottom;
-                  const spaceRequired = 200; // approx height for dropdown
+                  const spaceRequired = 300; // approx height for dropdown
                   setDropdownPosition(spaceBelow < spaceRequired ? 'top' : 'bottom');
                 }
                 setIsDropdownOpen(!isDropdownOpen);

@@ -1,6 +1,7 @@
 import express from 'express';
 import { createOrder, getAdminOrders, updateOrder, cancelOrder, getPublicOrderStatus, verifyPayment, getPriceHistory } from '../controllers/order.controller';
 import { protect } from '../middlewares/auth.middleware';
+import { trackOrderLimiter } from '../middlewares/rate-limiter.middleware';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.delete('/admin/:id', protect, cancelOrder);
 router.get('/:id/price-history', protect, getPriceHistory);
 
 // Public: Track order status
-router.get('/track/:id', getPublicOrderStatus);
+router.get('/track/:id', trackOrderLimiter, getPublicOrderStatus);
 
 // Public: Verify Payment (called after redirect)
 router.post('/verify-payment', verifyPayment);

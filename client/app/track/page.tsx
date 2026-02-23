@@ -19,6 +19,8 @@ function TrackContent() {
   const { useTrackOrder } = useOrderQueries();
   const { data: order, isLoading, isError, error, refetch } = useTrackOrder(trackingId, { enabled: false });
 
+  const isRateLimited = (error as any)?.response?.status === 429;
+
   // Auto-track if ID is in URL
   useEffect(() => {
     if (idFromUrl && idFromUrl !== trackingId) {
@@ -27,6 +29,7 @@ function TrackContent() {
   }, [idFromUrl]);
 
   const handleTrack = (id: string) => {
+    if (isRateLimited) return;
     setTrackingId(id);
     setIsSearching(true);
     setTimeout(() => {
@@ -38,7 +41,7 @@ function TrackContent() {
 
   return (
     <>
-      <TrackHero onTrack={handleTrack} isLoading={isLoading || isSearching} />
+      <TrackHero onTrack={handleTrack} isLoading={isLoading || isSearching} isRateLimited={isRateLimited} />
 
       <AnimatePresence>
         {showContent && (
@@ -54,10 +57,21 @@ function TrackContent() {
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/20 text-red-500 mb-4">
                   <AlertCircle size={24} />
                 </div>
-                <h2 className="text-xl font-bold text-white mb-2">Order Not Found</h2>
-                <p className="text-gray-400">
-                  We couldn't find an order with ID <span className="font-mono text-white">#{trackingId}</span>.
-                </p>
+                {(error as any)?.response?.status === 429 ? (
+                  <>
+                    <h2 className="text-xl font-bold text-white mb-2">Too Many Attempts</h2>
+                    <p className="text-gray-400">
+                      You've made too many tracking attempts. Please wait 15 minutes and try again.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-xl font-bold text-white mb-2">Order Not Found</h2>
+                    <p className="text-gray-400">
+                      We couldn't find an order with ID <span className="font-mono text-white">#{trackingId}</span>.
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="w-full">

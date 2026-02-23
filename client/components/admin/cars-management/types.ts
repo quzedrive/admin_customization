@@ -20,6 +20,7 @@ export interface HostDetails {
         name: string;
         email: string;
         phone: string;
+        address?: string;
         aadhar?: string;
     };
 }

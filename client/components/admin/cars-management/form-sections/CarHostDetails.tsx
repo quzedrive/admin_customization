@@ -81,6 +81,7 @@ export default function CarHostDetails({ formData, handleHostChange, handleHostD
                             required
                             color='blue'
                         />
+
                         <FloatingInput
                             label="Aadhar Number (Optional)"
                             name="hostAadhar"
@@ -89,6 +90,19 @@ export default function CarHostDetails({ formData, handleHostChange, handleHostD
                             color='blue'
                         // No error prop for optional field unless strict validation added later
                         />
+                        <div className="md:col-span-2">
+                            <FloatingInput
+                                label="Host Address"
+                                name="hostAddress"
+                                type="textarea"
+                                value={formData.host.details?.address || ''}
+                                onChange={(e: any) => handleHostDetailsChange('address', e.target.value)}
+                                error={errors.hostAddress}
+                                required
+                                className="w-full"
+                                color='blue'
+                            />
+                        </div>
                     </div>
                 )}
             </div>

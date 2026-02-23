@@ -8,14 +8,15 @@ import Image from 'next/image';
 interface TrackHeroProps {
     onTrack: (id: string) => void;
     isLoading?: boolean;
+    isRateLimited?: boolean;
 }
 
-export default function TrackHero({ onTrack, isLoading }: TrackHeroProps) {
+export default function TrackHero({ onTrack, isLoading, isRateLimited }: TrackHeroProps) {
     const [bookingId, setBookingId] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (bookingId.trim()) {
+        if (bookingId.trim() && !isRateLimited) {
             onTrack(bookingId);
         }
     };
@@ -48,11 +49,12 @@ export default function TrackHero({ onTrack, isLoading }: TrackHeroProps) {
                         placeholder="Enter Booking Id"
                         value={bookingId}
                         onChange={(e) => setBookingId(e.target.value)}
-                        className="w-full !text-white h-14 pl-6 pr-20 md:pr-32 rounded-lg bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-gray-500 transition-all font-medium text-base"
+                        disabled={isRateLimited}
+                        className="w-full !text-white h-14 pl-6 pr-20 md:pr-32 rounded-lg bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700 text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-gray-500 transition-all font-medium text-base disabled:opacity-50"
                     />
                     <button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isLoading || isRateLimited}
                         className="absolute right-1.5 top-1.5 bottom-1.5 cursor-pointer secondary-btn px-6 rounded-md font-bold text-sm tracking-wider uppercase transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed border border-gray-800"
                     >
                         {isLoading ? (
@@ -64,6 +66,11 @@ export default function TrackHero({ onTrack, isLoading }: TrackHeroProps) {
                         )}
                     </button>
                 </div>
+                {isRateLimited && (
+                    <p className="mt-4 text-red-500 font-medium text-sm">
+                        Too many attempts. Please wait 15 minutes before trying again.
+                    </p>
+                )}
             </motion.form>
         </div>
     );

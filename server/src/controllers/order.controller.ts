@@ -359,7 +359,7 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
             // Lessor Details (Host or Company)
             let lessorName = companyName;
             let lessorPhone = siteSettings?.contact?.phone || '';
-            let lessorAddress = siteSettings?.contact?.address || 'Bangalore, India';
+            let lessorAddress = carDetails.host?.details?.address || siteSettings?.contact?.address || 'Bangalore, India';
 
             if (carDetails.host?.type === 2 && carDetails.host?.details) { // 2 = Individual Host
                 lessorName = carDetails.host.details.name || lessorName;

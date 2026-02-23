@@ -51,7 +51,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         registrationType: '',
 
         packages: [],
-        host: { type: 1, details: { name: '', email: '', phone: '', aadhar: '' } },
+        host: { type: 1, details: { name: '', email: '', phone: '', address: '', aadhar: '' } },
         status: 1
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -111,7 +111,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
                 chassisNumber: initialData.chassisNumber || '',
                 registrationType: initialData.registrationType || '',
                 packages: [], // Handled separately
-                host: initialData.host || { type: 1, details: { name: '', email: '', phone: '', aadhar: '' } },
+                host: initialData.host || { type: 1, details: { name: '', email: '', phone: '', address: '', aadhar: '' } },
                 status: initialData.status ?? 1
             }));
         }
@@ -296,7 +296,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
         }));
         // Clear error directly since we key errors by direct field names like 'hostName' for simplicity in UI component
         // In validate() we map these errors back
-        const errorKey = field === 'name' ? 'hostName' : field === 'email' ? 'hostEmail' : field === 'phone' ? 'hostPhone' : '';
+        const errorKey = field === 'name' ? 'hostName' : field === 'email' ? 'hostEmail' : field === 'phone' ? 'hostPhone' : field === 'address' ? 'hostAddress' : '';
         if (errorKey && errors[errorKey]) {
             setErrors(prev => ({ ...prev, [errorKey]: '' }));
         }
@@ -317,6 +317,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
             if (!formData.host.details?.name) newErrors.hostName = 'Host Name is required';
             if (!formData.host.details?.email) newErrors.hostEmail = 'Host Email is required';
             if (!formData.host.details?.phone) newErrors.hostPhone = 'Host Phone is required';
+            if (!formData.host.details?.address) newErrors.hostAddress = 'Host Address is required';
         }
 
         setErrors(newErrors);

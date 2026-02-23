@@ -29,6 +29,7 @@ export interface ICar extends Document {
             name: string;
             email: string;
             phone: string;
+            address?: string;
             aadhar?: string;
         };
     };
@@ -77,6 +78,7 @@ const CarSchema = new Schema(
                     type: String,
                     required: function (this: any) { return this.host.type === 2; }
                 },
+                address: { type: String },
                 aadhar: { type: String }
             }
         },

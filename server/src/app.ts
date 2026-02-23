@@ -25,6 +25,9 @@ import pageRoutes from './routes/page.routes';
 
 const app: Application = express();
 
+// Trust proxy for rate limiting behind proxies (Render, Vercel, etc.)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({
     origin: [process.env.FRONTEND_URL || 'http://localhost:3000'], // Allow Client
@@ -76,9 +79,10 @@ app.use('/api/pages', pageRoutes);
 
 // Error Handling Middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+    const statusCode = err.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
     res.status(statusCode);
     res.json({
+        success: false,
         message: err.message,
         stack: process.env.NODE_ENV === 'production' ? null : err.stack,
     });

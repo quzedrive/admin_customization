@@ -7,19 +7,22 @@ import { setAccessToken } from '@/redux/slices/authSlice';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import client from '@/lib/api/client';
-import { Lock, Mail, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isRateLimited, setIsRateLimited] = useState(false);
   const { loginMutation } = useAdminLoginMutations();
   const dispatch = useDispatch();
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRateLimited) return;
+
     loginMutation.mutate(
       { email, password },
       {
@@ -30,8 +33,13 @@ function AdminLoginPage() {
           router.push('/admin/dashboard');
         },
         onError: (error: any) => {
-          const message = error.response?.data?.error || 'Login failed';
-          toast.error(message);
+          if (error.response?.status === 429) {
+            setIsRateLimited(true);
+            toast.error('Too many attempts. Please wait 15 minutes.');
+          } else {
+            const message = error.response?.data?.error || 'Login failed';
+            toast.error(message);
+          }
         },
       }
     );
@@ -49,6 +57,15 @@ function AdminLoginPage() {
         </div>
 
         <div className="p-8">
+          {isRateLimited && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 animate-pulse">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm font-medium">
+                Too many login attempts. Please wait 15 minutes and try again.
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 ml-1">Email Address</label>
@@ -60,7 +77,8 @@ function AdminLoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                  disabled={isRateLimited}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="admin@example.com"
                   required
                 />
@@ -77,14 +95,16 @@ function AdminLoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                  disabled={isRateLimited}
+                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="cursor-pointer absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  disabled={isRateLimited}
+                  className="cursor-pointer absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -95,17 +115,19 @@ function AdminLoginPage() {
               </div>
             </div>
             <div className="flex justify-end">
-              <Link
-                href="/admin/forgot-password"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
-              >
-                Forgot Password?
-              </Link>
+              {!isRateLimited && (
+                <Link
+                  href="/admin/forgot-password"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                >
+                  Forgot Password?
+                </Link>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={loginMutation.isPending}
+              disabled={loginMutation.isPending || isRateLimited}
               className="w-full cursor-pointer relative py-3 px-4 border border-transparent rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {loginMutation.isPending ? (
@@ -116,6 +138,8 @@ function AdminLoginPage() {
                   </svg>
                   Logging in...
                 </>
+              ) : isRateLimited ? (
+                'Account Blocked'
               ) : (
                 'Sign In'
               )}
