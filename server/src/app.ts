@@ -30,7 +30,7 @@ app.set('trust proxy', 1);
 
 // Middleware
 app.use(cors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:3000'], // Allow Client
+    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['http://localhost:3000'], // Allow Client
     credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
