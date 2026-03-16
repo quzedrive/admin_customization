@@ -22,7 +22,9 @@ export interface IOrder extends Document {
         link?: string;
         linkId?: string;
         screenshot?: string;
+        method?: number; // 1: Manual, 2: Razorpay
     };
+    refund?: Schema.Types.ObjectId; // Reference to Refund model
     cancelReason?: string;
     cancelReasonId?: string;
     bookingId?: string;
@@ -50,7 +52,9 @@ const OrderSchema = new Schema(
             link: { type: String },
             linkId: { type: String },
             screenshot: { type: String },
+            method: { type: Number, default: 0 }, // 0: Unknown, 1: Manual, 2: Razorpay
         },
+        refund: { type: Schema.Types.ObjectId, ref: 'Refund' },
         cancelReason: { type: String },
         cancelReasonId: { type: Schema.Types.ObjectId, ref: 'CancellationReason' },
         bookingId: { type: String, unique: true, index: true, sparse: true },

@@ -57,26 +57,36 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
 
     const order = orderData?.orders?.find((o: any) => o._id === id || o.bookingId === id) || orderData?.orders?.[0]; // Fallback if search returns distinct 1
 
+    const [localCarName, setLocalCarName] = useState('');
+    const [localCarSlug, setLocalCarSlug] = useState('');
+
     const { useUpdateOrder } = useOrderMutations();
     const updateOrderMutation = useUpdateOrder();
 
     const { useGetCarBySlug } = useCarQueries();
-    const { data: carData } = useGetCarBySlug(order?.carSlug || '');
+    const { data: carData } = useGetCarBySlug(localCarSlug || order?.carSlug || '');
 
     const [status, setStatus] = useState<string>('');
     const [paymentStatus, setPaymentStatus] = useState<string>('');
-    const [adminNotes, setAdminNotes] = useState(''); // Assuming we might want to add this field later or map it to 'message' if editable
+    const [adminNotes, setAdminNotes] = useState('');
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [approveModalOpen, setApproveModalOpen] = useState(false);
     const [finalPrice, setFinalPrice] = useState<number>(0);
+    const [localHours, setLocalHours] = useState<number>(0);
 
     useEffect(() => {
         if (order) {
             setStatus(order.status.toString());
             setPaymentStatus(order.paymentStatus.toString());
-            // setAdminNotes(order.adminNotes || ''); // generic placeholder
-
+            setLocalCarName(order.carName || '');
+            setLocalCarSlug(order.carSlug || '');
+            
+            if (order.tripStart && order.tripEnd) {
+                const h = Math.ceil((new Date(order.tripEnd).getTime() - new Date(order.tripStart).getTime()) / (1000 * 60 * 60));
+                setLocalHours(h);
+            }
+            
             if (order.finalPrice) {
                 setFinalPrice(order.finalPrice);
             } else if (order.selectedPackage) {
@@ -102,7 +112,10 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                 data: {
                     status: parseInt(status),
                     paymentStatus: parseInt(paymentStatus),
-                    finalPrice: finalPrice
+                    finalPrice: finalPrice,
+                    carName: localCarName,
+                    carSlug: localCarSlug,
+                    selectedPackage: `${localHours} Hours - ₹${finalPrice.toLocaleString()}`
                     // message: adminNotes // If we decide to allow editing message
                 }
             });
@@ -123,21 +136,31 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
         }
     };
 
-    const handleApproveConfirm = (price: number) => {
-        setFinalPrice(price);
+    const handleApproveConfirm = (data: { finalPrice: number, carName?: string, carSlug?: string, hours?: number }) => {
+        setFinalPrice(data.finalPrice);
+        if (data.hours) setLocalHours(data.hours);
+        if (data.carName && data.carSlug) {
+            setLocalCarName(data.carName);
+            setLocalCarSlug(data.carSlug);
+            toast.success(`Vehicle changed to ${data.carName}`);
+        }
         setStatus('1');
         setApproveModalOpen(false);
-        toast.success("Price confirmed! Click Save to apply changes.");
+        toast.success("Details confirmed! Click Save to apply changes.");
     };
 
-    const processCancelStatus = (reasonId: string, reasonText: string) => {
+    const processCancelStatus = (data: { reasonId: string, reasonText: string, refundAmount?: number, refundMethod?: number, transactionId?: string }) => {
         if (order) {
             updateOrderMutation.mutate({
                 id: order._id,
                 data: {
                     status: 3, // Cancelled
-                    cancelReason: reasonText,
-                    cancelReasonId: reasonId
+                    cancelReason: data.reasonText,
+                    cancelReasonId: data.reasonId,
+                    refundAmount: data.refundAmount,
+                    refundStatus: data.refundMethod ? 1 : 0, // 1: Pending if refund initiated
+                    refundMethod: data.refundMethod,
+                    refundTransactionId: data.transactionId
                 }
             }, {
                 onSuccess: () => {
@@ -406,19 +429,15 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                                 <span className="text-gray-500 text-sm">Car</span>
                                 <span className="font-medium text-gray-900 flex items-center gap-1.5">
                                     <Car size={14} className="text-gray-400" />
-                                    {order.carName}
+                                    {localCarName}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
                                 <span className="text-gray-500 text-sm">Package</span>
-                                <span className="font-medium text-gray-900">
-                                    {finalPrice > 0 ? (
+                                <span className="font-medium text-gray-900 capitalize">
+                                    {(localHours > 0 || finalPrice > 0) ? (
                                         <>
-                                            {order.selectedPackage?.includes('-')
-                                                ? order.selectedPackage.split('-')[0].trim()
-                                                : (order.selectedPackage || 'Custom')}
-                                            {' - '}
-                                            ₹{finalPrice.toLocaleString()}
+                                            {localHours} Hours - ₹{finalPrice.toLocaleString()}
                                         </>
                                     ) : (
                                         order.selectedPackage || 'Custom'
@@ -468,6 +487,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                 onClose={() => setApproveModalOpen(false)}
                 onConfirm={handleApproveConfirm}
                 initialPrice={finalPrice}
+                initialHours={order ? Math.ceil((new Date(order.tripEnd).getTime() - new Date(order.tripStart).getTime()) / (1000 * 60 * 60)) : 0}
                 orderId={order?._id || ''}
             />
 
@@ -476,6 +496,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                 onClose={() => setCancelModalOpen(false)}
                 onConfirm={processCancelStatus}
                 isLoading={updateOrderMutation.isPending}
+                order={order}
             />
 
             <ConfirmationModal

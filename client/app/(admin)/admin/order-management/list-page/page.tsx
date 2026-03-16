@@ -95,14 +95,18 @@ export default function OrderListPage() {
     setCancelModalOpen(true);
   };
 
-  const processCancelStatus = (reasonId: string, reasonText: string) => {
+  const processCancelStatus = (data: { reasonId: string, reasonText: string, refundAmount?: number, refundMethod?: number, transactionId?: string }) => {
     if (selectedOrderId) {
       updateOrderMutation.mutate({
         id: selectedOrderId,
         data: {
           status: 3, // Cancelled
-          cancelReason: reasonText,
-          cancelReasonId: reasonId
+          cancelReason: data.reasonText,
+          cancelReasonId: data.reasonId,
+          refundAmount: data.refundAmount,
+          refundStatus: data.refundMethod ? 1 : 0, // 1: Pending if refund initiated
+          refundMethod: data.refundMethod,
+          refundTransactionId: data.transactionId
         }
       }, {
         onSuccess: () => {
@@ -338,6 +342,7 @@ export default function OrderListPage() {
         onClose={() => setCancelModalOpen(false)}
         onConfirm={processCancelStatus}
         isLoading={updateOrderMutation.isPending}
+        order={orders.find(o => o._id === selectedOrderId)}
       />
 
       <UpdatePaymentStatusModal

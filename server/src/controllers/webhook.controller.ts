@@ -61,9 +61,11 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
 
                 if (order.payment) {
                     order.payment.transactionId = paymentId;
+                    order.payment.method = 2; // 2: Razorpay
                 } else {
                     order.payment = {
-                        transactionId: paymentId
+                        transactionId: paymentId,
+                        method: 2
                     };
                 }
 

@@ -11,6 +11,9 @@ import { status } from '../constants/status';
 import axios from 'axios';
 
 import { generateBookingId } from '../utils/generators';
+import { initiateRazorpayRefund } from '../utils/refund';
+import Refund from '../models/finance/refund.model';
+import { PaymentMethod } from '../constants/payment';
 
 import SiteSettings from '../models/settings/site-settings.model';
 import Notification from '../models/notification.model';
@@ -387,6 +390,8 @@ const sendOrderStatusEmail = async (order: any, slug: string) => {
                 .replace(/{{link}}/g, orderLink)
                 .replace(/{{adminLink}}/g, adminLink)
                 .replace(/{{cancelReason}}/g, order.cancelReason || '')
+                .replace(/{{refundAmount}}/g, (order.refund as any)?.amount ? `₹${(order.refund as any).amount.toLocaleString()}` : 'N/A')
+                .replace(/{{refundMethod}}/g, (order.refund as any)?.method === PaymentMethod.RAZORPAY ? 'Razorpay (Auto)' : (order.refund as any)?.method === PaymentMethod.MANUAL ? 'Manual (UPI/Cash)' : 'N/A')
                 .replace(/{{finalPrice}}/g, leaseAmount.toString())
                 .replace(/{{submissionTime}}/g, submissionTime)
 
@@ -655,6 +660,53 @@ export const updateOrder = async (req: Request, res: Response) => {
                     break;
                 case RideStatus.CANCEL: // 3
                     slug = 'order_cancelled';
+                                    // Handle Refund if order was PAID
+                    if (oldStatus !== RideStatus.CANCEL && updates.refundAmount > 0) {
+                        const amountInPaise = Math.round(updates.refundAmount * 100);
+                        
+                        // Create Refund Record
+                        const refundDoc = await Refund.create({
+                            order: updatedOrder._id,
+                            amount: updates.refundAmount,
+                            method: updates.refundMethod, // Now numerical from front-end
+                            status: 1, // Pending
+                            reasonId: updates.reasonId,
+                            reason: updates.reasonText
+                        });
+
+                        updatedOrder.refund = refundDoc._id as any;
+                        await updatedOrder.save();
+
+                        if (updates.refundMethod === PaymentMethod.RAZORPAY && updatedOrder.payment?.transactionId) {
+                            console.log(`Triggering Automated Razorpay Refund: ₹${updates.refundAmount}`);
+                            // Run refund logic
+                            initiateRazorpayRefund(updatedOrder.payment.transactionId, amountInPaise)
+                                .then(async (result) => {
+                                    if (result.success) {
+                                        await updatedOrder.save();
+
+                                        refundDoc.status = 2; // Processed
+                                        refundDoc.transactionId = result.refundId;
+                                        await refundDoc.save();
+
+                                        console.log('Razorpay Refund Processed Successfully');
+                                    } else {
+                                        await updatedOrder.save();
+
+                                        refundDoc.status = 3; // Failed
+                                        await refundDoc.save();
+
+                                        console.error('Razorpay Refund Failed:', result.error);
+                                    }
+                                });
+                        } else if (updates.refundMethod === PaymentMethod.MANUAL) {
+                            await updatedOrder.save();
+
+                            refundDoc.status = 2; // Processed
+                            refundDoc.transactionId = updates.transactionId;
+                            await refundDoc.save();
+                        }
+                    }
                     break;
                 case RideStatus.RIDE_STARTED: // 4
                     slug = 'ride_started';
@@ -774,7 +826,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
 
         // 3. Verify Status
         if (paymentData.status === 'captured') {
-            const order = await Order.findById(orderId);
+            const order = await Order.findById(orderId).populate('refund'); // Changed orderId to orderId, added populate
             if (order) {
                 const wasUnpaid = order.paymentStatus !== 1;
 

@@ -37,18 +37,27 @@ const ModernDropdown: React.FC<ModernDropdownProps> = ({
   disabled = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [openTop, setOpenTop] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close when clicking outside
+  // Close when clicking outside and handle position
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
+
+    if (isOpen && dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceRequired = 250; // Dropdown max height + some buffer
+      setOpenTop(spaceBelow < spaceRequired && rect.top > spaceRequired);
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const selectedLabel = options.find(opt => opt.value === value)?.label || placeholder;
 
@@ -65,8 +74,8 @@ const ModernDropdown: React.FC<ModernDropdownProps> = ({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={`flex items-center gap-2 px-3 py-2.5 bg-white border rounded-lg transition-all duration-200 group w-full justify-between ${disabled
-              ? 'cursor-not-allowed opacity-60 bg-gray-50'
-              : 'cursor-pointer hover:bg-gray-50'
+            ? 'cursor-not-allowed opacity-60 bg-gray-50'
+            : 'cursor-pointer hover:bg-gray-50'
             } ${error
               ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
               : isOpen
@@ -83,12 +92,15 @@ const ModernDropdown: React.FC<ModernDropdownProps> = ({
 
         {/* Dropdown Menu */}
         <div
-          className={`absolute z-30 mt-2  bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-200 origin-top ${width} ${isOpen
+          className={`absolute z-[100] bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden transition-all duration-200 ${width} ${isOpen
             ? 'opacity-100 translate-y-0 scale-100'
             : 'opacity-0 translate-y-2 scale-95 pointer-events-none'
-            } ${align === 'right' ? 'right-0' : 'left-0'}`}
+            } ${align === 'right' ? 'right-0' : 'left-0'} ${openTop
+              ? 'bottom-full mb-2 origin-bottom'
+              : 'top-full mt-2 origin-top'
+            }`}
         >
-          <div className="p-1">
+          <div className="p-1 max-h-[250px] overflow-y-auto custom-scrollbar">
             {options.map((option) => (
               <button
                 key={option.value}
@@ -106,6 +118,11 @@ const ModernDropdown: React.FC<ModernDropdownProps> = ({
                 {value === option.value && <Check size={14} className="text-blue-600" />}
               </button>
             ))}
+            {options.length === 0 && (
+              <div className="p-3 text-center text-sm text-gray-400 font-medium">
+                No options available
+              </div>
+            )}
           </div>
         </div>
       </div>

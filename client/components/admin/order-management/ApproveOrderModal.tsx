@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, DollarSign, History } from 'lucide-react';
+import { X, Check, DollarSign, History, Loader2 } from 'lucide-react';
 import { useOrderQueries } from '@/lib/hooks/queries/useOrderQueries';
+import { useCarQueries } from '@/lib/hooks/queries/useCarQueries';
+import { useSiteSettingsQueries } from '@/lib/hooks/queries/useSiteSettingsQueries';
+import ModernDropdown from '@/components/inputs/ModernDropDown';
+import { calculateCarPrice } from '@/lib/utils/pricing';
 
 interface PriceHistoryItem {
     price: number;
@@ -12,10 +16,11 @@ interface PriceHistoryItem {
 interface ApproveOrderModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (finalPrice: number) => void;
+    onConfirm: (data: { finalPrice: number, carName?: string, carSlug?: string, hours?: number }) => void;
     initialPrice: number;
+    initialHours: number;
     isLoading?: boolean;
-    orderId: string; // Added orderId
+    orderId: string;
 }
 
 export default function ApproveOrderModal({
@@ -23,37 +28,66 @@ export default function ApproveOrderModal({
     onClose,
     onConfirm,
     initialPrice,
+    initialHours,
     isLoading,
     orderId
 }: ApproveOrderModalProps) {
+    const [step, setStep] = useState<0 | 1 | 2>(0);
+    const [changeVehicle, setChangeVehicle] = useState(false);
+    const [selectedCar, setSelectedCar] = useState<any | null>(null);
+    const [hours, setHours] = useState<number>(initialHours);
     const [priceOption, setPriceOption] = useState<'same' | 'custom'>('same');
     const [customPrice, setCustomPrice] = useState<string>('');
-    const [showGstStep, setShowGstStep] = useState(false);
     const [withGst, setWithGst] = useState(false);
 
     const { usePriceHistory } = useOrderQueries();
-    const { data: historyData, isLoading: loadingHistory } = usePriceHistory(orderId);
+    const { useGetAllCars } = useCarQueries();
+    const { useSiteSettings } = useSiteSettingsQueries();
+    
+    const { data: historyData } = usePriceHistory(orderId);
+    const { data: carsData, isLoading: loadingCars } = useGetAllCars();
+    const { data: settings } = useSiteSettings();
+
+    const activeCars = carsData?.filter((c: any) => c.status === 1) || [];
 
     // Ensure history is an array
     const history: PriceHistoryItem[] = Array.isArray(historyData) ? historyData : [];
 
     useEffect(() => {
         if (isOpen) {
+            setStep(0);
+            setChangeVehicle(false);
+            setSelectedCar(null);
+            setHours(initialHours);
             setPriceOption('same');
             setCustomPrice(initialPrice.toString());
-            setShowGstStep(false);
             setWithGst(false);
         }
-    }, [isOpen, initialPrice]);
+    }, [isOpen, initialPrice, initialHours]);
+
+    const getPricing = () => {
+        if (!selectedCar) return { price: initialPrice, breakdown: 'Original Booking' };
+        return calculateCarPrice(selectedCar, settings, hours);
+    };
 
     const getBasePrice = () => {
-        const price = priceOption === 'same' ? initialPrice : parseFloat(customPrice);
+        if (priceOption === 'same') {
+            return changeVehicle ? getPricing().price : initialPrice;
+        }
+        const price = parseFloat(customPrice);
         return (isNaN(price) || price < 0) ? 0 : price;
+    };
+
+    const handleStep0Confirm = () => {
+        if (changeVehicle && selectedCar) {
+            setCustomPrice(getPricing().price.toString());
+        }
+        setStep(1);
     };
 
     const handleStep1Confirm = () => {
         if (getBasePrice() > 0) {
-            setShowGstStep(true);
+            setStep(2);
         }
     };
 
@@ -62,7 +96,12 @@ export default function ApproveOrderModal({
         if (withGst) {
             final = Math.round(final * 1.18);
         }
-        onConfirm(final);
+        onConfirm({
+            finalPrice: final,
+            carName: changeVehicle ? selectedCar?.name : undefined,
+            carSlug: changeVehicle ? selectedCar?.slug : undefined,
+            hours: hours
+        });
     };
 
     if (!isOpen) return null;
@@ -75,19 +114,101 @@ export default function ApproveOrderModal({
         <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
         >
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-in fade-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
 
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
                     <h3 className="font-bold text-gray-900 text-lg">Approve Order</h3>
                     <button onClick={onClose} className="p-1 cursor-pointer hover:bg-gray-200 rounded-full transition-colors text-gray-500">
                         <X size={20} />
                     </button>
                 </div>
 
-                {!showGstStep ? (
+                {step === 0 ? (
+                    // STEP 0: CHANGE VEHICLE
+                    <>
+                        <div className="p-6 space-y-6">
+                            <div className="space-y-4">
+                                <p className="text-sm font-medium text-gray-600">Review vehicle and duration</p>
+                                
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700">Rental Duration (Hours)</label>
+                                    <div className="flex items-center gap-3">
+                                        <input 
+                                            type="number" 
+                                            value={hours}
+                                            onChange={(e) => setHours(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div 
+                                    onClick={() => setChangeVehicle(!changeVehicle)}
+                                    className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${changeVehicle 
+                                        ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' 
+                                        : 'border-gray-200 hover:border-gray-300'}`}
+                                >
+                                    <div className={`w-5 h-5 rounded border flex items-center justify-center ${changeVehicle ? 'border-blue-500 bg-blue-500' : 'border-gray-400 bg-white'}`}>
+                                        {changeVehicle && <Check size={14} className="text-white" />}
+                                    </div>
+                                    <label className="font-semibold text-gray-900 cursor-pointer">Change vehicle for this order</label>
+                                </div>
+
+                                {changeVehicle && (
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <ModernDropdown
+                                            label="Select New Vehicle"
+                                            options={activeCars.map((car: any) => ({
+                                                value: car.slug,
+                                                label: `${car.name} (${car.brand})`
+                                            }))}
+                                            value={selectedCar?.slug || ''}
+                                            onChange={(slug) => {
+                                                const car = activeCars.find((c: any) => c.slug === slug);
+                                                if (car) setSelectedCar(car);
+                                            }}
+                                        />
+                                        
+                                        {selectedCar && (
+                                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-2">
+                                                <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">Price Breakdown</p>
+                                                <div className="flex justify-between text-sm text-blue-900 font-medium italic">
+                                                    <span>{getPricing().breakdown}</span>
+                                                    <span>₹{getPricing().price.toLocaleString()}</span>
+                                                </div>
+                                                <div className="border-t border-blue-200 pt-2 flex justify-between font-bold text-blue-900 transition-all">
+                                                    <span>Calculated Total</span>
+                                                    <span>₹{getPricing().price.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {loadingCars && <p className="text-xs text-blue-500 mt-1 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Loading cars...</p>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3 sticky bottom-0 rounded-b-2xl">
+                            <button
+                                onClick={onClose}
+                                className="px-4 py-2 cursor-pointer text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleStep0Confirm}
+                                disabled={changeVehicle && !selectedCar}
+                                className="px-6 py-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </>
+                ) : step === 1 ? (
                     // STEP 1: SELECT PRICE
                     <>
                         <div className="p-6 space-y-6">
@@ -108,11 +229,17 @@ export default function ApproveOrderModal({
                                             {priceOption === 'same' && <div className="w-2 h-2 rounded-full bg-white" />}
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-900">Keep Booked Price</p>
-                                            <p className="text-sm text-gray-500">Use the original internal price</p>
+                                            <p className="font-medium text-gray-900">
+                                                {changeVehicle ? 'Use Calculated Price' : 'Keep Booked Price'}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {changeVehicle ? 'Use price based on selected car' : 'Use the original internal price'}
+                                            </p>
                                         </div>
                                     </div>
-                                    <span className="font-bold text-gray-900 text-lg">₹{initialPrice.toLocaleString()}</span>
+                                    <span className="font-bold text-gray-900 text-lg">
+                                        ₹{(changeVehicle ? getPricing().price : initialPrice).toLocaleString()}
+                                    </span>
                                 </div>
 
                                 {/* Option: Custom Price */}
@@ -198,17 +325,17 @@ export default function ApproveOrderModal({
                         </div>
 
                         {/* Footer Step 1 */}
-                        <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3 sticky bottom-0">
+                        <div className="px-6 py-4 bg-gray-50 flex justify-between gap-3 sticky bottom-0 rounded-b-2xl">
                             <button
-                                onClick={onClose}
-                                className="px-4 py-2 cursor-pointer text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                                onClick={() => setStep(0)}
+                                className="px-4 py-2 cursor-pointer text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
                             >
-                                Cancel
+                                Back
                             </button>
                             <button
                                 onClick={handleStep1Confirm}
                                 disabled={isLoading || (priceOption === 'custom' && !customPrice)}
-                                className="px-4 py-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-6 py-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Next
                             </button>
@@ -266,9 +393,9 @@ export default function ApproveOrderModal({
                         </div>
 
                         {/* Footer Step 2 */}
-                        <div className="px-6 py-4 bg-gray-50 flex justify-between gap-3 sticky bottom-0">
+                        <div className="px-6 py-4 bg-gray-50 flex justify-between gap-3 sticky bottom-0 rounded-b-2xl">
                             <button
-                                onClick={() => setShowGstStep(false)}
+                                onClick={() => setStep(1)}
                                 className="px-4 py-2 cursor-pointer text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
                             >
                                 Back
