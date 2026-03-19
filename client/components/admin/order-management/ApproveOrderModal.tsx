@@ -16,7 +16,7 @@ interface PriceHistoryItem {
 interface ApproveOrderModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (data: { finalPrice: number, carName?: string, carSlug?: string, hours?: number }) => void;
+    onConfirm: (data: { finalPrice: number, carName?: string, carSlug?: string, hours?: number, gstAdded?: boolean }) => void;
     initialPrice: number;
     initialHours: number;
     isLoading?: boolean;
@@ -100,7 +100,8 @@ export default function ApproveOrderModal({
             finalPrice: final,
             carName: changeVehicle ? selectedCar?.name : undefined,
             carSlug: changeVehicle ? selectedCar?.slug : undefined,
-            hours: hours
+            hours: hours,
+            gstAdded: withGst
         });
     };
 

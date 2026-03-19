@@ -42,9 +42,18 @@ export default function CancelOrderModal({ isOpen, onClose, onConfirm, isLoading
                 
                 total = total || 0;
                 
-                // Calculate Refund: Total / 1.18 (Holding 18% GST)
-                const basePrice = Math.floor(total / 1.18);
-                setRefundAmount(basePrice);
+                // Calculate Refund
+                let calculatedRefund = 0;
+                if (order.gstAdded) {
+                    // Razorpay style: Deduct 2% + 18% of that 2% (Total 2.36%)
+                    // Refund = Total - (Total * 0.02 * 1.18)
+                    calculatedRefund = Math.floor(total * (1 - (0.02 * 1.18)));
+                } else {
+                    // Full Refund if no GST added
+                    calculatedRefund = total;
+                }
+                
+                setRefundAmount(calculatedRefund);
                 
                 // Set default method based on how they paid
                 // payment.method: 1: Manual, 2: Razorpay
@@ -159,7 +168,11 @@ export default function CancelOrderModal({ isOpen, onClose, onConfirm, isLoading
                                 <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100">
                                     <div className="flex items-start gap-3 text-blue-800 text-sm mb-4">
                                         <Info size={18} className="mt-0.5 shrink-0" />
-                                        <p className="font-medium">Order is paid. Holding 18% GST (Tax) and refunding the base amount.</p>
+                                        <p className="font-medium">
+                                            {order?.gstAdded 
+                                                ? "Order includes GST. Deducting Razorpay fees (2.36%) and refunding the balance." 
+                                                : "Order is paid. Refunding the full amount as no GST was added."}
+                                        </p>
                                     </div>
 
                                     <div className="space-y-2">
@@ -168,8 +181,8 @@ export default function CancelOrderModal({ isOpen, onClose, onConfirm, isLoading
                                             <span className="font-bold text-blue-900">₹{totalPaid.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-red-600 font-medium">
-                                            <span>Tax Held (18% GST)</span>
-                                            <span>- ₹{taxHeld.toLocaleString()}</span>
+                                            <span>{order?.gstAdded ? "Fees & Tax (2.36%)" : "Tax Held (GST)"}</span>
+                                            <span>{order?.gstAdded ? `- ₹${taxHeld.toLocaleString()}` : "₹0"}</span>
                                         </div>
                                         <div className="pt-2 border-t border-blue-200 mt-2 flex justify-between items-center">
                                             <span className="text-blue-900 font-bold uppercase text-xs tracking-wider">Net Refund Amount</span>

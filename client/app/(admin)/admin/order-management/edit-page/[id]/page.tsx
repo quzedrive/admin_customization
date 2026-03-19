@@ -74,6 +74,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
     const [approveModalOpen, setApproveModalOpen] = useState(false);
     const [finalPrice, setFinalPrice] = useState<number>(0);
     const [localHours, setLocalHours] = useState<number>(0);
+    const [localGstAdded, setLocalGstAdded] = useState(false);
 
     useEffect(() => {
         if (order) {
@@ -81,6 +82,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
             setPaymentStatus(order.paymentStatus.toString());
             setLocalCarName(order.carName || '');
             setLocalCarSlug(order.carSlug || '');
+            setLocalGstAdded(order.gstAdded || false);
             
             if (order.tripStart && order.tripEnd) {
                 const h = Math.ceil((new Date(order.tripEnd).getTime() - new Date(order.tripStart).getTime()) / (1000 * 60 * 60));
@@ -115,6 +117,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                     finalPrice: finalPrice,
                     carName: localCarName,
                     carSlug: localCarSlug,
+                    gstAdded: localGstAdded,
                     selectedPackage: `${localHours} Hours - ₹${finalPrice.toLocaleString()}`
                     // message: adminNotes // If we decide to allow editing message
                 }
@@ -136,9 +139,10 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
         }
     };
 
-    const handleApproveConfirm = (data: { finalPrice: number, carName?: string, carSlug?: string, hours?: number }) => {
+    const handleApproveConfirm = (data: { finalPrice: number, carName?: string, carSlug?: string, hours?: number, gstAdded?: boolean }) => {
         setFinalPrice(data.finalPrice);
         if (data.hours) setLocalHours(data.hours);
+        if (data.gstAdded !== undefined) setLocalGstAdded(data.gstAdded);
         if (data.carName && data.carSlug) {
             setLocalCarName(data.carName);
             setLocalCarSlug(data.carSlug);
