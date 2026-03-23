@@ -52,5 +52,11 @@ export const orderServices = {
     verifyPayment: async (data: { paymentId: string; orderId: string }) => {
         const response = await client.post(`${BASE_URL}/verify-payment`, data);
         return response.data;
+    },
+
+    // Admin: Resend Email
+    resendOrderEmail: async (id: string, slug?: string) => {
+        const response = await client.post(`${BASE_URL}/admin/${id}/resend-email`, { slug });
+        return response.data;
     }
 };

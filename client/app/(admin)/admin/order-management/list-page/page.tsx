@@ -46,9 +46,10 @@ export default function OrderListPage() {
     sortBy: sortBy
   });
 
-  const { useCancelOrder, useUpdateOrder } = useOrderMutations();
+  const { useCancelOrder, useUpdateOrder, useResendOrderEmail } = useOrderMutations();
   const cancelOrderMutation = useCancelOrder();
   const updateOrderMutation = useUpdateOrder();
+  const resendEmailMutation = useResendOrderEmail();
 
   // Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -142,6 +143,10 @@ export default function OrderListPage() {
   const viewHostDetails = (hostDetails: any) => {
     setSelectedHost(hostDetails);
     setHostModalOpen(true);
+  };
+
+  const handleResendOrderEmail = (id: string) => {
+    resendEmailMutation.mutate({ id });
   };
 
   const formatDate = (dateString?: string) => {
@@ -284,6 +289,7 @@ export default function OrderListPage() {
                 confirmDelete={confirmDelete}
                 cancelOrder={handleCancelStatus}
                 onUpdatePaymentStatus={handleUpdatePaymentStatus}
+                resendEmail={handleResendOrderEmail}
               />
             ) : (
               <OrderTableView
@@ -293,6 +299,7 @@ export default function OrderListPage() {
                 confirmDelete={confirmDelete}
                 cancelOrder={handleCancelStatus}
                 onUpdatePaymentStatus={handleUpdatePaymentStatus}
+                resendEmail={handleResendOrderEmail}
               />
             )}
           </AnimatePresence>

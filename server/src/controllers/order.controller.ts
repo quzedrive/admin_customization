@@ -660,10 +660,10 @@ export const updateOrder = async (req: Request, res: Response) => {
                     break;
                 case RideStatus.CANCEL: // 3
                     slug = 'order_cancelled';
-                                    // Handle Refund if order was PAID
+                    // Handle Refund if order was PAID
                     if (oldStatus !== RideStatus.CANCEL && updates.refundAmount > 0) {
                         const amountInPaise = Math.round(updates.refundAmount * 100);
-                        
+
                         // Create Refund Record
                         const refundDoc = await Refund.create({
                             order: updatedOrder._id,
@@ -671,7 +671,8 @@ export const updateOrder = async (req: Request, res: Response) => {
                             method: updates.refundMethod, // Now numerical from front-end
                             status: 1, // Pending
                             reasonId: updates.reasonId,
-                            reason: updates.reasonText
+                            reason: updates.reasonText,
+                            transactionId: updates.refundTransactionId // Save initial ID if provided
                         });
 
                         updatedOrder.refund = refundDoc._id as any;
@@ -703,7 +704,9 @@ export const updateOrder = async (req: Request, res: Response) => {
                             await updatedOrder.save();
 
                             refundDoc.status = 2; // Processed
-                            refundDoc.transactionId = updates.transactionId;
+                            if (updates.refundTransactionId) {
+                                refundDoc.transactionId = updates.refundTransactionId;
+                            }
                             await refundDoc.save();
                         }
                     }
@@ -726,6 +729,32 @@ export const updateOrder = async (req: Request, res: Response) => {
     } catch (error: any) {
         console.error('Update Order Error:', error);
         res.status(400).json({ message: 'Invalid update data', error: error.message });
+    }
+};
+
+// @desc    Resend order email (Admin)
+// @route   POST /api/orders/admin/:id/resend-email
+// @access  Private/Admin
+export const resendOrderEmail = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { slug = 'order_confirmed' } = req.body; // Default to confirmation which has payment link
+
+        const order = await Order.findById(id);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        console.log(`Manually resending ${slug} email for order ${id}`);
+
+        // Trigger email sequence (async)
+        sendOrderStatusEmail(order, slug);
+
+        res.json({ message: `Email (${slug}) resent successfully` });
+    } catch (error: any) {
+        console.error('Resend Email Error:', error);
+        res.status(500).json({ message: 'Failed to resend email', error: error.message });
     }
 };
 

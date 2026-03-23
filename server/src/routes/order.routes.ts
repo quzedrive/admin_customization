@@ -1,5 +1,5 @@
 import express from 'express';
-import { createOrder, getAdminOrders, updateOrder, cancelOrder, getPublicOrderStatus, verifyPayment, getPriceHistory } from '../controllers/order.controller';
+import { createOrder, getAdminOrders, updateOrder, cancelOrder, getPublicOrderStatus, verifyPayment, getPriceHistory, resendOrderEmail } from '../controllers/order.controller';
 import { protect } from '../middlewares/auth.middleware';
 import { trackOrderLimiter } from '../middlewares/rate-limiter.middleware';
 
@@ -13,6 +13,9 @@ router.get('/admin', protect, getAdminOrders);
 
 // Admin: Update an order
 router.put('/admin/:id', protect, updateOrder);
+
+// Admin: Resend Email
+router.post('/admin/:id/resend-email', protect, resendOrderEmail);
 
 // Admin: Delete (cancel) an order
 router.delete('/admin/:id', protect, cancelOrder);

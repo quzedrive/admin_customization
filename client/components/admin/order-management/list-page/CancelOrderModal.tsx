@@ -175,18 +175,33 @@ export default function CancelOrderModal({ isOpen, onClose, onConfirm, isLoading
                                         </p>
                                     </div>
 
-                                    <div className="space-y-2">
+                                    <div className="space-y-3">
                                         <div className="flex justify-between text-sm text-blue-900/70">
-                                            <span>Total Amount Paid</span>
-                                            <span className="font-bold text-blue-900">₹{totalPaid.toLocaleString()}</span>
+                                            <span>Ride Charges</span>
+                                            <span className="font-medium text-blue-900">₹{(order?.gstAdded ? Math.floor(totalPaid / 1.18) : totalPaid).toLocaleString()}</span>
                                         </div>
-                                        <div className="flex justify-between text-sm text-red-600 font-medium">
-                                            <span>{order?.gstAdded ? "Fees & Tax (2.36%)" : "Tax Held (GST)"}</span>
-                                            <span>{order?.gstAdded ? `- ₹${taxHeld.toLocaleString()}` : "₹0"}</span>
+                                        {order?.gstAdded && (
+                                            <div className="flex justify-between text-sm text-blue-900/70">
+                                                <span>GST Charges (18%)</span>
+                                                <span className="font-medium text-blue-900">₹{(totalPaid - Math.floor(totalPaid / 1.18)).toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-sm text-blue-900 font-bold border-t border-blue-100 pt-2 pb-1">
+                                            <span>Total Paid</span>
+                                            <span>₹{totalPaid.toLocaleString()}</span>
                                         </div>
-                                        <div className="pt-2 border-t border-blue-200 mt-2 flex justify-between items-center">
-                                            <span className="text-blue-900 font-bold uppercase text-xs tracking-wider">Net Refund Amount</span>
-                                            <span className="text-2xl font-black text-blue-900">₹{refundAmount.toLocaleString()}</span>
+                                        
+                                        <div className="pt-3 border-t border-blue-200 mt-2 space-y-2">
+                                            <label className="text-blue-900 font-bold uppercase text-xs tracking-wider block">Refund Amount (Editable)</label>
+                                            <div className="relative">
+                                                <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500" size={18} />
+                                                <input 
+                                                    type="number"
+                                                    value={refundAmount}
+                                                    onChange={(e) => setRefundAmount(parseInt(e.target.value) || 0)}
+                                                    className="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-200 rounded-xl focus:border-blue-500 outline-none transition-all text-xl font-black text-blue-900"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

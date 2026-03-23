@@ -12,9 +12,10 @@ interface OrderTableViewProps {
     confirmDelete: (id: string) => void;
     cancelOrder: (id: string) => void;
     onUpdatePaymentStatus: (id: string, currentStatus: number) => void;
+    resendEmail: (id: string) => void;
 }
 
-export default function OrderTableView({ orders, formatDate, viewHostDetails, confirmDelete, cancelOrder, onUpdatePaymentStatus }: OrderTableViewProps) {
+export default function OrderTableView({ orders, formatDate, viewHostDetails, confirmDelete, cancelOrder, onUpdatePaymentStatus, resendEmail }: OrderTableViewProps) {
     return (
         <motion.div
             key="table"
@@ -114,13 +115,24 @@ export default function OrderTableView({ orders, formatDate, viewHostDetails, co
                                                 </button>
                                             </>
                                         )}
-                                        <button
-                                            onClick={() => onUpdatePaymentStatus(order._id, order.paymentStatus)}
-                                            className="p-1.5 cursor-pointer text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-100"
-                                            title="Update Payment Status"
-                                        >
-                                            <CreditCard size={16} />
-                                        </button>
+                                        {(order.status === 1 || order.status === 2) && (
+                                            <button
+                                                onClick={() => onUpdatePaymentStatus(order._id, order.paymentStatus)}
+                                                className="p-1.5 cursor-pointer text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-100"
+                                                title="Update Payment Status"
+                                            >
+                                                <CreditCard size={16} />
+                                            </button>
+                                        )}
+                                        {(order.paymentStatus === 0 || order.paymentStatus === 2) && (
+                                            <button
+                                                onClick={() => resendEmail(order._id)}
+                                                className="p-1.5 cursor-pointer text-purple-600 hover:bg-purple-50 rounded-lg transition-colors border border-transparent hover:border-purple-100"
+                                                title="Resend Payment Mail"
+                                            >
+                                                <Mail size={16} />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => confirmDelete(order._id)}
                                             className="p-1.5 cursor-pointer text-red-500 hover:bg-red-50 rounded-lg transition-colors"

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Phone, Car, MapPin, Clock, UserCheck, Pencil, Trash2, SquareX, CreditCard } from 'lucide-react';
+import { Mail, Phone, Car, MapPin, Clock, UserCheck, Pencil, Trash2, SquareX, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_COLORS } from '@/components/admin/order-management/constants';
 
@@ -12,9 +12,10 @@ interface OrderGridViewProps {
     confirmDelete: (id: string) => void;
     cancelOrder: (id: string) => void;
     onUpdatePaymentStatus: (id: string, currentStatus: number) => void;
+    resendEmail: (id: string) => void;
 }
 
-export default function OrderGridView({ orders, formatDate, viewHostDetails, confirmDelete, cancelOrder, onUpdatePaymentStatus }: OrderGridViewProps) {
+export default function OrderGridView({ orders, formatDate, viewHostDetails, confirmDelete, cancelOrder, onUpdatePaymentStatus, resendEmail }: OrderGridViewProps) {
     return (
         <motion.div
             key="grid"
@@ -101,6 +102,15 @@ export default function OrderGridView({ orders, formatDate, viewHostDetails, con
                                         >
                                             <Pencil size={16} />
                                         </Link>
+                                        {(order.paymentStatus === 0 || order.paymentStatus === 2) && (
+                                            <button
+                                                onClick={() => resendEmail(order._id)}
+                                                className="p-1.5 cursor-pointer text-purple-600 hover:bg-purple-50 rounded-lg transition-colors border border-transparent hover:border-purple-100"
+                                                title="Resend Payment Mail"
+                                            >
+                                                <Mail size={16} />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => cancelOrder(order._id)}
                                             className="p-1.5 cursor-pointer text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"

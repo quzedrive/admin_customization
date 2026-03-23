@@ -60,8 +60,9 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
     const [localCarName, setLocalCarName] = useState('');
     const [localCarSlug, setLocalCarSlug] = useState('');
 
-    const { useUpdateOrder } = useOrderMutations();
+    const { useUpdateOrder, useResendOrderEmail } = useOrderMutations();
     const updateOrderMutation = useUpdateOrder();
+    const resendEmailMutation = useResendOrderEmail();
 
     const { useGetCarBySlug } = useCarQueries();
     const { data: carData } = useGetCarBySlug(localCarSlug || order?.carSlug || '');
@@ -187,6 +188,11 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                 }
             });
         }
+    };
+
+    const handleResendEmail = () => {
+        if (!order) return;
+        resendEmailMutation.mutate({ id: order._id });
     };
 
     if (isListLoading) {
@@ -474,6 +480,17 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
                                 {updateOrderMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                                 Save Changes
                             </button>
+
+                            {(paymentStatus === '0' || paymentStatus === '2') && (
+                                <button
+                                    onClick={handleResendEmail}
+                                    disabled={resendEmailMutation.isPending}
+                                    className="w-full cursor-pointer flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold py-3 px-4 rounded-xl transition-all border border-purple-100 disabled:opacity-70 disabled:cursor-not-allowed"
+                                >
+                                    {resendEmailMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : <Mail size={18} />}
+                                    Resend Payment Mail
+                                </button>
+                            )}
 
                             <Link
                                 href="/admin/order-management/list-page"
