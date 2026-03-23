@@ -120,6 +120,11 @@ export default function OrderGridView({ orders, formatDate, viewHostDetails, con
                                         </button>
                                     </>
                                 )}
+                                {order.status === 3 && order.refund?.amount && (
+                                    <span className="text-red-500 font-bold text-xs ring-1 ring-red-100 bg-red-50/50 px-2 py-1 rounded-lg">
+                                        Refund: ₹{order.refund.amount}
+                                    </span>
+                                )}
                                 <button
                                     onClick={() => confirmDelete(order._id)}
                                     className="p-1.5 cursor-pointer text-red-500 hover:bg-red-50 rounded-lg transition-colors"

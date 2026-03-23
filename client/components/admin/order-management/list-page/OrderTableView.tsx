@@ -133,6 +133,7 @@ export default function OrderTableView({ orders, formatDate, viewHostDetails, co
                                                 <Mail size={16} />
                                             </button>
                                         )}
+                                        {order?.status === 3 && order?.refund?.amount && <span className='text-red-500 font-bold ml-2'>₹{order.refund.amount}</span>}
                                         <button
                                             onClick={() => confirmDelete(order._id)}
                                             className="p-1.5 cursor-pointer text-red-500 hover:bg-red-50 rounded-lg transition-colors"

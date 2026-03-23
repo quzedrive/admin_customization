@@ -243,6 +243,7 @@ export const getAdminOrders = async (req: Request, res: Response) => {
         const [ordersRaw, total] = await Promise.all([
             Order.find(query)
                 .sort(sortOptions)
+                .populate('refund')
                 .skip(skip)
                 .limit(limit)
                 .lean(),
