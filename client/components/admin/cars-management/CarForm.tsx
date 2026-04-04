@@ -204,10 +204,18 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
             const uploadPromises = fileList.map(file => fileServices.uploadFile(file, 'cars'));
             const results = await Promise.all(uploadPromises);
 
-            setFormData(prev => ({
-                ...prev,
-                images: [...prev.images, ...results]
-            }));
+            setFormData(prev => {
+                const currentImages = Array.isArray(prev.images) ? prev.images : [];
+                // ONLY remove temporary data: URLs, keeping everything else (persistent URLs or IDs)
+                const persistentImages = currentImages.filter(img => {
+                    const isTempPreview = typeof img === 'string' && img.startsWith('data:');
+                    return !isTempPreview;
+                });
+                return {
+                    ...prev,
+                    images: [...persistentImages, ...results]
+                };
+            });
             if (errors.images) setErrors(prev => ({ ...prev, images: '' }));
 
         } catch (error) {
