@@ -178,7 +178,7 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
             setIsSlugManuallyEdited(true);
         }
 
-        // Clear error
+        // Clear errors
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
