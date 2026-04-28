@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Types } from 'mongoose';
 import Car from '../models/cars/car.model';
 import CarImage from '../models/cars/car-image.model';
 import CarSpecification from '../models/cars/car-specification.model';
@@ -407,29 +408,44 @@ export const updateCar = async (req: Request, res: Response) => {
         // Update Images
         if (images && Array.isArray(images)) {
             try {
+                console.log(`[Update Car] Processing ${images.length} images`);
                 const newImageIds = [];
                 for (const img of images) {
                     if (typeof img === 'string') {
-                        // Check if it is a valid ObjectId (24 hex characters)
                         if (img.match(/^[0-9a-fA-F]{24}$/)) {
+                            // Already an ObjectId — use directly
                             newImageIds.push(img);
+                        } else if (img.startsWith('data:')) {
+                            // Skip base64 — frontend should never send these
+                            console.warn('[Update Car] Skipping base64 image — should have been uploaded before submit');
+                            continue;
                         } else {
-                            // Treat as URL or Data URI (base64) -> Create new CarImage
-                            // This handles http, https, relative paths, and data: URIs
-                            const newImage = await CarImage.create({ url: img });
-                            newImageIds.push(newImage._id);
+                            // It's a Cloudinary/HTTP URL — find existing or create
+                            let existing = await CarImage.findOne({ url: img });
+                            if (existing) {
+                                console.log(`[Update Car] Reusing existing CarImage: ${existing._id}`);
+                                newImageIds.push(existing._id);
+                            } else {
+                                const newImage = await CarImage.create({ url: img });
+                                console.log(`[Update Car] Created new CarImage: ${newImage._id}`);
+                                newImageIds.push(newImage._id);
+                            }
                         }
                     } else if (img && img._id) {
-                        // It's an Object with _id
                         newImageIds.push(img._id);
                     }
                 }
-                car.images = newImageIds;
+                // Deduplicate
+                const uniqueIds = [...new Set(newImageIds.map((id: any) => id.toString()))]
+                    .map(id => new Types.ObjectId(id));
+                car.images = uniqueIds as any;
+                console.log(`[Update Car] Final image IDs: ${uniqueIds.length}`);
             } catch (imgError) {
                 console.error('[Update Car] Image Error:', imgError);
                 throw new Error(`Image Update Failed: ${(imgError as any).message}`);
             }
         }
+
 
         // Update Specifications
         if (specifications && Array.isArray(specifications)) {

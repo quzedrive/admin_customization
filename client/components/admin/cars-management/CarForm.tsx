@@ -227,8 +227,12 @@ export default function CarForm({ initialData, isEditMode = false }: CarFormProp
     };
 
     const handleImageChange = (newImages: any) => {
-        setFormData(prev => ({ ...prev, images: newImages || [] }));
-        if (errors.images && (newImages || []).length > 0) {
+        // Filter out any temporary data: base64 previews — only keep real server URLs
+        const images = Array.isArray(newImages)
+            ? newImages.filter((img: any) => typeof img === 'string' && !img.startsWith('data:'))
+            : [];
+        setFormData(prev => ({ ...prev, images }));
+        if (errors.images && images.length > 0) {
             setErrors(prev => ({ ...prev, images: '' }));
         }
     };
